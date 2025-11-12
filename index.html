@@ -164,7 +164,7 @@
     </style>
 </head>
 
-<body class="flex flex-col h-screen p-2 sm:p-4 max-w-4xl mx-auto gap-4">
+<body class="flex flex-col h-screen p-4 max-w-4xl mx-auto gap-4">
 
     <!-- Header -->
     <header class="flex flex-col sm:flex-row justify-between items-center p-4 neon-border gap-4">
@@ -185,15 +185,13 @@
         </div>
 
         <!-- Username Setup -->
-        <!-- Responsive: flex-col on mobile, sm:flex-row on desktop -->
-        <div id="usernameSection" class="flex gap-3">
+        <div id="usernameSection" class.="flex gap-3">
             <input type="text" id="usernameInput" placeholder="SET YOUR USERNAME..."
                 class="flex-1 p-3 rounded-lg focus:outline-none" />
             <button id="usernameButton" class="px-6 py-2 rounded-lg font-bold">SET</button>
         </div>
 
         <!-- Input Forms (one for each page) -->
-        <!-- Responsive: flex-col on mobile, sm:flex-row on desktop -->
         <form id="confessionForm" class="hidden gap-3">
             <textarea id="confessionInput" rows="2"
                 class="flex-1 p-3 rounded-lg resize-none focus:outline-none"
@@ -202,18 +200,15 @@
                 class="px-6 py-2 rounded-lg font-bold">CONFESS</button>
         </form>
 
-        <!-- Responsive: flex-col on mobile, sm:flex-row on desktop -->
         <form id="chatForm" class="flex gap-3">
-            <textarea id="chatInput" rows="2"
-                class="flex-1 p-3 rounded-lg resize-none focus:outline-none"
+            <textarea id="chatInput" rows="2" class="flex-1 p-3 rounded-lg resize-none focus:outline-none"
                 placeholder="TYPE YOUR MESSAGE... (SHIFT+ENTER FOR NEW LINE)" required></textarea>
-            <button id="chatButton" type="submit"
-                class="px-6 py-2 rounded-lg font-bold">SEND</button>
+            <button id="chatButton" type="submit" class="px-6 py-2 rounded-lg font-bold">SEND</button>
         </form>
     </main>
 
     <!-- Footer -->
-    <footer class="text-center text-xs opacity-50 pb-2">
+    <footer class="text-center text-xs opacity-50">
         ANONYMOUS GRID // DISCONNECT ANYTIME
     </footer>
 
