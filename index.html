@@ -201,10 +201,16 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Configuration ---
-        // Use environment variables provided by the platform
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // User's provided Firebase config for Vercel deployment
+        const firebaseConfig = {
+          apiKey: "AIzaSyCtFOOGfjbeLM-bAT5i2J601w9_95MQlxs",
+          authDomain: "kiit-confessions.firebaseapp.com",
+          projectId: "kiit-confessions",
+          storageBucket: "kiit-confessions.firebasestorage.app",
+          messagingSenderId: "844059847809",
+          appId: "1:844059847809:web:98a8a39a3a33c2dd7d3180",
+          measurementId: "G-2JRL8TMMV7"
+        };
 
 
         // --- DOM Elements ---
@@ -240,28 +246,27 @@
 
         async function initFirebase() {
             try {
-                // Check if firebaseConfig is empty (which it would be if __firebase_config is undefined)
-                if (Object.keys(firebaseConfig).length === 0) {
-                     throw new Error("Firebase configuration is missing. Cannot initialize app.");
+                // Check if firebaseConfig has been pasted
+                if (firebaseConfig.apiKey === "AIzaSyCtFOOGfjbeLM-bAT5i2J601w9_95MQlxs") {
+                    console.log("Firebase config loaded.");
+                } else {
+                    // This error will show if the config is somehow still the placeholder
+                    throw new Error("Firebase configuration is missing or incorrect.");
                 }
 
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                // Authenticate the user (anonymously or with token)
+                // Authenticate the user (anonymously)
                 // This is required to interact with Firestore
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                await signInAnonymously(auth);
                 
                 console.log("Firebase initialized and user signed in.");
                 
-                // Define collection paths (using the environment's appId)
-                confessionsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'confessions');
-                chatCollection = collection(db, 'artifacts', appId, 'public', 'data', 'chat');
+                // Define collection paths (Simplified for Vercel)
+                confessionsCollection = collection(db, 'confessions');
+                chatCollection = collection(db, 'chat');
                 
                 // Start listening for new data on both collections
                 loadConfessions();
