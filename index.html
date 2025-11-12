@@ -82,6 +82,29 @@
             box-shadow: 0 0 15px #00e5ff;
         }
 
+        /* Style for text input */
+        input[type="text"] {
+            font-family: 'Orbitron', sans-serif;
+            background-color: rgba(0, 229, 255, 0.05);
+            /* Faint blue */
+            border: 1px solid #00e5ff;
+            color: #00e5ff;
+            text-shadow: 0 0 5px #00e5ff;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]::placeholder {
+            color: #00e5ff;
+            opacity: 0.5;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            background-color: rgba(0, 229, 255, 0.1);
+            box-shadow: 0 0 10px #00e5ff;
+        }
+
+
         /* Feed container */
         #feedContainer {
             background-color: rgba(0, 0, 0, 0.3);
@@ -148,8 +171,8 @@
         <h1 class="text-2xl sm:text-3xl font-bold glow">KIIT CONFESSIONS</h1>
         <!-- Navigation -->
         <nav class="flex text-lg gap-4">
-            <div id="navConfessions" class="nav-item active">CONFESSIONS</div>
-            <div id="navChat" class="nav-item">CHAT</div>
+            <div id="navConfessions" class="nav-item">CONFESSIONS</div>
+            <div id="navChat" class="nav-item active">CHAT</div>
         </nav>
     </header>
 
@@ -161,8 +184,15 @@
             <div id="loading" class="text-center p-4">CONNECTING TO GRID...</div>
         </div>
 
+        <!-- Username Setup -->
+        <div id="usernameSection" class.="flex gap-3">
+            <input type="text" id="usernameInput" placeholder="SET YOUR USERNAME..."
+                class="flex-1 p-3 rounded-lg focus:outline-none" />
+            <button id="usernameButton" class="px-6 py-2 rounded-lg font-bold">SET</button>
+        </div>
+
         <!-- Input Forms (one for each page) -->
-        <form id="confessionForm" class="flex gap-3">
+        <form id="confessionForm" class="hidden gap-3">
             <textarea id="confessionInput" rows="2"
                 class="flex-1 p-3 rounded-lg resize-none focus:outline-none"
                 placeholder="TYPE YOUR CONFESSION... (SHIFT+ENTER FOR NEW LINE)" required></textarea>
@@ -170,7 +200,7 @@
                 class="px-6 py-2 rounded-lg font-bold">CONFESS</button>
         </form>
 
-        <form id="chatForm" class="hidden gap-3">
+        <form id="chatForm" class="flex gap-3">
             <textarea id="chatInput" rows="2" class="flex-1 p-3 rounded-lg resize-none focus:outline-none"
                 placeholder="TYPE YOUR MESSAGE... (SHIFT+ENTER FOR NEW LINE)" required></textarea>
             <button id="chatButton" type="submit" class="px-6 py-2 rounded-lg font-bold">SEND</button>
@@ -198,7 +228,10 @@
             addDoc,
             onSnapshot,
             query,
-            serverTimestamp
+            serverTimestamp,
+            doc,
+            setDoc,
+            getDoc
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Configuration ---
@@ -229,15 +262,20 @@
         const chatInput = document.getElementById('chatInput');
         const chatButton = document.getElementById('chatButton');
 
+        // Username elements
+        const usernameInput = document.getElementById('usernameInput');
+        const usernameButton = document.getElementById('usernameButton');
+
         // --- App State ---
         let db;
         let auth;
         let currentUserId = null; // Store the anonymous user ID
+        let currentUsername = 'Anonymous'; // Store the user's chosen name
         let confessionsCollection;
         let chatCollection;
         let unsubscribeConfessions = () => {};
         let unsubscribeChat = () => {};
-        let currentPage = 'confessions';
+        let currentPage = 'chat'; // Default to chat page
 
         // --- Firebase Initialization ---
         async function initFirebase() {
@@ -255,18 +293,19 @@
                 auth = getAuth(app);
 
                 // Authenticate the user (anonymously)
-                // This is required to interact with Firestore and get a UID
                 const userCredential = await signInAnonymously(auth);
                 currentUserId = userCredential.user.uid;
                 console.log("Firebase initialized and user signed in:", currentUserId);
+
+                // Load username from Firestore
+                await loadUsername();
 
                 // Define collection paths (Simplified for Vercel)
                 confessionsCollection = collection(db, 'confessions');
                 chatCollection = collection(db, 'chat');
 
-                // Start listening for new data on both collections
-                listenForConfessions();
-                listenForChat();
+                // Start the application on the default page
+                showPage(currentPage); // This will be 'chat'
 
             } catch (error) {
                 console.error("Error initializing Firebase:", error);
@@ -274,6 +313,53 @@
                 if (error.message.includes("api-key-not-valid")) {
                     loading.textContent = "Error: Firebase API Key is not valid. Check console.";
                 }
+            }
+        }
+
+        // --- Username Functions ---
+        async function loadUsername() {
+            if (!db || !currentUserId) return;
+            const userDocRef = doc(db, 'users', currentUserId);
+            const userDoc = await getDoc(userDocRef);
+
+            if (userDoc.exists()) {
+                currentUsername = userDoc.data().username;
+            } else {
+                currentUsername = 'Anonymous';
+            }
+            usernameInput.value = currentUsername === 'Anonymous' ? '' : currentUsername;
+        }
+
+        async function saveUsername() {
+            const newUsername = usernameInput.value.trim();
+            if (newUsername && newUsername !== currentUsername) {
+                currentUsername = newUsername;
+                const userDocRef = doc(db, 'users', currentUserId);
+                try {
+                    await setDoc(userDocRef, {
+                        username: newUsername
+                    }, {
+                        merge: true
+                    });
+                    // Visual feedback
+                    usernameButton.textContent = "SAVED!";
+                    usernameInput.blur();
+                    setTimeout(() => {
+                        usernameButton.textContent = "SET";
+                    }, 1500);
+                } catch (error) {
+                    console.error("Error saving username:", error);
+                    usernameButton.textContent = "ERROR!";
+                    setTimeout(() => {
+                        usernameButton.textContent = "SET";
+                    }, 1500);
+                }
+            } else if (newUsername) {
+                // Same name, just give feedback
+                usernameButton.textContent = "SAVED!";
+                setTimeout(() => {
+                    usernameButton.textContent = "SET";
+                }, 1500);
             }
         }
 
@@ -308,11 +394,11 @@
             const q = query(collection(db, 'confessions'));
             unsubscribeConfessions = onSnapshot(q, (snapshot) => {
                 const docs = snapshot.docs;
-                // Sort client-side by timestamp
+                // Sort client-side by timestamp (Oldest first)
                 const sortedDocs = docs.sort((a, b) => {
                     const timeA = a.data().timestamp?.toDate() || 0;
                     const timeB = b.data().timestamp?.toDate() || 0;
-                    return timeB - timeA; // Newest first
+                    return timeA - timeB; // Oldest first (newest at bottom)
                 });
                 renderFeed(sortedDocs, 'confessions');
             }, (error) => {
@@ -329,11 +415,11 @@
             const q = query(collection(db, 'chat'));
             unsubscribeChat = onSnapshot(q, (snapshot) => {
                 const docs = snapshot.docs;
-                // Sort client-side by timestamp
+                // Sort client-side by timestamp (Oldest first)
                 const sortedDocs = docs.sort((a, b) => {
                     const timeA = a.data().timestamp?.toDate() || 0;
                     const timeB = b.data().timestamp?.toDate() || 0;
-                    return timeB - timeA; // Newest first
+                    return timeA - timeB; // Oldest first (newest at bottom)
                 });
                 renderFeed(sortedDocs, 'chat');
             }, (error) => {
@@ -356,6 +442,7 @@
                 const text = data.text || '...';
                 const time = data.timestamp ? data.timestamp.toDate().toLocaleString() : '...';
                 const docUserId = data.userId; // Get the ID of the user who posted
+                const username = data.username || 'Anonymous'; // Get username from doc
 
                 // Check if this message is "mine"
                 const isMine = currentUserId && docUserId === currentUserId;
@@ -368,6 +455,11 @@
                 const bubble = document.createElement('div');
                 bubble.className = `message-bubble p-3 rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${isMine ? 'my-message' : ''}`;
 
+                // Create username element
+                const usernameElement = document.createElement('div');
+                usernameElement.className = `font-bold text-sm mb-1 opacity-70 ${isMine ? 'text-right' : 'text-left'}`;
+                usernameElement.textContent = username;
+                bubble.appendChild(usernameElement);
 
                 // Create text content
                 const textElement = document.createElement('p');
@@ -397,7 +489,8 @@
                     await addDoc(confessionsCollection, {
                         text: text,
                         timestamp: serverTimestamp(),
-                        userId: currentUserId // Tag with anonymous ID
+                        userId: currentUserId, // Tag with anonymous ID
+                        username: currentUsername // Tag with username
                     });
                     confessionInput.value = '';
                 } catch (error) {
@@ -414,7 +507,8 @@
                     await addDoc(chatCollection, {
                         text: text,
                         timestamp: serverTimestamp(),
-                        userId: currentUserId // Tag with anonymous ID
+                        userId: currentUserId, // Tag with anonymous ID
+                        username: currentUsername // Tag with username
                     });
                     chatInput.value = '';
                 } catch (error) {
@@ -428,6 +522,18 @@
         chatForm.addEventListener('submit', postChatMessage);
         navConfessions.addEventListener('click', () => showPage('confessions'));
         navChat.addEventListener('click', () => showPage('chat'));
+
+        // Event listener for setting username
+        usernameButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            saveUsername();
+        });
+        usernameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveUsername();
+            }
+        });
 
         // Handle Enter/Shift+Enter for Confessions
         confessionInput.addEventListener('keydown', (e) => {
