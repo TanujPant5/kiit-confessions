@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIIT Confessions</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Google Font: Orbitron (Tron-like font) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom Tron Theme Styles */
+        body {
+            font-family: 'Orbitron', sans-serif;
+            /* Background grid effect */
+            background-color: #0a0a1a; /* Dark blue-black */
+            background-image: 
+                linear-gradient(to right, rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #00ffff; /* Cyan */
+        }
+
+        /* Glowing text effect */
+        .tron-glow {
+            color: #00ffff;
+            text-shadow:
+                0 0 5px #00ffff,
+                0 0 10px #00ffff,
+                0 0 20px #00ffff,
+                0 0 40px #0ff,
+                0 0 80px #0ff;
+        }
+
+        /* Active nav button style */
+        .nav-button.active {
+            color: #ffffff;
+            text-shadow:
+                0 0 5px #00ffff,
+                0 0 10px #00ffff,
+                0 0 20px #00ffff,
+                0 0 40px #0ff,
+                0 0 80px #0ff;
+            background-color: rgba(0, 255, 255, 0.1);
+        }
+
+        /* Neon button */
+        .tron-button {
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            background-color: transparent;
+            box-shadow: 0 0 10px #00ffff, inset 0 0 10px #00ffff;
+            transition: all 0.3s ease-in-out;
+        }
+        .tron-button:hover:not(:disabled) {
+            background-color: rgba(0, 255, 255, 0.1);
+            color: #ffffff;
+            box-shadow: 0 0 20px #00ffff, inset 0 0 20px #00ffff;
+        }
+        .tron-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.5), inset 0 0 5px rgba(0, 255, 255, 0.5);
+        }
+
+        /* Neon input/textarea */
+        .tron-input {
+            background-color: rgba(0, 0, 10, 0.5);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            caret-color: #00ffff;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.5), inset 0 0 5px rgba(0, 255, 255, 0.5);
+        }
+        .tron-input::placeholder {
+            color: rgba(0, 255, 255, 0.4);
+        }
+        .tron-input:focus {
+            outline: none;
+            border-color: #ffffff;
+            box-shadow: 0 0 15px #00ffff, inset 0 0 10px #00ffff;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00ffff;
+            border-radius: 4px;
+            box-shadow: 0 0 5px #00ffff;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ffffff;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+
+    <!-- Header -->
+    <header class="py-4 text-center border-b border-cyan-700 shadow-lg shadow-cyan-500/20">
+        <h1 class="text-3xl md:text-4xl font-bold tron-glow">KIIT CONFESSIONS</h1>
+        <!-- Navigation for Pages -->
+        <nav class="flex justify-center gap-4 mt-3">
+            <button id="nav-confessions" class="nav-button tron-button px-6 py-2 rounded-lg text-sm font-bold">
+                CONFESSIONS
+            </button>
+            <button id="nav-chat" class="nav-button tron-button px-6 py-2 rounded-lg text-sm font-bold">
+                CHAT
+            </button>
+        </nav>
+    </header>
+
+    <!-- Page Container -->
+    <div id="page-container" class="flex-1 flex flex-col overflow-hidden">
+
+        <!-- Confessions Page (Shown by default) -->
+        <div id="page-confessions" class="flex flex-col flex-1 h-full">
+            <!-- Main Content: Confessions Feed -->
+            <main id="confessions-feed" class="flex-1 p-4 overflow-y-auto space-y-4">
+                <!-- Loading Message -->
+                <div id="confessions-loading" class="text-center p-8">
+                    <p class="text-lg text-cyan-300 animate-pulse">Initializing Grid... Accessing Confessions...</p>
+                </div>
+                <!-- Confessions will be dynamically inserted here -->
+            </main>
+
+            <!-- Footer: Confession Input Form -->
+            <footer class="p-4 border-t border-cyan-700 shadow-lg shadow-cyan-500/20">
+                <form id="confession-form" class="flex flex-col sm:flex-row gap-3">
+                    <textarea
+                        id="confession-input"
+                        rows="2"
+                        class="flex-1 p-3 rounded-lg tron-input text-sm"
+                        placeholder="Enter your confession... (max 500 chars)"
+                        maxlength="500"
+                        required
+                    ></textarea>
+                    <button
+                        id="confession-button"
+                        type="submit"
+                        class="tron-button font-bold py-3 px-6 rounded-lg"
+                    >
+                        CONFESS
+                    </button>
+                </form>
+            </footer>
+        </div>
+
+        <!-- Chat Page (Hidden by default) -->
+        <div id="page-chat" class="hidden flex-col flex-1 h-full">
+            <!-- Main Content: Chat Feed -->
+            <main id="chat-feed" class="flex-1 p-4 overflow-y-auto space-y-4">
+                <!-- Loading Message -->
+                <div id="chat-loading" class="text-center p-8">
+                    <p class="text-lg text-cyan-300 animate-pulse">Connecting to Chat... Loading Messages...</p>
+                </div>
+                <!-- Chat messages will be dynamically inserted here -->
+            </main>
+
+            <!-- Footer: Chat Input Form -->
+            <footer class="p-4 border-t border-cyan-700 shadow-lg shadow-cyan-500/20">
+                <form id="chat-form" class="flex flex-col sm:flex-row gap-3">
+                    <textarea
+                        id="chat-input"
+                        rows="2"
+                        class="flex-1 p-3 rounded-lg tron-input text-sm"
+                        placeholder="Enter your message... (max 280 chars)"
+                        maxlength="280"
+                        required
+                    ></textarea>
+                    <button
+                        id="chat-button"
+                        type="submit"
+                        class="tron-button font-bold py-3 px-6 rounded-lg"
+                    >
+                        SEND
+                    </button>
+                </form>
+            </footer>
+        </div>
+    </div>
+
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            onSnapshot, 
+            serverTimestamp,
+            setLogLevel
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Firebase Configuration ---
+        // Use environment variables provided by the platform
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+
+        // --- DOM Elements ---
+        // Page switching
+        const navConfessions = document.getElementById('nav-confessions');
+        const navChat = document.getElementById('nav-chat');
+        const pageConfessions = document.getElementById('page-confessions');
+        const pageChat = document.getElementById('page-chat');
+
+        // Confessions Page
+        const confessionsFeed = document.getElementById('confessions-feed');
+        const confessionsLoading = document.getElementById('confessions-loading');
+        const confessionForm = document.getElementById('confession-form');
+        const confessionInput = document.getElementById('confession-input');
+        const confessionButton = document.getElementById('confession-button');
+
+        // Chat Page
+        const chatFeed = document.getElementById('chat-feed');
+        const chatLoading = document.getElementById('chat-loading');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatButton = document.getElementById('chat-button');
+
+
+        // --- Firebase Initialization ---
+        let db;
+        let auth;
+        let confessionsCollection;
+        let chatCollection; // New collection for chat
+        
+        // Show logs for debugging
+        setLogLevel('Debug');
+
+        async function initFirebase() {
+            try {
+                // Check if firebaseConfig is empty (which it would be if __firebase_config is undefined)
+                if (Object.keys(firebaseConfig).length === 0) {
+                     throw new Error("Firebase configuration is missing. Cannot initialize app.");
+                }
+
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Authenticate the user (anonymously or with token)
+                // This is required to interact with Firestore
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                console.log("Firebase initialized and user signed in.");
+                
+                // Define collection paths (using the environment's appId)
+                confessionsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'confessions');
+                chatCollection = collection(db, 'artifacts', appId, 'public', 'data', 'chat');
+                
+                // Start listening for new data on both collections
+                loadConfessions();
+                loadChat();
+
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                const errorBox = `<div class="p-4 rounded-lg bg-red-900 border border-red-500 text-white">
+                    <strong>Error connecting to the grid.</strong> Please refresh the page.
+                    <p class="text-sm opacity-70">${error.message}</p>
+                </div>`;
+                // Show error on both feeds
+                confessionsFeed.innerHTML = errorBox;
+                chatFeed.innerHTML = errorBox;
+                if (confessionsLoading) confessionsLoading.remove();
+                if (chatLoading) chatLoading.remove();
+            }
+        }
+
+        // --- Page Switching Logic ---
+        function showPage(pageName) {
+            if (pageName === 'confessions') {
+                pageConfessions.classList.remove('hidden');
+                pageConfessions.classList.add('flex');
+                pageChat.classList.add('hidden');
+                pageChat.classList.remove('flex');
+                
+                navConfessions.classList.add('active');
+                navChat.classList.remove('active');
+            } else if (pageName === 'chat') {
+                pageChat.classList.remove('hidden');
+                pageChat.classList.add('flex');
+                pageConfessions.classList.add('hidden');
+                pageConfessions.classList.remove('flex');
+
+                navChat.classList.add('active');
+                navConfessions.classList.remove('active');
+            }
+        }
+
+        // --- Load and Display Confessions ---
+        function loadConfessions() {
+            onSnapshot(confessionsCollection, (snapshot) => {
+                if (confessionsLoading) {
+                    confessionsLoading.remove();
+                }
+
+                if (snapshot.empty) {
+                    confessionsFeed.innerHTML = '<p class="text-center text-cyan-300">The grid is quiet... Be the first to confess.</p>';
+                    return;
+                }
+
+                const confessions = [];
+                snapshot.forEach(doc => {
+                    confessions.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Client-side sorting (as requested)
+                // Sort by timestamp, newest first
+                confessions.sort((a, b) => {
+                    const timeA = a.timestamp?.toMillis() || 0;
+                    const timeB = b.timestamp?.toMillis() || 0;
+                    return timeB - timeA;
+                });
+                
+                renderConfessions(confessions);
+
+            }, (error) => {
+                console.error("Error fetching confessions:", error);
+                confessionsFeed.innerHTML = `<div class="p-4 rounded-lg bg-red-900 border border-red-500 text-white">
+                    <strong>Error fetching data.</strong> A connection to the confessions database failed.
+                </div>`;
+            });
+        }
+
+        // --- Load and Display Chat Messages ---
+        function loadChat() {
+            onSnapshot(chatCollection, (snapshot) => {
+                if (chatLoading) {
+                    chatLoading.remove();
+                }
+
+                if (snapshot.empty) {
+                    chatFeed.innerHTML = '<p class="text-center text-cyan-300">No chat messages yet. Start the conversation!</p>';
+                    return;
+                }
+
+                const messages = [];
+                snapshot.forEach(doc => {
+                    messages.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Sort by timestamp, newest first
+                messages.sort((a, b) => {
+                    const timeA = a.timestamp?.toMillis() || 0;
+                    const timeB = b.timestamp?.toMillis() || 0;
+                    return timeB - timeA;
+                });
+                
+                renderChat(messages);
+
+            }, (error) => {
+                console.error("Error fetching chat messages:", error);
+                chatFeed.innerHTML = `<div class="p-4 rounded-lg bg-red-900 border border-red-500 text-white">
+                    <strong>Error fetching data.</strong> A connection to the chat database failed.
+                </div>`;
+            });
+        }
+
+
+        // --- Render Confessions to the DOM ---
+        function renderConfessions(confessions) {
+            const isScrolledToBottom = confessionsFeed.scrollHeight - confessionsFeed.clientHeight <= confessionsFeed.scrollTop + 1;
+
+            confessionsFeed.innerHTML = ''; // Clear the feed
+            
+            confessions.forEach(confession => {
+                const post = document.createElement('div');
+                post.className = "p-4 rounded-lg border border-cyan-700 shadow-lg shadow-cyan-500/10 break-words animate-fade-in";
+                post.style.backgroundColor = "rgba(0, 20, 30, 0.7)"; // Translucent dark card
+
+                const text = document.createElement('p');
+                text.className = "text-cyan-300 text-sm md:text-base whitespace-pre-wrap";
+                text.textContent = confession.text;
+
+                const time = document.createElement('p');
+                time.className = "text-xs text-cyan-500 opacity-70 mt-2 text-right";
+                time.textContent = confession.timestamp 
+                    ? confession.timestamp.toDate().toLocaleString() 
+                    : 'Sending...';
+
+                post.appendChild(text);
+                post.appendChild(time);
+                confessionsFeed.appendChild(post);
+            });
+
+            // Auto-scroll to bottom only if user was already at the bottom
+            if (isScrolledToBottom) {
+                confessionsFeed.scrollTop = confessionsFeed.scrollHeight;
+            }
+        }
+
+        // --- Render Chat Messages to the DOM ---
+        function renderChat(messages) {
+            const isScrolledToBottom = chatFeed.scrollHeight - chatFeed.clientHeight <= chatFeed.scrollTop + 1;
+
+            chatFeed.innerHTML = ''; // Clear the chat feed
+            
+            messages.forEach(message => {
+                const post = document.createElement('div');
+                post.className = "p-4 rounded-lg border border-cyan-700 shadow-lg shadow-cyan-500/10 break-words animate-fade-in";
+                post.style.backgroundColor = "rgba(0, 20, 30, 0.7)";
+
+                const text = document.createElement('p');
+                text.className = "text-cyan-300 text-sm md:text-base whitespace-pre-wrap";
+                text.textContent = message.text;
+
+                const time = document.createElement('p');
+                time.className = "text-xs text-cyan-500 opacity-70 mt-2 text-right";
+                time.textContent = message.timestamp 
+                    ? message.timestamp.toDate().toLocaleString() 
+                    : 'Sending...';
+
+                post.appendChild(text);
+                post.appendChild(time);
+                chatFeed.appendChild(post);
+            });
+
+            if (isScrolledToBottom) {
+                chatFeed.scrollTop = chatFeed.scrollHeight;
+            }
+        }
+
+        // --- Post a New Confession ---
+        async function postConfession(e) {
+            e.preventDefault();
+            const confessionText = confessionInput.value.trim();
+
+            if (confessionText.length === 0) {
+                return; // Don't post empty messages
+            }
+
+            // Disable form to prevent spam
+            confessionButton.disabled = true;
+            confessionButton.textContent = "SENDING...";
+            confessionInput.disabled = true;
+
+            try {
+                await addDoc(confessionsCollection, {
+                    text: confessionText,
+                    timestamp: serverTimestamp()
+                });
+
+                // Clear the input field
+                confessionInput.value = '';
+                
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                // Optionally show an error to the user in a non-alert way
+                const errorMsg = document.createElement('p');
+                errorMsg.className = "text-red-400 text-xs text-center mt-1";
+                errorMsg.textContent = "Failed to send. Please try again.";
+                confessionForm.appendChild(errorMsg);
+                setTimeout(() => errorMsg.remove(), 3000);
+            } finally {
+                // Re-enable the form
+                confessionButton.disabled = false;
+                confessionButton.textContent = "CONFESS";
+                confessionInput.disabled = false;
+            }
+        }
+
+        // --- Post a New Chat Message ---
+        async function postChatMessage(e) {
+            e.preventDefault();
+            const chatText = chatInput.value.trim();
+
+            if (chatText.length === 0) {
+                return;
+            }
+
+            chatButton.disabled = true;
+            chatButton.textContent = "SENDING...";
+            chatInput.disabled = true;
+
+            try {
+                await addDoc(chatCollection, {
+                    text: chatText,
+                    timestamp: serverTimestamp()
+                });
+
+                chatInput.value = '';
+                
+            } catch (error) {
+                console.error("Error adding chat message: ", error);
+                const errorMsg = document.createElement('p');
+                errorMsg.className = "text-red-400 text-xs text-center mt-1";
+                errorMsg.textContent = "Failed to send. Please try again.";
+                chatForm.appendChild(errorMsg);
+                setTimeout(() => errorMsg.remove(), 3000);
+            } finally {
+                chatButton.disabled = false;
+                chatButton.textContent = "SEND";
+                chatInput.disabled = false;
+            }
+        }
+        
+        // --- Add CSS for fade-in ---
+        const styleSheet = document.createElement("style");
+        styleSheet.type = "text/css";
+        styleSheet.innerText = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.5s ease-out;
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // --- Event Listeners ---
+        confessionForm.addEventListener('submit', postConfession);
+        chatForm.addEventListener('submit', postChatMessage);
+        navConfessions.addEventListener('click', () => showPage('confessions'));
+        navChat.addEventListener('click', () => showPage('chat'));
+        
+        // Start the application
+        initFirebase();
+        // Show the default page
+        showPage('confessions');
+    </script>
+
+</body>
+</html>
