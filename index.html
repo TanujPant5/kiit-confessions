@@ -705,7 +705,7 @@
 
         function hideDropdownMenu() {
             contextMenu.classList.add('hidden');
-            currentContextMenuData = null;
+            // currentContextMenuData = null; // <-- This was the bug
         }
 
         function handleMessageClick(bubble) {
@@ -770,7 +770,7 @@
             const count = selectedMessages.size;
             selectionCount.textContent = `${count} selected`;
 
-            if (count === 0) {
+            if (count === 0 && isSelectionMode) { // Only exit if we were already in selection mode
                 exitSelectionMode();
             }
         }
@@ -797,8 +797,11 @@
         // --- Page Navigation ---
         function showPage(page) {
             currentPage = page;
+            
             // --- FIX: Check if selection mode is on ---
-            if(isSelectionMode) exitSelectionMode(); // Exit selection mode on page change
+            if(isSelectionMode) {
+                exitSelectionMode(); 
+            }
 
             unsubscribeConfessions();
             unsubscribeChat();
