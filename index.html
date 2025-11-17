@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KIIT Confessions // TRON</title>
+    <title>Konvo // Anonymous Chat</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Font 'Inter' for readability -->
@@ -279,7 +279,7 @@
     <!-- Header -->
     <header class="flex justify-between items-center p-2 sm:p-4 border-b-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20 gap-2 sm:gap-4">
         <!-- Left Side: Title -->
-        <h1 class="text-xl sm:text-3xl font-bold glow">KIIT CONFESSIONS</h1>
+        <h1 class="text-xl sm:text-3xl font-bold glow">KONVO</h1>
 
         <!-- Right Side: Nav and Profile -->
         <div class="flex items-center gap-2 sm:gap-4">
@@ -730,6 +730,8 @@
         function enterSelectionMode() {
             isSelectionMode = true;
             selectionBar.classList.remove('hidden');
+            chatForm.classList.add('hidden'); // Hide input forms
+            confessionForm.classList.add('hidden');
 
             // Add the right-clicked message to selection
             if (currentContextMenuData) {
@@ -747,6 +749,16 @@
             isSelectionMode = false;
             selectionBar.classList.add('hidden');
             selectedMessages.clear();
+            
+            // --- FIX: Manually show the correct form ---
+            if (currentPage === 'chat') {
+                chatForm.classList.remove('hidden');
+                chatForm.classList.add('flex');
+            } else {
+                confessionForm.classList.remove('hidden');
+                confessionForm.classList.add('flex');
+            }
+            // showPage(currentPage); // <-- THIS WAS THE BUG
 
             // Remove all selected-message classes
             document.querySelectorAll('.selected-message').forEach(el => {
@@ -785,7 +797,8 @@
         // --- Page Navigation ---
         function showPage(page) {
             currentPage = page;
-            exitSelectionMode(); // Exit selection mode on page change
+            // --- FIX: Check if selection mode is on ---
+            if(isSelectionMode) exitSelectionMode(); // Exit selection mode on page change
 
             unsubscribeConfessions();
             unsubscribeChat();
@@ -795,8 +808,10 @@
             if (page === 'confessions') {
                 navConfessions.classList.add('active');
                 navChat.classList.remove('active');
-                confessionForm.classList.remove('hidden');
-                confessionForm.classList.add('flex');
+                if (!isSelectionMode) { // Check again in case exitSelectionMode ran
+                    confessionForm.classList.add('flex');
+                    confessionForm.classList.remove('hidden');
+                }
                 chatForm.classList.add('hidden');
                 chatForm.classList.remove('flex');
                 typingIndicator.classList.add('hidden');
@@ -804,8 +819,10 @@
             } else {
                 navChat.classList.add('active');
                 navConfessions.classList.remove('active');
-                chatForm.classList.remove('hidden');
-                chatForm.classList.add('flex');
+                 if (!isSelectionMode) { // Check again
+                    chatForm.classList.add('flex');
+                    chatForm.classList.remove('hidden');
+                }
                 confessionForm.classList.add('hidden');
                 confessionForm.classList.remove('flex');
                 typingIndicator.classList.remove('hidden');
@@ -1050,7 +1067,7 @@
                     });
                     chatInput.value = '';
                     updateTypingStatus(false);
-                } catch (error) { // <-- This was the bug location, now fixed.
+                } catch (error) {
                     console.error("Error adding chat message: ", error);
                 }
             }
