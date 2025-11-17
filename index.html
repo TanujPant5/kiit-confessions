@@ -323,11 +323,11 @@
             transition-delay: 0s;
         }
 
-        /* 3. New Message Animation (UPDATED to slide) */
-        @keyframes messageSlideIn {
+        /* 3. New Message Animation */
+        @keyframes messagePopIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(5px);
             }
 
             to {
@@ -336,8 +336,8 @@
             }
         }
 
-        .animate-slide-in {
-            animation: messageSlideIn 0.2s ease-out;
+        .animate-pop-in {
+            animation: messagePopIn 0.2s ease-out;
         }
 
         /* --- END OF ADDED CSS --- */
@@ -1074,7 +1074,7 @@
                         showDropdownMenu(e, bubble.dataset);
                     });
 
-                    timeElement.appendChild(kGebabBtn);
+                    timeElement.appendChild(kebabBtn);
                 }
 
                 bubble.appendChild(timeElement);
@@ -1093,7 +1093,7 @@
 
                 // Only animate if the message is very new (posted in the last 3s)
                 if ((now - messageTime) < 3000) {
-                    lastBubble.classList.add('animate-slide-in'); // <-- UPDATED CLASS
+                    lastBubble.classList.add('animate-pop-in');
                 }
                 lastBubble.setAttribute('data-animated', 'true'); // Prevent re-animation
             }
