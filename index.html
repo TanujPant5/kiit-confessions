@@ -145,7 +145,37 @@
             text-shadow: none;
             margin-top: 2px;
             /* Tighter margin */
+            display: flex; /* NEW: for edit/delete buttons */
+            justify-content: flex-end; /* NEW */
+            align-items: center; /* NEW */
+            gap: 4px; /* NEW */
         }
+
+        /* NEW: Edit/Delete button styling */
+        .edit-btn, .delete-btn {
+            background: none;
+            border: none;
+            padding: 0 2px;
+            margin: 0;
+            color: #00e5ff;
+            opacity: 0.5;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 0.6rem; /* 9px */
+            text-shadow: none;
+        }
+        .edit-btn:hover, .delete-btn:hover {
+            opacity: 1;
+            text-shadow: 0 0 5px #00e5ff;
+        }
+
+        /* NEW: Edited marker styling */
+        .edited-marker {
+            font-size: 0.6rem;
+            opacity: 0.5;
+            margin-right: 4px;
+        }
+
 
         /* Navigation styling */
         .nav-item {
@@ -264,6 +294,34 @@
         </div>
     </div>
 
+    <!-- NEW: Edit Message Modal -->
+    <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
+        <div class="bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
+            <h2 class="text-2xl font-bold glow">EDIT MESSAGE</h2>
+            
+            <textarea id="modalEditTextArea" rows="4" class="w-full p-3 rounded-lg resize-none focus:outline-none"></textarea>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-4 mt-4">
+                <button id="editModalCancelButton" class="flex-1 px-6 py-2 rounded-lg font-bold">CANCEL</button>
+                <button id="editModalSaveButton" class="flex-1 px-6 py-2 rounded-lg font-bold">SAVE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Confirm Delete Modal -->
+    <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
+        <div class="bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
+            <h2 class="text-xl font-bold glow">DELETE MESSAGE</h2>
+            <p id="confirmModalText" class="text-base opacity-90">Are you sure you want to permanently delete this message?</p>
+            <!-- Action Buttons -->
+            <div class="flex gap-4 mt-4">
+                <button id="confirmModalNoButton" class="flex-1 px-6 py-2 rounded-lg font-bold">CANCEL</button>
+                <button id="confirmModalYesButton" class="flex-1 px-6 py-2 rounded-lg font-bold bg-red-800 border-red-500 hover:bg-red-600">DELETE</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -285,7 +343,9 @@
             doc,
             setDoc,
             getDoc,
-            orderBy
+            orderBy,
+            updateDoc, // --- NEW
+            deleteDoc  // --- NEW
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Configuration ---
@@ -320,6 +380,17 @@
         const modalSaveButton = document.getElementById('modalSaveButton');
         const modalUsernameInput = document.getElementById('modalUsernameInput');
 
+        // --- NEW: Edit/Delete Modal Elements ---
+        const editModal = document.getElementById('editModal');
+        const modalEditTextArea = document.getElementById('modalEditTextArea');
+        const editModalCancelButton = document.getElementById('editModalCancelButton');
+        const editModalSaveButton = document.getElementById('editModalSaveButton');
+
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmModalText = document.getElementById('confirmModalText');
+        const confirmModalNoButton = document.getElementById('confirmModalNoButton');
+        const confirmModalYesButton = document.getElementById('confirmModalYesButton');
+
         // --- App State ---
         let db;
         let auth;
@@ -340,6 +411,11 @@
         let currentPage = 'chat';
         
         let typingTimeout = null;
+        
+        // --- NEW: State for editing/deleting ---
+        let docToEditId = null;
+        let collectionToEdit = null;
+        let deleteCallback = null; // Stores the function to run on delete confirm
 
         // --- Firebase Initialization ---
         async function initFirebase() {
@@ -467,6 +543,68 @@
 
         function closeProfileModal() {
             profileModal.classList.add('hidden');
+        }
+
+        // --- NEW: Edit/Delete Modal Controls & Logic ---
+        function showEditModal(docId, collectionName, currentText) {
+            docToEditId = docId;
+            collectionToEdit = collectionName;
+            modalEditTextArea.value = currentText;
+            editModal.classList.remove('hidden');
+        }
+        
+        function closeEditModal() {
+            editModal.classList.add('hidden');
+            docToEditId = null;
+            collectionToEdit = null;
+        }
+
+        async function saveEdit() {
+            const newText = modalEditTextArea.value.trim();
+            if (newText && docToEditId && collectionToEdit) {
+                editModalSaveButton.textContent = "SAVING...";
+                editModalSaveButton.disabled = true;
+                try {
+                    const docRef = doc(db, collectionToEdit, docToEditId);
+                    await updateDoc(docRef, {
+                        text: newText,
+                        edited: true // Add 'edited' marker
+                    });
+                    closeEditModal();
+                } catch (error) {
+                    console.error("Error updating document:", error);
+                    // This error will trigger if rules fail (e.g., > 5 mins)
+                    alert("Error: Could not save edit. The 5-minute edit window may have expired.");
+                }
+                editModalSaveButton.textContent = "SAVE";
+                editModalSaveButton.disabled = false;
+            }
+        }
+
+        function showConfirmModal(callback) {
+            deleteCallback = callback; // Store the delete function
+            confirmModal.classList.remove('hidden');
+        }
+        
+        function closeConfirmModal() {
+            confirmModal.classList.add('hidden');
+            deleteCallback = null;
+        }
+        
+        async function handleDelete() {
+            if (deleteCallback) {
+                confirmModalYesButton.textContent = "DELETING...";
+                confirmModalYesButton.disabled = true;
+                try {
+                    await deleteCallback(); // Run the stored delete function
+                } catch (error) {
+                    console.error("Error deleting document:", error);
+                    alert("Error: Could not delete message.");
+                }
+                closeConfirmModal();
+                confirmModalYesButton.textContent = "DELETE";
+                confirmModalYesButton.disabled = false;
+            }
         }
 
         // --- Page Navigation ---
@@ -619,7 +757,7 @@
             });
         }
 
-        // --- Render Function ---
+        // --- Render Function (UPDATED) ---
         function renderFeed(docs, type) {
             feedContainer.innerHTML = ''; 
             if (docs.length === 0) {
@@ -633,8 +771,8 @@
 
             let lastUserId = null; 
 
-            docs.forEach(doc => {
-                const data = doc.data();
+            docs.forEach(docInstance => { // Renamed 'doc' to 'docInstance' to avoid conflict
+                const data = docInstance.data();
                 const text = data.text || '...';
                 const time = formatTimestamp(data.timestamp);
                 const docUserId = data.userId;
@@ -679,7 +817,45 @@
 
                 const timeElement = document.createElement('div');
                 timeElement.className = 'timestamp text-right';
-                timeElement.textContent = time;
+                
+                // Add (edited) marker if data.edited is true
+                if (data.edited) {
+                    const editedMarker = document.createElement('span');
+                    editedMarker.className = 'edited-marker';
+                    editedMarker.textContent = '(edited)';
+                    timeElement.appendChild(editedMarker);
+                }
+                
+                const timeText = document.createElement('span');
+                timeText.textContent = time;
+                timeElement.appendChild(timeText);
+
+                // Add Edit/Delete buttons if isMine
+                if (isMine) {
+                    // Check for 5-min edit window
+                    const now = Date.now();
+                    const messageTime = data.timestamp ? data.timestamp.toDate().getTime() : 0;
+                    const isEditable = (now - messageTime < 300000); // 5 mins in ms
+
+                    if (isEditable) {
+                        const editBtn = document.createElement('button');
+                        editBtn.textContent = 'Edit';
+                        editBtn.className = 'edit-btn';
+                        editBtn.onclick = () => showEditModal(docInstance.id, currentPage, text);
+                        timeElement.appendChild(editBtn);
+                    }
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.onclick = () => {
+                        showConfirmModal(async () => {
+                            await deleteDoc(doc(db, currentPage, docInstance.id));
+                        });
+                    };
+                    timeElement.appendChild(deleteBtn);
+                }
+
                 bubble.appendChild(timeElement);
 
                 alignWrapper.appendChild(bubble);
@@ -700,6 +876,7 @@
                         text: text,
                         timestamp: serverTimestamp(),
                         userId: currentUserId // Only save the user's ID
+                        // 'edited' field is not added on creation
                     });
                     confessionInput.value = '';
                     updateTypingStatus(false); // Clear typing status on send
@@ -739,6 +916,13 @@
         modalCloseButton.addEventListener('click', closeProfileModal);
         modalSaveButton.addEventListener('click', handleProfileSave);
         
+        // --- NEW: Edit/Delete Modal Listeners ---
+        editModalCancelButton.addEventListener('click', closeEditModal);
+        editModalSaveButton.addEventListener('click', saveEdit);
+        confirmModalNoButton.addEventListener('click', closeConfirmModal);
+        confirmModalYesButton.addEventListener('click', handleDelete);
+
+
         // Handle Enter/Shift+Enter for Confessions
         confessionInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
