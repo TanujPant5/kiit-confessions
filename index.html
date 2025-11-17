@@ -7,16 +7,16 @@
     <title>KIIT Confessions // TRON</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Font 'Orbitron' for Tron theme -->
+    <!-- Google Font 'Inter' for readability -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
     <!-- Custom Styles for Tron Theme -->
     <style>
         /* Base styling */
         body {
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: #0a0a1a;
             /* Dark blue/black */
             color: #00e5ff;
@@ -55,7 +55,7 @@
         /* Textarea and Button Styling */
         textarea,
         button {
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: rgba(0, 229, 255, 0.05);
             /* Faint blue */
             border: 1px solid #00e5ff;
@@ -84,7 +84,7 @@
 
         /* Style for text input */
         input[type="text"] {
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: rgba(0, 229, 255, 0.05);
             /* Faint blue */
             border: 1px solid #00e5ff;
@@ -125,6 +125,7 @@
             /* Ensure long words break */
             white-space: pre-wrap;
             /* Respect newlines */
+            padding: 0.5rem 0.75rem; /* Tighter padding */
         }
 
         /* "My" message bubbles */
@@ -143,7 +144,7 @@
             color: #00e5ff;
             opacity: 0.6;
             text-shadow: none;
-            margin-top: 4px;
+            margin-top: 2px; /* Tighter margin */
         }
 
         /* Navigation styling */
@@ -161,35 +162,62 @@
             text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff;
             border-bottom-color: #00e5ff;
         }
+
+        /* Profile picture in chat */
+        .chat-pfp {
+            width: 32px; /* Smaller */
+            height: 32px; /* Smaller */
+            border-radius: 50%;
+            border: 2px solid #00e5ff;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        /* NEW: Typing indicator styling */
+        #typingIndicator {
+            height: 1.5rem; /* 24px */
+            font-size: 0.875rem; /* 14px */
+            color: #00e5ff;
+            opacity: 0.7;
+            text-shadow: 0 0 5px #00e5ff;
+            transition: opacity 0.3s ease;
+        }
     </style>
 </head>
 
 <body class="flex flex-col h-screen p-4 max-w-4xl mx-auto gap-4">
 
     <!-- Header -->
-    <header class="flex flex-col sm:flex-row justify-between items-center p-4 neon-border gap-4">
+    <header class="flex justify-between items-center p-4 neon-border gap-4">
+        <!-- Left Side: Title -->
         <h1 class="text-2xl sm:text-3xl font-bold glow">KIIT CONFESSIONS</h1>
-        <!-- Navigation -->
-        <nav class="flex text-lg gap-4">
-            <div id="navConfessions" class="nav-item">CONFESSIONS</div>
-            <div id="navChat" class="nav-item active">CHAT</div>
-        </nav>
+
+        <!-- Right Side: Nav and Profile -->
+        <div class="flex items-center gap-4">
+            <nav class="flex text-lg gap-4">
+                <div id="navConfessions" class="nav-item">CONFESSIONS</div>
+                <div id="navChat" class="nav-item active">CHAT</div>
+            </nav>
+            <button id="profileButton" class="p-2 rounded-full hover:bg-gray-700 transition" title="Edit Profile">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+            </button>
+        </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col gap-4 overflow-hidden">
+    <main class="flex-1 flex flex-col gap-2 overflow-hidden"> <!-- Changed gap-4 to gap-2 -->
         <!-- Feed Container -->
-        <div id="feedContainer" class="flex-1 flex flex-col p-4 rounded-lg gap-3 overflow-y-auto">
+        <div id="feedContainer" class="flex-1 flex flex-col p-4 rounded-lg gap-2 overflow-y-auto"> <!-- Tighter gap -->
             <!-- Messages will be injected here -->
             <div id="loading" class="text-center p-4">CONNECTING TO GRID...</div>
         </div>
 
-        <!-- Username Setup -->
-        <div id="usernameSection" class.="flex gap-3">
-            <input type="text" id="usernameInput" placeholder="SET YOUR USERNAME..."
-                class="flex-1 p-3 rounded-lg focus:outline-none" />
-            <button id="usernameButton" class="px-6 py-2 rounded-lg font-bold">SET</button>
-        </div>
+        <!-- NEW: Typing Indicator -->
+        <div id="typingIndicator" class="px-4 h-6 text-sm opacity-70">&nbsp;</div>
 
         <!-- Input Forms (one for each page) -->
         <form id="confessionForm" class="hidden gap-3">
@@ -212,6 +240,27 @@
         ANONYMOUS GRID // DISCONNECT ANYTIME
     </footer>
 
+    <!-- Profile Modal -->
+    <div id="profileModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
+        <div class="bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
+            <h2 class="text-2xl font-bold glow">EDIT PROFILE</h2>
+
+            <!-- Username Input -->
+            <div class="flex flex-col gap-2">
+                <label for="modalUsernameInput" class="text-sm opacity-70">Username</label>
+                <input type="text" id="modalUsernameInput" placeholder="SET YOUR USERNAME..."
+                    class="w-full p-3 rounded-lg focus:outline-none" />
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-4 mt-4">
+                <button id="modalCloseButton" class="flex-1 px-6 py-2 rounded-lg font-bold">CANCEL</button>
+                <button id="modalSaveButton" class="flex-1 px-6 py-2 rounded-lg font-bold">SAVE</button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Firebase SDK -->
     <script type="module">
         // Import Firebase modules
@@ -231,11 +280,11 @@
             serverTimestamp,
             doc,
             setDoc,
-            getDoc
+            getDoc,
+            orderBy
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Configuration ---
-        // User's provided Firebase config for Vercel deployment
         const firebaseConfig = {
             apiKey: "AIzaSyCtFOOGfjbeLM-bAT5i2J601w9_95MQlxs",
             authDomain: "kiit-confessions.firebaseapp.com",
@@ -250,41 +299,50 @@
         // --- DOM Elements ---
         const feedContainer = document.getElementById('feedContainer');
         const loading = document.getElementById('loading');
-
         const navConfessions = document.getElementById('navConfessions');
         const navChat = document.getElementById('navChat');
-
         const confessionForm = document.getElementById('confessionForm');
         const confessionInput = document.getElementById('confessionInput');
         const confessionButton = document.getElementById('confessionButton');
-
         const chatForm = document.getElementById('chatForm');
         const chatInput = document.getElementById('chatInput');
         const chatButton = document.getElementById('chatButton');
+        const typingIndicator = document.getElementById('typingIndicator'); // --- NEW
 
-        // Username elements
-        const usernameInput = document.getElementById('usernameInput');
-        const usernameButton = document.getElementById('usernameButton');
+        // --- Modal DOM Elements ---
+        const profileButton = document.getElementById('profileButton');
+        const profileModal = document.getElementById('profileModal');
+        const modalCloseButton = document.getElementById('modalCloseButton');
+        const modalSaveButton = document.getElementById('modalSaveButton');
+        const modalUsernameInput = document.getElementById('modalUsernameInput');
 
         // --- App State ---
         let db;
         let auth;
-        let currentUserId = null; // Store the anonymous user ID
-        let currentUsername = 'Anonymous'; // Store the user's chosen name
+        let currentUserId = null;
+        let currentUsername = 'Anonymous';
+        let currentProfilePhotoURL = null;
+        
+        // Cache for all user profiles
+        let userProfiles = {}; 
+        
         let confessionsCollection;
         let chatCollection;
+        let typingStatusCollection; // --- NEW
         let unsubscribeConfessions = () => {};
         let unsubscribeChat = () => {};
-        let currentPage = 'chat'; // Default to chat page
+        let unsubscribeUserProfiles = () => {};
+        let unsubscribeTypingStatus = () => {}; // --- NEW
+        let currentPage = 'chat';
+        
+        let typingTimeout = null; // --- NEW: For typing indicator
 
         // --- Firebase Initialization ---
         async function initFirebase() {
             try {
-                // Check if firebaseConfig has been pasted
                 if (firebaseConfig.apiKey === "AIzaSyCtFOOGfjbeLM-bAT5i2J601w9_95MQlxs") {
                     console.log("Firebase config loaded.");
                 } else {
-                    // This error will show if the config is somehow still the placeholder
                     throw new Error("Firebase configuration is missing or incorrect.");
                 }
 
@@ -292,19 +350,19 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                // Authenticate the user (anonymously)
                 const userCredential = await signInAnonymously(auth);
                 currentUserId = userCredential.user.uid;
                 console.log("Firebase initialized and user signed in:", currentUserId);
 
-                // Load username from Firestore
-                await loadUsername();
+                // Start listening for all user profiles
+                listenForUserProfiles();
+                
+                await loadUserProfile(); // Load local user's data
 
-                // Define collection paths (Simplified for Vercel)
                 confessionsCollection = collection(db, 'confessions');
                 chatCollection = collection(db, 'chat');
+                typingStatusCollection = collection(db, 'typingStatus'); // --- NEW
 
-                // Start the application on the default page
                 showPage(currentPage); // This will be 'chat'
 
             } catch (error) {
@@ -316,56 +374,107 @@
             }
         }
 
-        // --- Username Functions ---
-        async function loadUsername() {
+        // --- User Profile Functions ---
+
+        // Listen for all user profiles and cache them
+        function listenForUserProfiles() {
+            const usersCollection = collection(db, 'users');
+            unsubscribeUserProfiles = onSnapshot(usersCollection, (snapshot) => {
+                snapshot.docs.forEach(doc => {
+                    userProfiles[doc.id] = doc.data();
+                });
+                console.log("User profiles cache updated:", userProfiles);
+                // Re-render the current feed with new profile data
+                if (currentPage === 'chat') {
+                    listenForChat(true); // 'true' to signal a re-render
+                } else {
+                    listenForConfessions(true); // 'true' to signal a re-render
+                }
+            });
+        }
+        
+        // Load the current user's profile
+        async function loadUserProfile() {
             if (!db || !currentUserId) return;
             const userDocRef = doc(db, 'users', currentUserId);
             const userDoc = await getDoc(userDocRef);
 
             if (userDoc.exists()) {
-                currentUsername = userDoc.data().username;
+                const data = userDoc.data();
+                currentUsername = data.username || 'Anonymous';
+                currentProfilePhotoURL = data.profilePhotoURL || null;
             } else {
                 currentUsername = 'Anonymous';
+                currentProfilePhotoURL = null;
             }
-            usernameInput.value = currentUsername === 'Anonymous' ? '' : currentUsername;
+            modalUsernameInput.value = currentUsername === 'Anonymous' ? '' : currentUsername;
         }
 
-        async function saveUsername() {
-            const newUsername = usernameInput.value.trim();
-            if (newUsername && newUsername !== currentUsername) {
-                currentUsername = newUsername;
-                const userDocRef = doc(db, 'users', currentUserId);
-                try {
-                    await setDoc(userDocRef, {
-                        username: newUsername
-                    }, {
-                        merge: true
-                    });
-                    // Visual feedback
-                    usernameButton.textContent = "SAVED!";
-                    usernameInput.blur();
-                    setTimeout(() => {
-                        usernameButton.textContent = "SET";
-                    }, 1500);
-                } catch (error) {
-                    console.error("Error saving username:", error);
-                    usernameButton.textContent = "ERROR!";
-                    setTimeout(() => {
-                        usernameButton.textContent = "SET";
-                    }, 1500);
-                }
-            } else if (newUsername) {
-                // Same name, just give feedback
-                usernameButton.textContent = "SAVED!";
-                setTimeout(() => {
-                    usernameButton.textContent = "SET";
-                }, 1500);
+        // Save the current user's profile
+        async function handleProfileSave() {
+            if (!db || !currentUserId) return;
+
+            modalSaveButton.textContent = "SAVING...";
+            modalSaveButton.disabled = true;
+
+            const newUsername = modalUsernameInput.value.trim() || 'Anonymous';
+            
+            // Generate photo URL from username
+            let newProfilePhotoURL = null;
+            if (newUsername && newUsername !== 'Anonymous') {
+                const firstLetter = newUsername.charAt(0).toUpperCase();
+                // Use a 32px placeholder to match the new UI
+                newProfilePhotoURL = `https://placehold.co/32x32/0a0a1a/00e5ff?text=${firstLetter}`; 
+            } else {
+                newProfilePhotoURL = `https://placehold.co/32x32/00e5ff/0a0a1a?text=?`;
             }
+            
+            try {
+                // Save username and photo URL to Firestore
+                const userDocRef = doc(db, 'users', currentUserId);
+                await setDoc(userDocRef, {
+                    username: newUsername,
+                    profilePhotoURL: newProfilePhotoURL 
+                }, { merge: true });
+
+                // Update local app state (will also be updated by snapshot listener)
+                currentUsername = newUsername;
+                currentProfilePhotoURL = newProfilePhotoURL;
+
+                closeProfileModal();
+                modalSaveButton.textContent = "SAVE";
+                modalSaveButton.disabled = false;
+
+            } catch (error) {
+                console.error("Error saving profile: ", error);
+                modalSaveButton.textContent = "ERROR!";
+                modalSaveButton.disabled = false;
+                setTimeout(() => {
+                    modalSaveButton.textContent = "SAVE";
+                }, 2000);
+            }
+        }
+
+        // --- Modal Controls ---
+        function openProfileModal() {
+            modalUsernameInput.value = currentUsername === 'Anonymous' ? '' : currentUsername;
+            profileModal.classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            profileModal.classList.add('hidden');
         }
 
         // --- Page Navigation ---
         function showPage(page) {
             currentPage = page;
+            
+            // Stop all listeners
+            unsubscribeConfessions();
+            unsubscribeChat();
+            unsubscribeTypingStatus();
+            typingIndicator.innerHTML = '&nbsp;'; // Clear typing indicator
+
             if (page === 'confessions') {
                 navConfessions.classList.add('active');
                 navChat.classList.remove('active');
@@ -373,7 +482,8 @@
                 confessionForm.classList.add('flex');
                 chatForm.classList.add('hidden');
                 chatForm.classList.remove('flex');
-                listenForConfessions(); // Re-attach listener and render
+                typingIndicator.classList.add('hidden'); // Hide typing on confessions page
+                listenForConfessions();
             } else {
                 navChat.classList.add('active');
                 navConfessions.classList.remove('active');
@@ -381,92 +491,188 @@
                 chatForm.classList.add('flex');
                 confessionForm.classList.add('hidden');
                 confessionForm.classList.remove('flex');
-                listenForChat(); // Re-attach listener and render
+                typingIndicator.classList.remove('hidden'); // Show typing on chat page
+                listenForChat();
+                listenForTyping(); // --- NEW: Start listening for typing
             }
         }
 
         // --- Real-time Data Listeners ---
-        function listenForConfessions() {
-            unsubscribeChat(); // Stop listening to chat
+        // Store the last rendered docs to allow re-rendering without a new query
+        let lastConfessionDocs = [];
+        let lastChatDocs = [];
+
+        function listenForConfessions(isRerender = false) { 
+            if (isRerender) {
+                renderFeed(lastConfessionDocs, 'confessions');
+                return;
+            }
+            unsubscribeChat(); 
             feedContainer.innerHTML =
                 '<div id="loading" class="text-center p-4">LOADING CONFESSIONS...</div>';
-
-            const q = query(collection(db, 'confessions'));
+        
+            const q = query(confessionsCollection, orderBy("timestamp", "asc"));
             unsubscribeConfessions = onSnapshot(q, (snapshot) => {
-                const docs = snapshot.docs;
-                // Sort client-side by timestamp (Oldest first)
-                const sortedDocs = docs.sort((a, b) => {
-                    const timeA = a.data().timestamp?.toDate() || 0;
-                    const timeB = b.data().timestamp?.toDate() || 0;
-                    return timeA - timeB; // Oldest first (newest at bottom)
-                });
-                renderFeed(sortedDocs, 'confessions');
+                lastConfessionDocs = snapshot.docs; // Cache docs
+                renderFeed(lastConfessionDocs, 'confessions');
             }, (error) => {
                 console.error("Error listening to confessions:", error);
                 loading.textContent = "Error loading confessions.";
             });
         }
 
-        function listenForChat() {
-            unsubscribeConfessions(); // Stop listening to confessions
+        function listenForChat(isRerender = false) {
+            if (isRerender) {
+                renderFeed(lastChatDocs, 'chat');
+                return;
+            }
+            unsubscribeConfessions(); 
             feedContainer.innerHTML =
                 '<div id="loading" class="text-center p-4">LOADING CHAT...</div>';
 
-            const q = query(collection(db, 'chat'));
+            const q = query(chatCollection, orderBy("timestamp", "asc"));
             unsubscribeChat = onSnapshot(q, (snapshot) => {
-                const docs = snapshot.docs;
-                // Sort client-side by timestamp (Oldest first)
-                const sortedDocs = docs.sort((a, b) => {
-                    const timeA = a.data().timestamp?.toDate() || 0;
-                    const timeB = b.data().timestamp?.toDate() || 0;
-                    return timeA - timeB; // Oldest first (newest at bottom)
-                });
-                renderFeed(sortedDocs, 'chat');
+                lastChatDocs = snapshot.docs; // Cache docs
+                renderFeed(lastChatDocs, 'chat');
             }, (error) => {
                 console.error("Error listening to chat:", error);
                 loading.textContent = "Error loading chat.";
             });
         }
 
+        // --- NEW: Typing Indicator Logic ---
+        function listenForTyping() {
+            unsubscribeTypingStatus = onSnapshot(typingStatusCollection, (snapshot) => {
+                const now = Date.now();
+                const typingUsers = [];
+
+                snapshot.docs.forEach(doc => {
+                    const data = doc.data();
+                    const userId = doc.id;
+                    
+                    // Check if user is typing and it's not us
+                    // And timestamp is recent (within 5 seconds)
+                    if (data.isTyping && userId !== currentUserId && (now - data.timestamp < 5000)) {
+                        // Look up username from cache
+                        const username = userProfiles[userId]?.username || 'Someone';
+                        typingUsers.push(username);
+                    }
+                });
+
+                if (typingUsers.length === 0) {
+                    typingIndicator.innerHTML = '&nbsp;'; // Non-breaking space
+                } else if (typingUsers.length === 1) {
+                    typingIndicator.textContent = `${typingUsers[0]} is typing...`;
+                } else if (typingUsers.length === 2) {
+                    typingIndicator.textContent = `${typingUsers[0]} and ${typingUsers[1]} are typing...`;
+                } else {
+                    typingIndicator.textContent = 'Several users are typing...';
+                }
+            });
+        }
+
+        // --- NEW: Function to update our typing status ---
+        async function updateTypingStatus(isTyping) {
+            if (!db || !currentUserId) return;
+            
+            // Clear previous timeout if it exists
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+                typingTimeout = null;
+            }
+
+            const typingDocRef = doc(db, 'typingStatus', currentUserId);
+            
+            if (isTyping) {
+                // User is typing, set status to true with timestamp
+                await setDoc(typingDocRef, {
+                    isTyping: true,
+                    timestamp: Date.now() // Use local timestamp for quick updates
+                });
+
+                // Set a timeout to automatically set typing to false after 3 seconds
+                typingTimeout = setTimeout(() => {
+                    updateTypingStatus(false);
+                }, 3000); // 3 second timeout
+
+            } else {
+                // User stopped typing, set status to false
+                await setDoc(typingDocRef, {
+                    isTyping: false,
+                    timestamp: Date.now()
+                });
+            }
+        }
+
+
+        // --- Helper Function to Format Timestamp ---
+        function formatTimestamp(firebaseTimestamp) {
+            if (!firebaseTimestamp) return '...';
+            const date = firebaseTimestamp.toDate();
+            return date.toLocaleString([], { 
+                dateStyle: 'short', 
+                timeStyle: 'short' 
+            });
+        }
+
         // --- Render Function ---
         function renderFeed(docs, type) {
-            feedContainer.innerHTML = ''; // Clear feed
+            feedContainer.innerHTML = ''; 
             if (docs.length === 0) {
-                loading.textContent = `NO ${type.toUpperCase()} YET. BE THE FIRST!`;
-                feedContainer.appendChild(loading);
+                const loadingEl = document.createElement('div');
+                loadingEl.id = 'loading';
+                loadingEl.className = 'text-center p-4';
+                loadingEl.textContent = `NO ${type.toUpperCase()} YET. BE THE FIRST!`;
+                feedContainer.appendChild(loadingEl);
                 return;
             }
+
+            let lastUserId = null; 
 
             docs.forEach(doc => {
                 const data = doc.data();
                 const text = data.text || '...';
-                const time = data.timestamp ? data.timestamp.toDate().toLocaleString() : '...';
-                const docUserId = data.userId; // Get the ID of the user who posted
-                const username = data.username || 'Anonymous'; // Get username from doc
+                const time = formatTimestamp(data.timestamp);
+                const docUserId = data.userId;
+                
+                // Look up profile from cache
+                const profile = userProfiles[docUserId] || {};
+                const username = profile.username || 'Anonymous';
+                const photoURL = profile.profilePhotoURL || `https://placehold.co/32x32/00e5ff/0a0a1a?text=${username.charAt(0).toUpperCase() || '?'}`;
 
-                // Check if this message is "mine"
                 const isMine = currentUserId && docUserId === currentUserId;
+                
+                const isConsecutive = (docUserId && docUserId === lastUserId);
+                lastUserId = docUserId; 
 
-                // Create wrapper for alignment
                 const alignWrapper = document.createElement('div');
                 alignWrapper.className = `flex w-full ${isMine ? 'justify-end' : 'justify-start'}`;
 
-                // Create the message bubble
                 const bubble = document.createElement('div');
-                bubble.className = `message-bubble p-3 rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${isMine ? 'my-message' : ''}`;
+                bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${isMine ? 'my-message' : ''} ${isConsecutive ? 'mt-0.5' : 'mt-2'}`; 
 
-                // Create username element
-                const usernameElement = document.createElement('div');
-                usernameElement.className = `font-bold text-sm mb-1 opacity-70 ${isMine ? 'text-right' : 'text-left'}`;
-                usernameElement.textContent = username;
-                bubble.appendChild(usernameElement);
+                if (!isConsecutive) {
+                    const headerElement = document.createElement('div');
+                    headerElement.className = `flex items-center gap-1.5 mb-1 ${isMine ? 'justify-end' : ''}`; 
+                    
+                    const imgElement = document.createElement('img');
+                    imgElement.src = photoURL;
+                    imgElement.className = `chat-pfp ${isMine ? 'order-2' : 'order-1'}`; 
+                    
+                    const usernameElement = document.createElement('div');
+                    usernameElement.className = `font-bold text-sm opacity-70 ${isMine ? 'order-1 text-right' : 'order-2 text-left'}`;
+                    usernameElement.textContent = username;
 
-                // Create text content
+                    headerElement.appendChild(imgElement);
+                    headerElement.appendChild(usernameElement);
+                    bubble.appendChild(headerElement);
+                }
+
                 const textElement = document.createElement('p');
+                textElement.className = `${isMine ? 'text-right' : 'text-left'}`;
                 textElement.textContent = text;
                 bubble.appendChild(textElement);
 
-                // Create timestamp
                 const timeElement = document.createElement('div');
                 timeElement.className = 'timestamp text-right';
                 timeElement.textContent = time;
@@ -489,10 +695,10 @@
                     await addDoc(confessionsCollection, {
                         text: text,
                         timestamp: serverTimestamp(),
-                        userId: currentUserId, // Tag with anonymous ID
-                        username: currentUsername // Tag with username
+                        userId: currentUserId // Only save the user's ID
                     });
                     confessionInput.value = '';
+                    updateTypingStatus(false); // --- NEW: Clear typing status on send
                 } catch (error) {
                     console.error("Error adding confession: ", error);
                 }
@@ -507,11 +713,12 @@
                     await addDoc(chatCollection, {
                         text: text,
                         timestamp: serverTimestamp(),
-                        userId: currentUserId, // Tag with anonymous ID
-                        username: currentUsername // Tag with username
+                        userId: currentUserId // Only save the user's ID
                     });
                     chatInput.value = '';
-                } catch (error) {
+                    updateTypingStatus(false); // --- NEW: Clear typing status on send
+                } catch (error)
+                 {
                     console.error("Error adding chat message: ", error);
                 }
             }
@@ -523,36 +730,29 @@
         navConfessions.addEventListener('click', () => showPage('confessions'));
         navChat.addEventListener('click', () => showPage('chat'));
 
-        // Event listener for setting username
-        usernameButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            saveUsername();
-        });
-        usernameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                saveUsername();
-            }
-        });
-
+        // --- Modal Event Listeners ---
+        profileButton.addEventListener('click', openProfileModal);
+        modalCloseButton.addEventListener('click', closeProfileModal);
+        modalSaveButton.addEventListener('click', handleProfileSave);
+        
         // Handle Enter/Shift+Enter for Confessions
         confessionInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // Prevent new line
-                // Manually trigger form submission
+                e.preventDefault(); 
                 confessionForm.requestSubmit(confessionButton);
+            } else {
+                updateTypingStatus(true); // --- NEW: User is typing
             }
-            // If Shift + Enter, default action (new line) is allowed
         });
 
         // Handle Enter/Shift+Enter for Chat
         chatInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // Prevent new line
-                // Manually trigger form submission
+                e.preventDefault(); 
                 chatForm.requestSubmit(chatButton);
+            } else {
+                updateTypingStatus(true); // --- NEW: User is typing
             }
-            // If Shift + Enter, default action (new line) is allowed
         });
 
         // Start the application
