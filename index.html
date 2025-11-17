@@ -159,6 +159,23 @@
         }
 
         /* REMOVED: Edit/Delete button styling */
+        /* .edit-btn, .delete-btn { ... } */
+
+        /* NEW: Kebab button styling */
+        .kebab-btn {
+            background: none;
+            border: none;
+            padding: 0 4px;
+            margin: 0;
+            color: #00e5ff;
+            opacity: 0.5;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .kebab-btn:hover {
+            opacity: 1;
+            background-color: rgba(0, 229, 255, 0.1);
+        }
 
         /* NEW: Edited marker styling */
         .edited-marker {
@@ -360,7 +377,7 @@
         </div>
     </div>
 
-    <!-- NEW: Custom Context Menu -->
+    <!-- NEW: Custom Context Menu (now used as dropdown) -->
     <div id="contextMenu" class="hidden">
         <ul>
             <li id="menuEdit">Edit</li>
@@ -646,10 +663,11 @@
             }
         }
         
-        // --- NEW: Context Menu & Selection Logic ---
+        // --- NEW: Dropdown Menu & Selection Logic ---
 
-        function showContextMenu(event, data) {
-            event.preventDefault();
+        function showDropdownMenu(event, data) {
+            // This function now opens the menu relative to the clicked button
+            event.stopPropagation(); // Stop click from bubbling up to document
             currentContextMenuData = data; // Store data from the bubble
             
             // Check for 5-min edit window
@@ -660,12 +678,17 @@
             menuEdit.style.display = isEditable ? 'block' : 'none';
 
             // Position and show menu
-            contextMenu.style.top = `${event.clientY}px`;
-            contextMenu.style.left = `${event.clientX}px`;
+            const rect = event.currentTarget.getBoundingClientRect();
+            contextMenu.style.top = `${rect.bottom + 2}px`; // Position below button
+            
+            // Right-align the menu
+            const menuWidth = contextMenu.offsetWidth || 150;
+            contextMenu.style.left = `${rect.right - menuWidth}px`; 
+            
             contextMenu.classList.remove('hidden');
         }
 
-        function hideContextMenu() {
+        function hideDropdownMenu() {
             contextMenu.classList.add('hidden');
             currentContextMenuData = null;
         }
@@ -954,7 +977,21 @@
                 timeText.textContent = time;
                 timeElement.appendChild(timeText);
 
-                // --- REMOVED: Old Edit/Delete button logic ---
+                // --- UPDATED: Add Kebab Menu Button ---
+                if (isMine) {
+                    const kebabBtn = document.createElement('button');
+                    kebabBtn.className = 'kebab-btn';
+                    // SVG for three vertical dots
+                    kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                    </svg>`;
+                    
+                    kebabBtn.addEventListener('click', (e) => {
+                        showDropdownMenu(e, bubble.dataset);
+                    });
+                    
+                    timeElement.appendChild(kebabBtn);
+                }
 
                 bubble.appendChild(timeElement);
                 alignWrapper.appendChild(bubble);
@@ -998,7 +1035,7 @@
                     });
                     chatInput.value = '';
                     updateTypingStatus(false);
-S                } catch (error) {
+                } catch (error) { // <-- FIXED: Removed stray 'S' here
                     console.error("Error adding chat message: ", error);
                 }
             }
@@ -1020,30 +1057,17 @@ S                } catch (error) {
         confirmModalNoButton.addEventListener('click', closeConfirmModal);
         confirmModalYesButton.addEventListener('click', handleDelete);
 
-        // --- NEW: Context Menu & Selection Listeners ---
+        // --- UPDATED: Context Menu & Selection Listeners ---
         
-        // Handle right-clicks on the feed
-        feedContainer.addEventListener('contextmenu', (e) => {
-            const bubble = e.target.closest('.message-bubble');
-            if (!bubble) return;
-            
-            const isMine = bubble.dataset.isMine === 'true';
-            if (!isMine) return; // Only show context menu for own messages
-            
-            // If in selection mode, don't show context menu
-            if (isSelectionMode) {
-                e.preventDefault();
-                handleMessageClick(bubble); // Just toggle selection
-                return;
-            }
-            
-            showContextMenu(e, bubble.dataset); // Pass the dataset
-        });
-
+        // REMOVED: feedContainer.addEventListener('contextmenu', ...)
+        
         // Handle left-clicks on the feed (for selection mode)
         feedContainer.addEventListener('click', (e) => {
             if (!isSelectionMode) return;
             
+            // Don't trigger selection if clicking the kebab button
+            if (e.target.closest('.kebab-btn')) return; 
+
             const bubble = e.target.closest('.message-bubble');
             if (!bubble) return;
             
@@ -1051,19 +1075,20 @@ S                } catch (error) {
             handleMessageClick(bubble);
         });
         
-        // Global click to hide context menu
+        // Global click to hide dropdown menu
         document.addEventListener('click', (e) => {
-            if (!contextMenu.contains(e.target)) {
-                hideContextMenu();
+            // Hide if click is not on the menu AND not on a kebab button
+            if (!contextMenu.contains(e.target) && !e.target.closest('.kebab-btn')) {
+                hideDropdownMenu();
             }
         }, true); // Use capture phase
 
-        // Context menu button clicks
+        // Context menu button clicks (no change, they target the global menu)
         menuEdit.addEventListener('click', () => {
             if (currentContextMenuData) {
                 showEditModal(currentContextMenuData.id, currentPage, currentContextMenuData.text);
             }
-            hideContextMenu();
+            hideDropdownMenu();
         });
         
         menuDelete.addEventListener('click', () => {
@@ -1072,12 +1097,12 @@ S                } catch (error) {
                     await deleteDoc(doc(db, currentPage, currentContextMenuData.id));
                 });
             }
-            hideContextMenu();
+            hideDropdownMenu();
         });
         
         menuSelect.addEventListener('click', () => {
             enterSelectionMode();
-            hideContextMenu(); // enterSelectionMode will add the first item
+            hideDropdownMenu(); // enterSelectionMode will add the first item
         });
         
         // Selection bar button clicks
