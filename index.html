@@ -15,6 +15,11 @@
     <!-- Custom Styles for Tron Theme -->
     <style>
         /* Base styling */
+        :root {
+            /* This --vh variable will be set by JavaScript for a perfect mobile fit */
+            --vh: 100vh; 
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0a0a1a;
@@ -22,7 +27,77 @@
             color: #00e5ff;
             /* Neon blue */
             text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff;
+            /* Set height using the JS variable for mobile, fallback to h-screen */
+            height: 100vh; /* Fallback for browsers without JS */
+            height: var(--vh);
         }
+        
+        /* --- NEW: Keyframe Animations --- */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @keyframes fadeOutPoof {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+        }
+        @keyframes flashGlow {
+            0% { box-shadow: 0 0 10px #00e5ff, 0 0 15px #00e5ff inset; }
+            50% { box-shadow: 0 0 25px #fff, 0 0 35px #00e5ff inset; }
+            100% { box-shadow: 0 0 10px #00e5ff, 0 0 15px #00e5ff inset; }
+        }
+        @keyframes slideInUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        @keyframes slideOutDown {
+            from { transform: translateY(0); }
+            to { transform: translateY(100%); }
+        }
+
+        /* Animation utility classes */
+        .animate-fadeInUp { animation: fadeInUp 0.3s ease-out; }
+        .animate-slideInRight { animation: slideInRight 0.3s ease-out; }
+        .animate-fadeOutPoof { animation: fadeOutPoof 0.3s ease-out; }
+        .animate-flashGlow { animation: flashGlow 0.8s ease-out; }
+
+        /* Modal base styles for animation */
+        .modal-base {
+            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+        }
+        .modal-hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none; /* Make unclickable when hidden */
+        }
+        .modal-visible {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
 
         /* Helper for glowing effect */
         .glow {
@@ -237,7 +312,18 @@
             border-radius: 0.5rem;
             padding: 0.5rem 0;
             min-width: 150px;
+            /* Animation for dropdown */
+            transition: opacity 0.1s ease-out, transform 0.1s ease-out;
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
         }
+        #contextMenu.menu-visible {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
 
         #contextMenu ul {
             list-style: none;
@@ -270,11 +356,21 @@
             background-color: rgba(0, 50, 100, 0.9);
             border-top: 2px solid #00e5ff;
             padding: 0.5rem 1rem;
+            /* Animation for slide up/down */
+            transition: transform 0.3s ease-out;
         }
+        #selectionBar.bar-hidden {
+            transform: translateY(100%);
+        }
+        #selectionBar.bar-visible {
+            transform: translateY(0);
+        }
+
     </style>
 </head>
 
-<body class="flex flex-col h-screen bg-[#0a0a1a]">
+<!-- Use the new height class from JS -->
+<body class="flex flex-col bg-[#0a0a1a]">
 
     <!-- Header -->
     <header class="flex justify-between items-center p-2 sm:p-4 border-b-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20 gap-2 sm:gap-4">
@@ -308,7 +404,7 @@
         </div>
 
         <!-- NEW: Selection Bar -->
-        <div id="selectionBar" class="hidden flex justify-between items-center">
+        <div id="selectionBar" class="bar-hidden flex justify-between items-center">
             <span id="selectionCount" class="text-lg">0 selected</span>
             <div class="flex gap-4">
                 <button id="selectionCancel" class="font-bold">CANCEL</button>
@@ -338,7 +434,7 @@
 
 
     <!-- Profile Modal -->
-    <div id="profileModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
+    <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 modal-base modal-hidden">
         <div class="bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
             <h2 class="text-2xl font-bold glow">EDIT PROFILE</h2>
 
@@ -358,7 +454,7 @@
     </div>
 
     <!-- Edit Message Modal -->
-    <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 modal-base modal-hidden">
         <div class="bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
             <h2 class="text-2xl font-bold glow">EDIT MESSAGE</h2>
 
@@ -374,7 +470,7 @@
     </div>
 
     <!-- Confirm Delete Modal -->
-    <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
+    <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 modal-base modal-hidden">
         <div class="bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
             <h2 class="text-xl font-bold glow">DELETE MESSAGE</h2>
             <p id="confirmModalText" class="text-base opacity-90">Are you sure you want to permanently delete this
@@ -388,8 +484,8 @@
         </div>
     </div>
 
-    <!-- NEW: Custom Context Menu (now used as dropdown) -->
-    <div id="contextMenu" class="hidden">
+    <!-- Custom Context Menu (now used as dropdown) -->
+    <div id="contextMenu">
         <ul>
             <li id="menuEdit">Edit</li>
             <li id="menuDelete">Delete</li>
@@ -397,6 +493,19 @@
             <li id="menuSelect">Select</li>
         </ul>
     </div>
+
+    <!-- NEW: Mobile Viewport Height Fix Script -->
+    <script>
+        function setViewportHeight() {
+            // We execute this script early to prevent page jump
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        setViewportHeight();
+        // Update on resize/orientation change
+        window.addEventListener('resize', setViewportHeight);
+        window.addEventListener('orientationchange', setViewportHeight);
+    </script>
 
 
     <!-- Firebase SDK -->
@@ -468,7 +577,7 @@
         const confirmModalNoButton = document.getElementById('confirmModalNoButton');
         const confirmModalYesButton = document.getElementById('confirmModalYesButton');
 
-        // --- NEW: Context Menu & Selection Bar Elements ---
+        // --- Context Menu & Selection Bar Elements ---
         const contextMenu = document.getElementById('contextMenu');
         const menuEdit = document.getElementById('menuEdit');
         const menuDelete = document.getElementById('menuDelete');
@@ -501,7 +610,7 @@
         let collectionToEdit = null;
         let deleteCallback = null;
 
-        // --- NEW: Selection State ---
+        // --- Selection State ---
         let isSelectionMode = false;
         let selectedMessages = new Set();
         let currentContextMenuData = null; // Store dataset of right-clicked message
@@ -605,26 +714,29 @@
             }
         }
 
-        // --- Modal Controls ---
+        // --- Modal Controls (UPDATED for Animations) ---
         function openProfileModal() {
             modalUsernameInput.value = currentUsername === 'Anonymous' ? '' : currentUsername;
-            profileModal.classList.remove('hidden');
+            profileModal.classList.remove('modal-hidden');
+            profileModal.classList.add('modal-visible');
         }
 
         function closeProfileModal() {
-            profileModal.classList.add('hidden');
+            profileModal.classList.remove('modal-visible');
+            profileModal.classList.add('modal-hidden');
         }
 
-        // --- Edit/Delete Modal Controls & Logic ---
         function showEditModal(docId, collectionName, currentText) {
             docToEditId = docId;
             collectionToEdit = collectionName;
             modalEditTextArea.value = currentText;
-            editModal.classList.remove('hidden');
+            editModal.classList.remove('modal-hidden');
+            editModal.classList.add('modal-visible');
         }
 
         function closeEditModal() {
-            editModal.classList.add('hidden');
+            editModal.classList.remove('modal-visible');
+            editModal.classList.add('modal-hidden');
             docToEditId = null;
             collectionToEdit = null;
         }
@@ -640,6 +752,14 @@
                         text: newText,
                         edited: true
                     });
+                    
+                    // Flash the edited bubble
+                    const bubble = document.querySelector(`.message-bubble[data-id="${docToEditId}"]`);
+                    if (bubble) {
+                        bubble.classList.add('animate-flashGlow');
+                        setTimeout(() => bubble.classList.remove('animate-flashGlow'), 1000);
+                    }
+                    
                     closeEditModal();
                 } catch (error) {
                     console.error("Error updating document:", error);
@@ -652,11 +772,13 @@
 
         function showConfirmModal(callback) {
             deleteCallback = callback;
-            confirmModal.classList.remove('hidden');
+            confirmModal.classList.remove('modal-hidden');
+            confirmModal.classList.add('modal-visible');
         }
 
         function closeConfirmModal() {
-            confirmModal.classList.add('hidden');
+            confirmModal.classList.remove('modal-visible');
+            confirmModal.classList.add('modal-hidden');
             deleteCallback = null;
         }
 
@@ -664,13 +786,23 @@
             if (deleteCallback) {
                 confirmModalYesButton.textContent = "DELETING...";
                 confirmModalYesButton.disabled = true;
+                
+                // Find the bubble *before* deleting
+                const bubble = document.querySelector(`.message-bubble[data-id="${currentContextMenuData.id}"]`);
+                
                 try {
+                    // Animate the bubble out
+                    if (bubble) {
+                        bubble.classList.add('animate-fadeOutPoof');
+                        // Wait for animation to finish before deleting
+                        await new Promise(r => setTimeout(r, 300)); 
+                    }
                     await deleteCallback();
                 } catch (error) {
-                    // --- UPDATED: Better Error Logging ---
-                    console.error("DELETE FAILED:", error); // Log the real error
+                    console.error("DELETE FAILED:", error); 
                     alert("Error: Could not delete message. Check console (F12) for details.");
-                    // ---
+                    // If delete failed, remove the animation
+                    if(bubble) bubble.classList.remove('animate-fadeOutPoof');
                 }
                 closeConfirmModal();
                 confirmModalYesButton.textContent = "DELETE";
@@ -678,33 +810,29 @@
             }
         }
 
-        // --- NEW: Dropdown Menu & Selection Logic ---
+        // --- Dropdown Menu & Selection Logic (UPDATED for Animations) ---
 
         function showDropdownMenu(event, data) {
-            // This function now opens the menu relative to the clicked button
-            event.stopPropagation(); // Stop click from bubbling up to document
-            currentContextMenuData = data; // Store data from the bubble
+            event.stopPropagation(); 
+            currentContextMenuData = data; 
 
-            // Check for 5-min edit window
             const now = Date.now();
             const messageTime = parseInt(currentContextMenuData.timestamp, 10);
             const isEditable = (now - messageTime < 300000); // 5 mins in ms
 
             menuEdit.style.display = isEditable ? 'block' : 'none';
 
-            // Position and show menu
             const rect = event.currentTarget.getBoundingClientRect();
-            contextMenu.style.top = `${rect.bottom + 2}px`; // Position below button
+            contextMenu.style.top = `${rect.bottom + 2}px`; 
 
-            // Right-align the menu
             const menuWidth = contextMenu.offsetWidth || 150;
             contextMenu.style.left = `${rect.right - menuWidth}px`;
-
-            contextMenu.classList.remove('hidden');
+            
+            contextMenu.classList.add('menu-visible'); // Use new animation class
         }
 
         function hideDropdownMenu() {
-            contextMenu.classList.add('hidden');
+            contextMenu.classList.remove('menu-visible');
             currentContextMenuData = null;
         }
 
@@ -729,7 +857,8 @@
 
         function enterSelectionMode() {
             isSelectionMode = true;
-            selectionBar.classList.remove('hidden');
+            selectionBar.classList.remove('bar-hidden'); // Animate in
+            selectionBar.classList.add('bar-visible');
             chatForm.classList.add('hidden'); // Hide input forms
             confessionForm.classList.add('hidden');
 
@@ -747,10 +876,10 @@
 
         function exitSelectionMode() {
             isSelectionMode = false;
-            selectionBar.classList.add('hidden');
+            selectionBar.classList.add('bar-hidden'); // Animate out
+            selectionBar.classList.remove('bar-visible');
             selectedMessages.clear();
             
-            // --- FIX: Manually show the correct form ---
             if (currentPage === 'chat') {
                 chatForm.classList.remove('hidden');
                 chatForm.classList.add('flex');
@@ -758,9 +887,7 @@
                 confessionForm.classList.remove('hidden');
                 confessionForm.classList.add('flex');
             }
-            // showPage(currentPage); // <-- THIS WAS THE BUG
 
-            // Remove all selected-message classes
             document.querySelectorAll('.selected-message').forEach(el => {
                 el.classList.remove('selected-message');
             });
@@ -779,9 +906,22 @@
             const count = selectedMessages.size;
             if (count === 0) return;
 
-            // Show a custom confirmation
             confirmModalText.textContent = `Are you sure you want to permanently delete these ${count} messages?`;
             showConfirmModal(async () => {
+                
+                // Animate all bubbles out
+                const deletePromises = [];
+                selectedMessages.forEach(docId => {
+                    const bubble = document.querySelector(`.message-bubble[data-id="${docId}"]`);
+                    if (bubble) {
+                        bubble.classList.add('animate-fadeOutPoof');
+                        deletePromises.push(new Promise(r => setTimeout(r, 300)));
+                    }
+                });
+                // Wait for all animations
+                await Promise.all(deletePromises);
+
+                // Now batch delete from DB
                 const batch = writeBatch(db);
                 selectedMessages.forEach(docId => {
                     const docRef = doc(db, currentPage, docId);
@@ -790,15 +930,14 @@
 
                 await batch.commit();
                 exitSelectionMode();
-                confirmModalText.textContent = "Are you sure you want to permanently delete this message?"; // Reset modal text
+                confirmModalText.textContent = "Are you sure you want to permanently delete this message?";
             });
         }
 
         // --- Page Navigation ---
         function showPage(page) {
             currentPage = page;
-            // --- FIX: Check if selection mode is on ---
-            if(isSelectionMode) exitSelectionMode(); // Exit selection mode on page change
+            if(isSelectionMode) exitSelectionMode(); 
 
             unsubscribeConfessions();
             unsubscribeChat();
@@ -808,7 +947,7 @@
             if (page === 'confessions') {
                 navConfessions.classList.add('active');
                 navChat.classList.remove('active');
-                if (!isSelectionMode) { // Check again in case exitSelectionMode ran
+                if (!isSelectionMode) { 
                     confessionForm.classList.add('flex');
                     confessionForm.classList.remove('hidden');
                 }
@@ -819,7 +958,7 @@
             } else {
                 navChat.classList.add('active');
                 navConfessions.classList.remove('active');
-                 if (!isSelectionMode) { // Check again
+                 if (!isSelectionMode) { 
                     chatForm.classList.add('flex');
                     chatForm.classList.remove('hidden');
                 }
@@ -931,7 +1070,7 @@
             });
         }
 
-        // --- Render Function (UPDATED) ---
+        // --- Render Function (UPDATED for Animations) ---
         function renderFeed(docs, type) {
             feedContainer.innerHTML = '';
             if (docs.length === 0) {
@@ -965,15 +1104,19 @@
                 const bubble = document.createElement('div');
                 bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${isMine ? 'my-message' : ''} ${isConsecutive ? 'mt-0.5' : 'mt-2'}`;
 
-                // --- NEW: Add dataset attributes for context menu ---
                 bubble.dataset.id = docInstance.id;
                 bubble.dataset.text = text;
                 bubble.dataset.isMine = isMine;
                 bubble.dataset.timestamp = data.timestamp ? data.timestamp.toMillis() : 0;
 
-                // --- NEW: Add selected class if in selection set ---
                 if (isSelectionMode && selectedMessages.has(docInstance.id)) {
                     bubble.classList.add('selected-message');
+                }
+
+                // --- Animate new messages ---
+                const isNew = (Date.now() - (data.timestamp ? data.timestamp.toMillis() : 0) < 3000); // 3 sec window
+                if (isNew && !isSelectionMode) { 
+                    alignWrapper.classList.add(isMine ? 'animate-slideInRight' : 'animate-fadeInUp');
                 }
 
                 if (!isConsecutive) {
@@ -1009,19 +1152,15 @@
                 timeText.textContent = time;
                 timeElement.appendChild(timeText);
 
-                // --- UPDATED: Add Kebab Menu Button ---
                 if (isMine) {
                     const kebabBtn = document.createElement('button');
                     kebabBtn.className = 'kebab-btn';
-                    // SVG for three vertical dots
                     kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
                     </svg>`;
-
                     kebabBtn.addEventListener('click', (e) => {
                         showDropdownMenu(e, bubble.dataset);
                     });
-
                     timeElement.appendChild(kebabBtn);
                 }
 
@@ -1089,31 +1228,24 @@
         confirmModalNoButton.addEventListener('click', closeConfirmModal);
         confirmModalYesButton.addEventListener('click', handleDelete);
 
-        // --- UPDATED: Context Menu & Selection Listeners ---
-
-        // Handle left-clicks on the feed (for selection mode)
+        // --- Context Menu & Selection Listeners ---
         feedContainer.addEventListener('click', (e) => {
             if (!isSelectionMode) return;
-
-            // Don't trigger selection if clicking the kebab button
             if (e.target.closest('.kebab-btn')) return;
-
             const bubble = e.target.closest('.message-bubble');
             if (!bubble) return;
-
-            e.preventDefault(); // Prevent any other click behavior
+            e.preventDefault(); 
             handleMessageClick(bubble);
         });
 
         // Global click to hide dropdown menu
         document.addEventListener('click', (e) => {
-            // Hide if click is not on the menu AND not on a kebab button
             if (!contextMenu.contains(e.target) && !e.target.closest('.kebab-btn')) {
                 hideDropdownMenu();
             }
-        }, true); // Use capture phase
+        }, true); 
 
-        // Context menu button clicks (no change, they target the global menu)
+        // Context menu button clicks
         menuEdit.addEventListener('click', () => {
             if (currentContextMenuData) {
                 showEditModal(currentContextMenuData.id, currentPage, currentContextMenuData.text);
@@ -1123,9 +1255,9 @@
 
         menuDelete.addEventListener('click', () => {
             if (currentContextMenuData) {
-                const docId = currentContextMenuData.id; // <-- CAPTURE THE ID HERE
+                const docId = currentContextMenuData.id; 
                 showConfirmModal(async () => {
-                    await deleteDoc(doc(db, currentPage, docId)); // <-- USE THE CAPTURED ID
+                    await deleteDoc(doc(db, currentPage, docId)); 
                 });
             }
             hideDropdownMenu();
@@ -1133,7 +1265,7 @@
 
         menuSelect.addEventListener('click', () => {
             enterSelectionMode();
-            hideDropdownMenu(); // enterSelectionMode will add the first item
+            hideDropdownMenu(); 
         });
 
         // Selection bar button clicks
