@@ -136,7 +136,7 @@
             /* Bright cyan */
             align-self: flex-end;
         }
-        
+
         /* NEW: Selected message styling */
         .selected-message {
             background-color: rgba(0, 229, 255, 0.2) !important;
@@ -152,10 +152,14 @@
             text-shadow: none;
             margin-top: 2px;
             /* Tighter margin */
-            display: flex; /* NEW: for edit/delete buttons */
-            justify-content: flex-end; /* NEW */
-            align-items: center; /* NEW */
-            gap: 4px; /* NEW */
+            display: flex;
+            /* NEW: for edit/delete buttons */
+            justify-content: flex-end;
+            /* NEW */
+            align-items: center;
+            /* NEW */
+            gap: 4px;
+            /* NEW */
         }
 
         /* NEW: Kebab button styling */
@@ -169,6 +173,7 @@
             cursor: pointer;
             border-radius: 4px;
         }
+
         .kebab-btn:hover {
             opacity: 1;
             background-color: rgba(0, 229, 255, 0.1);
@@ -233,21 +238,25 @@
             padding: 0.5rem 0;
             min-width: 150px;
         }
+
         #contextMenu ul {
             list-style: none;
             margin: 0;
             padding: 0;
         }
+
         #contextMenu li {
             padding: 0.5rem 1rem;
             cursor: pointer;
             transition: all 0.2s ease;
         }
+
         #contextMenu li:hover {
             background-color: #00e5ff;
             color: #0a0a1a;
             text-shadow: none;
         }
+
         #contextMenu li.separator {
             height: 1px;
             background-color: #00e5ff;
@@ -262,7 +271,6 @@
             border-top: 2px solid #00e5ff;
             padding: 0.5rem 1rem;
         }
-
     </style>
 </head>
 
@@ -290,9 +298,11 @@
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col overflow-hidden"> <!-- Full-height chat area -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+        <!-- Full-height chat area -->
         <!-- Feed Container -->
-        <div id="feedContainer" class="flex-1 flex flex-col p-2 sm:p-4 gap-2 overflow-y-auto"> <!-- Removed neon-border, added padding -->
+        <div id="feedContainer" class="flex-1 flex flex-col p-2 sm:p-4 gap-2 overflow-y-auto">
+            <!-- Removed neon-border, added padding -->
             <!-- Messages will be injected here -->
             <div id="loading" class="text-center p-4">CONNECTING TO GRID...</div>
         </div>
@@ -310,7 +320,8 @@
         <div id="typingIndicator" class="px-4 h-6 text-sm opacity-70">&nbsp;</div>
 
         <!-- Input Forms (one for each page) -->
-        <form id="confessionForm" class="hidden gap-3 p-2 sm:p-4 border-t-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20">
+        <form id="confessionForm"
+            class="hidden gap-3 p-2 sm:p-4 border-t-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20">
             <textarea id="confessionInput" rows="2"
                 class="flex-1 p-3 rounded-lg resize-none focus:outline-none"
                 placeholder="TYPE YOUR CONFESSION... (SHIFT+ENTER FOR NEW LINE)" required></textarea>
@@ -350,8 +361,9 @@
     <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
         <div class="bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
             <h2 class="text-2xl font-bold glow">EDIT MESSAGE</h2>
-            
-            <textarea id="modalEditTextArea" rows="4" class="w-full p-3 rounded-lg resize-none focus:outline-none"></textarea>
+
+            <textarea id="modalEditTextArea" rows="4"
+                class="w-full p-3 rounded-lg resize-none focus:outline-none"></textarea>
 
             <!-- Action Buttons -->
             <div class="flex gap-4 mt-4">
@@ -365,11 +377,13 @@
     <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
         <div class="bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
             <h2 class="text-xl font-bold glow">DELETE MESSAGE</h2>
-            <p id="confirmModalText" class="text-base opacity-90">Are you sure you want to permanently delete this message?</p>
+            <p id="confirmModalText" class="text-base opacity-90">Are you sure you want to permanently delete this
+                message?</p>
             <!-- Action Buttons -->
             <div class="flex gap-4 mt-4">
                 <button id="confirmModalNoButton" class="flex-1 px-6 py-2 rounded-lg font-bold">CANCEL</button>
-                <button id="confirmModalYesButton" class="flex-1 px-6 py-2 rounded-lg font-bold bg-red-800 border-red-500 hover:bg-red-600">DELETE</button>
+                <button id="confirmModalYesButton"
+                    class="flex-1 px-6 py-2 rounded-lg font-bold bg-red-800 border-red-500 hover:bg-red-600">DELETE</button>
             </div>
         </div>
     </div>
@@ -471,7 +485,7 @@
         let currentUserId = null;
         let currentUsername = 'Anonymous';
         let currentProfilePhotoURL = null;
-        let userProfiles = {}; 
+        let userProfiles = {};
         let confessionsCollection;
         let chatCollection;
         let typingStatusCollection;
@@ -481,11 +495,11 @@
         let unsubscribeTypingStatus = () => {};
         let currentPage = 'chat';
         let typingTimeout = null;
-        
+
         // --- Edit/Delete State ---
         let docToEditId = null;
         let collectionToEdit = null;
-        let deleteCallback = null; 
+        let deleteCallback = null;
 
         // --- NEW: Selection State ---
         let isSelectionMode = false;
@@ -510,7 +524,7 @@
                 console.log("Firebase initialized and user signed in:", currentUserId);
 
                 listenForUserProfiles();
-                await loadUserProfile(); 
+                await loadUserProfile();
 
                 confessionsCollection = collection(db, 'confessions');
                 chatCollection = collection(db, 'chat');
@@ -536,13 +550,13 @@
                 });
                 console.log("User profiles cache updated:", userProfiles);
                 if (currentPage === 'chat') {
-                    listenForChat(true); 
+                    listenForChat(true);
                 } else {
                     listenForConfessions(true);
                 }
             });
         }
-        
+
         async function loadUserProfile() {
             if (!db || !currentUserId) return;
             const userDocRef = doc(db, 'users', currentUserId);
@@ -567,17 +581,19 @@
             let newProfilePhotoURL = null;
             if (newUsername && newUsername !== 'Anonymous') {
                 const firstLetter = newUsername.charAt(0).toUpperCase();
-                newProfilePhotoURL = `https://placehold.co/32x32/0a0a1a/00e5ff?text=${firstLetter}`; 
+                newProfilePhotoURL = `https://placehold.co/32x32/0a0a1a/00e5ff?text=${firstLetter}`;
             } else {
                 newProfilePhotoURL = `https://placehold.co/32x32/00e5ff/0a0a1a?text=?`;
             }
-            
+
             try {
                 const userDocRef = doc(db, 'users', currentUserId);
                 await setDoc(userDocRef, {
                     username: newUsername,
-                    profilePhotoURL: newProfilePhotoURL 
-                }, { merge: true });
+                    profilePhotoURL: newProfilePhotoURL
+                }, {
+                    merge: true
+                });
                 currentUsername = newUsername;
                 currentProfilePhotoURL = newProfilePhotoURL;
                 closeProfileModal();
@@ -606,7 +622,7 @@
             modalEditTextArea.value = currentText;
             editModal.classList.remove('hidden');
         }
-        
+
         function closeEditModal() {
             editModal.classList.add('hidden');
             docToEditId = null;
@@ -622,7 +638,7 @@
                     const docRef = doc(db, collectionToEdit, docToEditId);
                     await updateDoc(docRef, {
                         text: newText,
-                        edited: true 
+                        edited: true
                     });
                     closeEditModal();
                 } catch (error) {
@@ -635,38 +651,40 @@
         }
 
         function showConfirmModal(callback) {
-            deleteCallback = callback; 
+            deleteCallback = callback;
             confirmModal.classList.remove('hidden');
         }
-        
+
         function closeConfirmModal() {
             confirmModal.classList.add('hidden');
             deleteCallback = null;
         }
-        
+
         async function handleDelete() {
             if (deleteCallback) {
                 confirmModalYesButton.textContent = "DELETING...";
                 confirmModalYesButton.disabled = true;
                 try {
-                    await deleteCallback(); 
+                    await deleteCallback();
                 } catch (error) {
-                    console.error("Error deleting document:", error);
-                    alert("Error: Could not delete message.");
+                    // --- UPDATED: Better Error Logging ---
+                    console.error("DELETE FAILED:", error); // Log the real error
+                    alert("Error: Could not delete message. Check console (F12) for details.");
+                    // ---
                 }
                 closeConfirmModal();
                 confirmModalYesButton.textContent = "DELETE";
                 confirmModalYesButton.disabled = false;
             }
         }
-        
+
         // --- NEW: Dropdown Menu & Selection Logic ---
 
         function showDropdownMenu(event, data) {
             // This function now opens the menu relative to the clicked button
             event.stopPropagation(); // Stop click from bubbling up to document
             currentContextMenuData = data; // Store data from the bubble
-            
+
             // Check for 5-min edit window
             const now = Date.now();
             const messageTime = parseInt(currentContextMenuData.timestamp, 10);
@@ -677,11 +695,11 @@
             // Position and show menu
             const rect = event.currentTarget.getBoundingClientRect();
             contextMenu.style.top = `${rect.bottom + 2}px`; // Position below button
-            
+
             // Right-align the menu
             const menuWidth = contextMenu.offsetWidth || 150;
-            contextMenu.style.left = `${rect.right - menuWidth}px`; 
-            
+            contextMenu.style.left = `${rect.right - menuWidth}px`;
+
             contextMenu.classList.remove('hidden');
         }
 
@@ -689,10 +707,10 @@
             contextMenu.classList.add('hidden');
             currentContextMenuData = null;
         }
-        
+
         function handleMessageClick(bubble) {
             if (!isSelectionMode) return;
-            
+
             const docId = bubble.dataset.id;
             const isMine = bubble.dataset.isMine === 'true';
 
@@ -705,14 +723,14 @@
                 selectedMessages.add(docId);
                 bubble.classList.add('selected-message');
             }
-            
+
             updateSelectionBar();
         }
 
         function enterSelectionMode() {
             isSelectionMode = true;
             selectionBar.classList.remove('hidden');
-            
+
             // Add the right-clicked message to selection
             if (currentContextMenuData) {
                 const docId = currentContextMenuData.id;
@@ -724,31 +742,31 @@
             }
             updateSelectionBar();
         }
-        
+
         function exitSelectionMode() {
             isSelectionMode = false;
             selectionBar.classList.add('hidden');
             selectedMessages.clear();
-            
+
             // Remove all selected-message classes
             document.querySelectorAll('.selected-message').forEach(el => {
                 el.classList.remove('selected-message');
             });
         }
-        
+
         function updateSelectionBar() {
             const count = selectedMessages.size;
             selectionCount.textContent = `${count} selected`;
-            
+
             if (count === 0) {
                 exitSelectionMode();
             }
         }
-        
+
         async function handleMultiDelete() {
             const count = selectedMessages.size;
             if (count === 0) return;
-            
+
             // Show a custom confirmation
             confirmModalText.textContent = `Are you sure you want to permanently delete these ${count} messages?`;
             showConfirmModal(async () => {
@@ -757,7 +775,7 @@
                     const docRef = doc(db, currentPage, docId);
                     batch.delete(docRef);
                 });
-                
+
                 await batch.commit();
                 exitSelectionMode();
                 confirmModalText.textContent = "Are you sure you want to permanently delete this message?"; // Reset modal text
@@ -768,11 +786,11 @@
         function showPage(page) {
             currentPage = page;
             exitSelectionMode(); // Exit selection mode on page change
-            
+
             unsubscribeConfessions();
             unsubscribeChat();
             unsubscribeTypingStatus();
-            typingIndicator.innerHTML = '&nbsp;'; 
+            typingIndicator.innerHTML = '&nbsp;';
 
             if (page === 'confessions') {
                 navConfessions.classList.add('active');
@@ -781,7 +799,7 @@
                 confessionForm.classList.add('flex');
                 chatForm.classList.add('hidden');
                 chatForm.classList.remove('flex');
-                typingIndicator.classList.add('hidden'); 
+                typingIndicator.classList.add('hidden');
                 listenForConfessions();
             } else {
                 navChat.classList.add('active');
@@ -790,7 +808,7 @@
                 chatForm.classList.add('flex');
                 confessionForm.classList.add('hidden');
                 confessionForm.classList.remove('flex');
-                typingIndicator.classList.remove('hidden'); 
+                typingIndicator.classList.remove('hidden');
                 listenForChat();
                 listenForTyping();
             }
@@ -800,18 +818,18 @@
         let lastConfessionDocs = [];
         let lastChatDocs = [];
 
-        function listenForConfessions(isRerender = false) { 
+        function listenForConfessions(isRerender = false) {
             if (isRerender) {
                 renderFeed(lastConfessionDocs, 'confessions');
                 return;
             }
-            unsubscribeChat(); 
+            unsubscribeChat();
             feedContainer.innerHTML =
                 '<div id="loading" class="text-center p-4">LOADING CONFESSIONS...</div>';
-        
+
             const q = query(confessionsCollection, orderBy("timestamp", "asc"));
             unsubscribeConfessions = onSnapshot(q, (snapshot) => {
-                lastConfessionDocs = snapshot.docs; 
+                lastConfessionDocs = snapshot.docs;
                 renderFeed(lastConfessionDocs, 'confessions');
             }, (error) => {
                 console.error("Error listening to confessions:", error);
@@ -824,13 +842,13 @@
                 renderFeed(lastChatDocs, 'chat');
                 return;
             }
-            unsubscribeConfessions(); 
+            unsubscribeConfessions();
             feedContainer.innerHTML =
                 '<div id="loading" class="text-center p-4">LOADING CHAT...</div>';
 
             const q = query(chatCollection, orderBy("timestamp", "asc"));
             unsubscribeChat = onSnapshot(q, (snapshot) => {
-                lastChatDocs = snapshot.docs; 
+                lastChatDocs = snapshot.docs;
                 renderFeed(lastChatDocs, 'chat');
             }, (error) => {
                 console.error("Error listening to chat:", error);
@@ -847,12 +865,12 @@
                     const data = doc.data();
                     const userId = doc.id;
                     if (data.isTyping && userId !== currentUserId && (now - data.timestamp < 5000)) {
-                        const username = userProfiles[userId]?.username || 'Someone';
+                        const username = userProfiles[userId] ?.username || 'Someone';
                         typingUsers.push(username);
                     }
                 });
                 if (typingUsers.length === 0) {
-                    typingIndicator.innerHTML = '&nbsp;'; 
+                    typingIndicator.innerHTML = '&nbsp;';
                 } else if (typingUsers.length === 1) {
                     typingIndicator.textContent = `${typingUsers[0]} is typing...`;
                 } else if (typingUsers.length === 2) {
@@ -877,7 +895,7 @@
                 });
                 typingTimeout = setTimeout(() => {
                     updateTypingStatus(false);
-                }, 3000); 
+                }, 3000);
             } else {
                 await setDoc(typingDocRef, {
                     isTyping: false,
@@ -890,15 +908,15 @@
         function formatTimestamp(firebaseTimestamp) {
             if (!firebaseTimestamp) return '...';
             const date = firebaseTimestamp.toDate();
-            return date.toLocaleString([], { 
-                dateStyle: 'short', 
-                timeStyle: 'short' 
+            return date.toLocaleString([], {
+                dateStyle: 'short',
+                timeStyle: 'short'
             });
         }
 
         // --- Render Function (UPDATED) ---
         function renderFeed(docs, type) {
-            feedContainer.innerHTML = ''; 
+            feedContainer.innerHTML = '';
             if (docs.length === 0) {
                 const loadingEl = document.createElement('div');
                 loadingEl.id = 'loading';
@@ -908,34 +926,34 @@
                 return;
             }
 
-            let lastUserId = null; 
+            let lastUserId = null;
 
             docs.forEach(docInstance => {
                 const data = docInstance.data();
                 const text = data.text || '...';
                 const time = formatTimestamp(data.timestamp);
                 const docUserId = data.userId;
-                
+
                 const profile = userProfiles[docUserId] || {};
                 const username = profile.username || 'Anonymous';
                 const photoURL = profile.profilePhotoURL || `https://placehold.co/32x32/00e5ff/0a0a1a?text=${username.charAt(0).toUpperCase() || '?'}`;
 
                 const isMine = currentUserId && docUserId === currentUserId;
                 const isConsecutive = (docUserId && docUserId === lastUserId);
-                lastUserId = docUserId; 
+                lastUserId = docUserId;
 
                 const alignWrapper = document.createElement('div');
                 alignWrapper.className = `flex w-full ${isMine ? 'justify-end' : 'justify-start'}`;
 
                 const bubble = document.createElement('div');
-                bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${isMine ? 'my-message' : ''} ${isConsecutive ? 'mt-0.5' : 'mt-2'}`; 
-                
+                bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${isMine ? 'my-message' : ''} ${isConsecutive ? 'mt-0.5' : 'mt-2'}`;
+
                 // --- NEW: Add dataset attributes for context menu ---
                 bubble.dataset.id = docInstance.id;
                 bubble.dataset.text = text;
                 bubble.dataset.isMine = isMine;
                 bubble.dataset.timestamp = data.timestamp ? data.timestamp.toMillis() : 0;
-                
+
                 // --- NEW: Add selected class if in selection set ---
                 if (isSelectionMode && selectedMessages.has(docInstance.id)) {
                     bubble.classList.add('selected-message');
@@ -943,10 +961,10 @@
 
                 if (!isConsecutive) {
                     const headerElement = document.createElement('div');
-                    headerElement.className = `flex items-center gap-1.5 mb-1 ${isMine ? 'justify-end' : ''}`; 
+                    headerElement.className = `flex items-center gap-1.5 mb-1 ${isMine ? 'justify-end' : ''}`;
                     const imgElement = document.createElement('img');
                     imgElement.src = photoURL;
-                    imgElement.className = `chat-pfp ${isMine ? 'order-2' : 'order-1'}`; 
+                    imgElement.className = `chat-pfp ${isMine ? 'order-2' : 'order-1'}`;
                     const usernameElement = document.createElement('div');
                     usernameElement.className = `font-bold text-sm opacity-70 ${isMine ? 'order-1 text-right' : 'order-2 text-left'}`;
                     usernameElement.textContent = username;
@@ -962,14 +980,14 @@
 
                 const timeElement = document.createElement('div');
                 timeElement.className = 'timestamp text-right';
-                
+
                 if (data.edited) {
                     const editedMarker = document.createElement('span');
                     editedMarker.className = 'edited-marker';
                     editedMarker.textContent = '(edited)';
                     timeElement.appendChild(editedMarker);
                 }
-                
+
                 const timeText = document.createElement('span');
                 timeText.textContent = time;
                 timeElement.appendChild(timeText);
@@ -982,11 +1000,11 @@
                     kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
                     </svg>`;
-                    
+
                     kebabBtn.addEventListener('click', (e) => {
                         showDropdownMenu(e, bubble.dataset);
                     });
-                    
+
                     timeElement.appendChild(kebabBtn);
                 }
 
@@ -1010,10 +1028,10 @@
                     await addDoc(confessionsCollection, {
                         text: text,
                         timestamp: serverTimestamp(),
-                        userId: currentUserId 
+                        userId: currentUserId
                     });
                     confessionInput.value = '';
-                    updateTypingStatus(false); 
+                    updateTypingStatus(false);
                 } catch (error) {
                     console.error("Error adding confession: ", error);
                 }
@@ -1032,7 +1050,7 @@
                     });
                     chatInput.value = '';
                     updateTypingStatus(false);
-                } catch (error) { // <-- FIXED: Removed stray 'S' here
+                } catch (error) { // <-- This was the bug location, now fixed.
                     console.error("Error adding chat message: ", error);
                 }
             }
@@ -1048,30 +1066,28 @@
         profileButton.addEventListener('click', openProfileModal);
         modalCloseButton.addEventListener('click', closeProfileModal);
         modalSaveButton.addEventListener('click', handleProfileSave);
-        
+
         editModalCancelButton.addEventListener('click', closeEditModal);
         editModalSaveButton.addEventListener('click', saveEdit);
         confirmModalNoButton.addEventListener('click', closeConfirmModal);
         confirmModalYesButton.addEventListener('click', handleDelete);
 
         // --- UPDATED: Context Menu & Selection Listeners ---
-        
-        // REMOVED: feedContainer.addEventListener('contextmenu', ...)
-        
+
         // Handle left-clicks on the feed (for selection mode)
         feedContainer.addEventListener('click', (e) => {
             if (!isSelectionMode) return;
-            
+
             // Don't trigger selection if clicking the kebab button
-            if (e.target.closest('.kebab-btn')) return; 
+            if (e.target.closest('.kebab-btn')) return;
 
             const bubble = e.target.closest('.message-bubble');
             if (!bubble) return;
-            
+
             e.preventDefault(); // Prevent any other click behavior
             handleMessageClick(bubble);
         });
-        
+
         // Global click to hide dropdown menu
         document.addEventListener('click', (e) => {
             // Hide if click is not on the menu AND not on a kebab button
@@ -1087,21 +1103,22 @@
             }
             hideDropdownMenu();
         });
-        
+
         menuDelete.addEventListener('click', () => {
             if (currentContextMenuData) {
+                const docId = currentContextMenuData.id; // <-- CAPTURE THE ID HERE
                 showConfirmModal(async () => {
-                    await deleteDoc(doc(db, currentPage, currentContextMenuData.id));
+                    await deleteDoc(doc(db, currentPage, docId)); // <-- USE THE CAPTURED ID
                 });
             }
             hideDropdownMenu();
         });
-        
+
         menuSelect.addEventListener('click', () => {
             enterSelectionMode();
             hideDropdownMenu(); // enterSelectionMode will add the first item
         });
-        
+
         // Selection bar button clicks
         selectionCancel.addEventListener('click', exitSelectionMode);
         selectionDelete.addEventListener('click', handleMultiDelete);
@@ -1110,17 +1127,17 @@
         // Handle Enter/Shift+Enter for Confessions
         confessionInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); 
+                e.preventDefault();
                 confessionForm.requestSubmit(confessionButton);
             } else {
-                updateTypingStatus(true); 
+                updateTypingStatus(true);
             }
         });
 
         // Handle Enter/Shift+Enter for Chat
         chatInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); 
+                e.preventDefault();
                 chatForm.requestSubmit(chatButton);
             } else {
                 updateTypingStatus(true);
