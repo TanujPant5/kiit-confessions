@@ -125,6 +125,7 @@
             /* Respect newlines */
             padding: 0.5rem 0.75rem;
             /* Tighter padding */
+            transition: background-color 0.2s;
         }
 
         /* "My" message bubbles */
@@ -134,6 +135,12 @@
             border: 1px solid #00e5ff;
             /* Bright cyan */
             align-self: flex-end;
+        }
+        
+        /* NEW: Selected message styling */
+        .selected-message {
+            background-color: rgba(0, 229, 255, 0.2) !important;
+            border-color: #00e5ff !important;
         }
 
         /* Timestamp styling */
@@ -151,23 +158,7 @@
             gap: 4px; /* NEW */
         }
 
-        /* NEW: Edit/Delete button styling */
-        .edit-btn, .delete-btn {
-            background: none;
-            border: none;
-            padding: 0 2px;
-            margin: 0;
-            color: #00e5ff;
-            opacity: 0.5;
-            cursor: pointer;
-            text-decoration: underline;
-            font-size: 0.6rem; /* 9px */
-            text-shadow: none;
-        }
-        .edit-btn:hover, .delete-btn:hover {
-            opacity: 1;
-            text-shadow: 0 0 5px #00e5ff;
-        }
+        /* REMOVED: Edit/Delete button styling */
 
         /* NEW: Edited marker styling */
         .edited-marker {
@@ -216,6 +207,48 @@
             text-shadow: 0 0 5px #00e5ff;
             transition: opacity 0.3s ease;
         }
+
+        /* NEW: Custom Context Menu */
+        #contextMenu {
+            position: fixed;
+            z-index: 1000;
+            background-color: #0a0a1a;
+            border: 2px solid #00e5ff;
+            box-shadow: 0 0 10px #00e5ff;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0;
+            min-width: 150px;
+        }
+        #contextMenu ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        #contextMenu li {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        #contextMenu li:hover {
+            background-color: #00e5ff;
+            color: #0a0a1a;
+            text-shadow: none;
+        }
+        #contextMenu li.separator {
+            height: 1px;
+            background-color: #00e5ff;
+            opacity: 0.3;
+            margin: 0.25rem 0;
+            padding: 0;
+        }
+
+        /* NEW: Selection Bar */
+        #selectionBar {
+            background-color: rgba(0, 50, 100, 0.9);
+            border-top: 2px solid #00e5ff;
+            padding: 0.5rem 1rem;
+        }
+
     </style>
 </head>
 
@@ -250,6 +283,15 @@
             <div id="loading" class="text-center p-4">CONNECTING TO GRID...</div>
         </div>
 
+        <!-- NEW: Selection Bar -->
+        <div id="selectionBar" class="hidden flex justify-between items-center">
+            <span id="selectionCount" class="text-lg">0 selected</span>
+            <div class="flex gap-4">
+                <button id="selectionCancel" class="font-bold">CANCEL</button>
+                <button id="selectionDelete" class="font-bold text-red-400">DELETE</button>
+            </div>
+        </div>
+
         <!-- Typing Indicator -->
         <div id="typingIndicator" class="px-4 h-6 text-sm opacity-70">&nbsp;</div>
 
@@ -269,10 +311,6 @@
         </form>
     </main>
 
-    <!-- Footer -->
-    <!-- <footer class="text-center text-xs opacity-50 p-1 sm:p-2 border-t border-[#00e5ff]/20">
-        ANONYMOUS GRID // DISCONNECT ANYTIME
-    </footer> -->
 
     <!-- Profile Modal -->
     <div id="profileModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
@@ -294,7 +332,7 @@
         </div>
     </div>
 
-    <!-- NEW: Edit Message Modal -->
+    <!-- Edit Message Modal -->
     <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
         <div class="bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
             <h2 class="text-2xl font-bold glow">EDIT MESSAGE</h2>
@@ -309,7 +347,7 @@
         </div>
     </div>
 
-    <!-- NEW: Confirm Delete Modal -->
+    <!-- Confirm Delete Modal -->
     <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
         <div class="bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
             <h2 class="text-xl font-bold glow">DELETE MESSAGE</h2>
@@ -320,6 +358,16 @@
                 <button id="confirmModalYesButton" class="flex-1 px-6 py-2 rounded-lg font-bold bg-red-800 border-red-500 hover:bg-red-600">DELETE</button>
             </div>
         </div>
+    </div>
+
+    <!-- NEW: Custom Context Menu -->
+    <div id="contextMenu" class="hidden">
+        <ul>
+            <li id="menuEdit">Edit</li>
+            <li id="menuDelete">Delete</li>
+            <li class="separator"></li>
+            <li id="menuSelect">Select</li>
+        </ul>
     </div>
 
 
@@ -344,8 +392,9 @@
             setDoc,
             getDoc,
             orderBy,
-            updateDoc, // --- NEW
-            deleteDoc  // --- NEW
+            updateDoc,
+            deleteDoc,
+            writeBatch // --- NEW
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Configuration ---
@@ -380,7 +429,7 @@
         const modalSaveButton = document.getElementById('modalSaveButton');
         const modalUsernameInput = document.getElementById('modalUsernameInput');
 
-        // --- NEW: Edit/Delete Modal Elements ---
+        // --- Edit/Delete Modal Elements ---
         const editModal = document.getElementById('editModal');
         const modalEditTextArea = document.getElementById('modalEditTextArea');
         const editModalCancelButton = document.getElementById('editModalCancelButton');
@@ -391,16 +440,24 @@
         const confirmModalNoButton = document.getElementById('confirmModalNoButton');
         const confirmModalYesButton = document.getElementById('confirmModalYesButton');
 
+        // --- NEW: Context Menu & Selection Bar Elements ---
+        const contextMenu = document.getElementById('contextMenu');
+        const menuEdit = document.getElementById('menuEdit');
+        const menuDelete = document.getElementById('menuDelete');
+        const menuSelect = document.getElementById('menuSelect');
+
+        const selectionBar = document.getElementById('selectionBar');
+        const selectionCount = document.getElementById('selectionCount');
+        const selectionCancel = document.getElementById('selectionCancel');
+        const selectionDelete = document.getElementById('selectionDelete');
+
         // --- App State ---
         let db;
         let auth;
         let currentUserId = null;
         let currentUsername = 'Anonymous';
         let currentProfilePhotoURL = null;
-        
-        // Cache for all user profiles
         let userProfiles = {}; 
-        
         let confessionsCollection;
         let chatCollection;
         let typingStatusCollection;
@@ -409,13 +466,17 @@
         let unsubscribeUserProfiles = () => {};
         let unsubscribeTypingStatus = () => {};
         let currentPage = 'chat';
-        
         let typingTimeout = null;
         
-        // --- NEW: State for editing/deleting ---
+        // --- Edit/Delete State ---
         let docToEditId = null;
         let collectionToEdit = null;
-        let deleteCallback = null; // Stores the function to run on delete confirm
+        let deleteCallback = null; 
+
+        // --- NEW: Selection State ---
+        let isSelectionMode = false;
+        let selectedMessages = new Set();
+        let currentContextMenuData = null; // Store dataset of right-clicked message
 
         // --- Firebase Initialization ---
         async function initFirebase() {
@@ -434,10 +495,8 @@
                 currentUserId = userCredential.user.uid;
                 console.log("Firebase initialized and user signed in:", currentUserId);
 
-                // Start listening for all user profiles
                 listenForUserProfiles();
-                
-                await loadUserProfile(); // Load local user's data
+                await loadUserProfile(); 
 
                 confessionsCollection = collection(db, 'confessions');
                 chatCollection = collection(db, 'chat');
@@ -455,8 +514,6 @@
         }
 
         // --- User Profile Functions ---
-
-        // Listen for all user profiles and cache them
         function listenForUserProfiles() {
             const usersCollection = collection(db, 'users');
             unsubscribeUserProfiles = onSnapshot(usersCollection, (snapshot) => {
@@ -464,16 +521,14 @@
                     userProfiles[doc.id] = doc.data();
                 });
                 console.log("User profiles cache updated:", userProfiles);
-                // Re-render the current feed with new profile data
                 if (currentPage === 'chat') {
-                    listenForChat(true); // 'true' to signal a re-render
+                    listenForChat(true); 
                 } else {
-                    listenForConfessions(true); // 'true' to signal a re-render
+                    listenForConfessions(true);
                 }
             });
         }
         
-        // Load the current user's profile
         async function loadUserProfile() {
             if (!db || !currentUserId) return;
             const userDocRef = doc(db, 'users', currentUserId);
@@ -490,48 +545,33 @@
             modalUsernameInput.value = currentUsername === 'Anonymous' ? '' : currentUsername;
         }
 
-        // Save the current user's profile
         async function handleProfileSave() {
             if (!db || !currentUserId) return;
-
             modalSaveButton.textContent = "SAVING...";
             modalSaveButton.disabled = true;
-
             const newUsername = modalUsernameInput.value.trim() || 'Anonymous';
-            
-            // Generate photo URL from username
             let newProfilePhotoURL = null;
             if (newUsername && newUsername !== 'Anonymous') {
                 const firstLetter = newUsername.charAt(0).toUpperCase();
-                // Use a 32px placeholder to match the UI
                 newProfilePhotoURL = `https://placehold.co/32x32/0a0a1a/00e5ff?text=${firstLetter}`; 
             } else {
                 newProfilePhotoURL = `https://placehold.co/32x32/00e5ff/0a0a1a?text=?`;
             }
             
             try {
-                // Save username and photo URL to Firestore
                 const userDocRef = doc(db, 'users', currentUserId);
                 await setDoc(userDocRef, {
                     username: newUsername,
                     profilePhotoURL: newProfilePhotoURL 
                 }, { merge: true });
-
-                // Update local app state (will also be updated by snapshot listener)
                 currentUsername = newUsername;
                 currentProfilePhotoURL = newProfilePhotoURL;
-
                 closeProfileModal();
-                modalSaveButton.textContent = "SAVE";
-                modalSaveButton.disabled = false;
-
             } catch (error) {
                 console.error("Error saving profile: ", error);
-                modalSaveButton.textContent = "ERROR!";
+            } finally {
+                modalSaveButton.textContent = "SAVE";
                 modalSaveButton.disabled = false;
-                setTimeout(() => {
-                    modalSaveButton.textContent = "SAVE";
-                }, 2000);
             }
         }
 
@@ -545,7 +585,7 @@
             profileModal.classList.add('hidden');
         }
 
-        // --- NEW: Edit/Delete Modal Controls & Logic ---
+        // --- Edit/Delete Modal Controls & Logic ---
         function showEditModal(docId, collectionName, currentText) {
             docToEditId = docId;
             collectionToEdit = collectionName;
@@ -568,12 +608,11 @@
                     const docRef = doc(db, collectionToEdit, docToEditId);
                     await updateDoc(docRef, {
                         text: newText,
-                        edited: true // Add 'edited' marker
+                        edited: true 
                     });
                     closeEditModal();
                 } catch (error) {
                     console.error("Error updating document:", error);
-                    // This error will trigger if rules fail (e.g., > 5 mins)
                     alert("Error: Could not save edit. The 5-minute edit window may have expired.");
                 }
                 editModalSaveButton.textContent = "SAVE";
@@ -582,7 +621,7 @@
         }
 
         function showConfirmModal(callback) {
-            deleteCallback = callback; // Store the delete function
+            deleteCallback = callback; 
             confirmModal.classList.remove('hidden');
         }
         
@@ -596,7 +635,7 @@
                 confirmModalYesButton.textContent = "DELETING...";
                 confirmModalYesButton.disabled = true;
                 try {
-                    await deleteCallback(); // Run the stored delete function
+                    await deleteCallback(); 
                 } catch (error) {
                     console.error("Error deleting document:", error);
                     alert("Error: Could not delete message.");
@@ -606,16 +645,114 @@
                 confirmModalYesButton.disabled = false;
             }
         }
+        
+        // --- NEW: Context Menu & Selection Logic ---
+
+        function showContextMenu(event, data) {
+            event.preventDefault();
+            currentContextMenuData = data; // Store data from the bubble
+            
+            // Check for 5-min edit window
+            const now = Date.now();
+            const messageTime = parseInt(currentContextMenuData.timestamp, 10);
+            const isEditable = (now - messageTime < 300000); // 5 mins in ms
+
+            menuEdit.style.display = isEditable ? 'block' : 'none';
+
+            // Position and show menu
+            contextMenu.style.top = `${event.clientY}px`;
+            contextMenu.style.left = `${event.clientX}px`;
+            contextMenu.classList.remove('hidden');
+        }
+
+        function hideContextMenu() {
+            contextMenu.classList.add('hidden');
+            currentContextMenuData = null;
+        }
+        
+        function handleMessageClick(bubble) {
+            if (!isSelectionMode) return;
+            
+            const docId = bubble.dataset.id;
+            const isMine = bubble.dataset.isMine === 'true';
+
+            if (!isMine) return; // Can only select own messages
+
+            if (selectedMessages.has(docId)) {
+                selectedMessages.delete(docId);
+                bubble.classList.remove('selected-message');
+            } else {
+                selectedMessages.add(docId);
+                bubble.classList.add('selected-message');
+            }
+            
+            updateSelectionBar();
+        }
+
+        function enterSelectionMode() {
+            isSelectionMode = true;
+            selectionBar.classList.remove('hidden');
+            
+            // Add the right-clicked message to selection
+            if (currentContextMenuData) {
+                const docId = currentContextMenuData.id;
+                selectedMessages.add(docId);
+                const bubble = document.querySelector(`.message-bubble[data-id="${docId}"]`);
+                if (bubble) {
+                    bubble.classList.add('selected-message');
+                }
+            }
+            updateSelectionBar();
+        }
+        
+        function exitSelectionMode() {
+            isSelectionMode = false;
+            selectionBar.classList.add('hidden');
+            selectedMessages.clear();
+            
+            // Remove all selected-message classes
+            document.querySelectorAll('.selected-message').forEach(el => {
+                el.classList.remove('selected-message');
+            });
+        }
+        
+        function updateSelectionBar() {
+            const count = selectedMessages.size;
+            selectionCount.textContent = `${count} selected`;
+            
+            if (count === 0) {
+                exitSelectionMode();
+            }
+        }
+        
+        async function handleMultiDelete() {
+            const count = selectedMessages.size;
+            if (count === 0) return;
+            
+            // Show a custom confirmation
+            confirmModalText.textContent = `Are you sure you want to permanently delete these ${count} messages?`;
+            showConfirmModal(async () => {
+                const batch = writeBatch(db);
+                selectedMessages.forEach(docId => {
+                    const docRef = doc(db, currentPage, docId);
+                    batch.delete(docRef);
+                });
+                
+                await batch.commit();
+                exitSelectionMode();
+                confirmModalText.textContent = "Are you sure you want to permanently delete this message?"; // Reset modal text
+            });
+        }
 
         // --- Page Navigation ---
         function showPage(page) {
             currentPage = page;
+            exitSelectionMode(); // Exit selection mode on page change
             
-            // Stop all listeners
             unsubscribeConfessions();
             unsubscribeChat();
             unsubscribeTypingStatus();
-            typingIndicator.innerHTML = '&nbsp;'; // Clear typing indicator
+            typingIndicator.innerHTML = '&nbsp;'; 
 
             if (page === 'confessions') {
                 navConfessions.classList.add('active');
@@ -624,7 +761,7 @@
                 confessionForm.classList.add('flex');
                 chatForm.classList.add('hidden');
                 chatForm.classList.remove('flex');
-                typingIndicator.classList.add('hidden'); // Hide typing on confessions page
+                typingIndicator.classList.add('hidden'); 
                 listenForConfessions();
             } else {
                 navChat.classList.add('active');
@@ -633,14 +770,13 @@
                 chatForm.classList.add('flex');
                 confessionForm.classList.add('hidden');
                 confessionForm.classList.remove('flex');
-                typingIndicator.classList.remove('hidden'); // Show typing on chat page
+                typingIndicator.classList.remove('hidden'); 
                 listenForChat();
-                listenForTyping(); // Start listening for typing
+                listenForTyping();
             }
         }
 
         // --- Real-time Data Listeners ---
-        // Store the last rendered docs to allow re-rendering without a new query
         let lastConfessionDocs = [];
         let lastChatDocs = [];
 
@@ -655,7 +791,7 @@
         
             const q = query(confessionsCollection, orderBy("timestamp", "asc"));
             unsubscribeConfessions = onSnapshot(q, (snapshot) => {
-                lastConfessionDocs = snapshot.docs; // Cache docs
+                lastConfessionDocs = snapshot.docs; 
                 renderFeed(lastConfessionDocs, 'confessions');
             }, (error) => {
                 console.error("Error listening to confessions:", error);
@@ -674,7 +810,7 @@
 
             const q = query(chatCollection, orderBy("timestamp", "asc"));
             unsubscribeChat = onSnapshot(q, (snapshot) => {
-                lastChatDocs = snapshot.docs; // Cache docs
+                lastChatDocs = snapshot.docs; 
                 renderFeed(lastChatDocs, 'chat');
             }, (error) => {
                 console.error("Error listening to chat:", error);
@@ -687,22 +823,16 @@
             unsubscribeTypingStatus = onSnapshot(typingStatusCollection, (snapshot) => {
                 const now = Date.now();
                 const typingUsers = [];
-
                 snapshot.docs.forEach(doc => {
                     const data = doc.data();
                     const userId = doc.id;
-                    
-                    // Check if user is typing and it's not us
-                    // And timestamp is recent (within 5 seconds)
                     if (data.isTyping && userId !== currentUserId && (now - data.timestamp < 5000)) {
-                        // Look up username from cache
                         const username = userProfiles[userId]?.username || 'Someone';
                         typingUsers.push(username);
                     }
                 });
-
                 if (typingUsers.length === 0) {
-                    typingIndicator.innerHTML = '&nbsp;'; // Non-breaking space
+                    typingIndicator.innerHTML = '&nbsp;'; 
                 } else if (typingUsers.length === 1) {
                     typingIndicator.textContent = `${typingUsers[0]} is typing...`;
                 } else if (typingUsers.length === 2) {
@@ -713,39 +843,28 @@
             });
         }
 
-        // --- Function to update our typing status ---
         async function updateTypingStatus(isTyping) {
             if (!db || !currentUserId) return;
-            
-            // Clear previous timeout if it exists
             if (typingTimeout) {
                 clearTimeout(typingTimeout);
                 typingTimeout = null;
             }
-
             const typingDocRef = doc(db, 'typingStatus', currentUserId);
-            
             if (isTyping) {
-                // User is typing, set status to true with timestamp
                 await setDoc(typingDocRef, {
                     isTyping: true,
-                    timestamp: Date.now() // Use local timestamp for quick updates
+                    timestamp: Date.now()
                 });
-
-                // Set a timeout to automatically set typing to false after 3 seconds
                 typingTimeout = setTimeout(() => {
                     updateTypingStatus(false);
-                }, 3000); // 3 second timeout
-
+                }, 3000); 
             } else {
-                // User stopped typing, set status to false
                 await setDoc(typingDocRef, {
                     isTyping: false,
                     timestamp: Date.now()
                 });
             }
         }
-
 
         // --- Helper Function to Format Timestamp ---
         function formatTimestamp(firebaseTimestamp) {
@@ -771,19 +890,17 @@
 
             let lastUserId = null; 
 
-            docs.forEach(docInstance => { // Renamed 'doc' to 'docInstance' to avoid conflict
+            docs.forEach(docInstance => {
                 const data = docInstance.data();
                 const text = data.text || '...';
                 const time = formatTimestamp(data.timestamp);
                 const docUserId = data.userId;
                 
-                // Look up profile from cache
                 const profile = userProfiles[docUserId] || {};
                 const username = profile.username || 'Anonymous';
                 const photoURL = profile.profilePhotoURL || `https://placehold.co/32x32/00e5ff/0a0a1a?text=${username.charAt(0).toUpperCase() || '?'}`;
 
                 const isMine = currentUserId && docUserId === currentUserId;
-                
                 const isConsecutive = (docUserId && docUserId === lastUserId);
                 lastUserId = docUserId; 
 
@@ -792,19 +909,27 @@
 
                 const bubble = document.createElement('div');
                 bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${isMine ? 'my-message' : ''} ${isConsecutive ? 'mt-0.5' : 'mt-2'}`; 
+                
+                // --- NEW: Add dataset attributes for context menu ---
+                bubble.dataset.id = docInstance.id;
+                bubble.dataset.text = text;
+                bubble.dataset.isMine = isMine;
+                bubble.dataset.timestamp = data.timestamp ? data.timestamp.toMillis() : 0;
+                
+                // --- NEW: Add selected class if in selection set ---
+                if (isSelectionMode && selectedMessages.has(docInstance.id)) {
+                    bubble.classList.add('selected-message');
+                }
 
                 if (!isConsecutive) {
                     const headerElement = document.createElement('div');
                     headerElement.className = `flex items-center gap-1.5 mb-1 ${isMine ? 'justify-end' : ''}`; 
-                    
                     const imgElement = document.createElement('img');
                     imgElement.src = photoURL;
                     imgElement.className = `chat-pfp ${isMine ? 'order-2' : 'order-1'}`; 
-                    
                     const usernameElement = document.createElement('div');
                     usernameElement.className = `font-bold text-sm opacity-70 ${isMine ? 'order-1 text-right' : 'order-2 text-left'}`;
                     usernameElement.textContent = username;
-
                     headerElement.appendChild(imgElement);
                     headerElement.appendChild(usernameElement);
                     bubble.appendChild(headerElement);
@@ -818,7 +943,6 @@
                 const timeElement = document.createElement('div');
                 timeElement.className = 'timestamp text-right';
                 
-                // Add (edited) marker if data.edited is true
                 if (data.edited) {
                     const editedMarker = document.createElement('span');
                     editedMarker.className = 'edited-marker';
@@ -830,40 +954,17 @@
                 timeText.textContent = time;
                 timeElement.appendChild(timeText);
 
-                // Add Edit/Delete buttons if isMine
-                if (isMine) {
-                    // Check for 5-min edit window
-                    const now = Date.now();
-                    const messageTime = data.timestamp ? data.timestamp.toDate().getTime() : 0;
-                    const isEditable = (now - messageTime < 300000); // 5 mins in ms
-
-                    if (isEditable) {
-                        const editBtn = document.createElement('button');
-                        editBtn.textContent = 'Edit';
-                        editBtn.className = 'edit-btn';
-                        editBtn.onclick = () => showEditModal(docInstance.id, currentPage, text);
-                        timeElement.appendChild(editBtn);
-                    }
-
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.textContent = 'Delete';
-                    deleteBtn.className = 'delete-btn';
-                    deleteBtn.onclick = () => {
-                        showConfirmModal(async () => {
-                            await deleteDoc(doc(db, currentPage, docInstance.id));
-                        });
-                    };
-                    timeElement.appendChild(deleteBtn);
-                }
+                // --- REMOVED: Old Edit/Delete button logic ---
 
                 bubble.appendChild(timeElement);
-
                 alignWrapper.appendChild(bubble);
                 feedContainer.appendChild(alignWrapper);
             });
 
             // Auto-scroll to bottom
-            feedContainer.scrollTop = feedContainer.scrollHeight;
+            if (!isSelectionMode) { // Don't auto-scroll when selecting
+                feedContainer.scrollTop = feedContainer.scrollHeight;
+            }
         }
 
         // --- Form Submission ---
@@ -875,11 +976,10 @@
                     await addDoc(confessionsCollection, {
                         text: text,
                         timestamp: serverTimestamp(),
-                        userId: currentUserId // Only save the user's ID
-                        // 'edited' field is not added on creation
+                        userId: currentUserId 
                     });
                     confessionInput.value = '';
-                    updateTypingStatus(false); // Clear typing status on send
+                    updateTypingStatus(false); 
                 } catch (error) {
                     console.error("Error adding confession: ", error);
                 }
@@ -894,12 +994,11 @@
                     await addDoc(chatCollection, {
                         text: text,
                         timestamp: serverTimestamp(),
-                        userId: currentUserId // Only save the user's ID
+                        userId: currentUserId
                     });
                     chatInput.value = '';
-                    updateTypingStatus(false); // Clear typing status on send
-                } catch (error)
-                 {
+                    updateTypingStatus(false);
+S                } catch (error) {
                     console.error("Error adding chat message: ", error);
                 }
             }
@@ -916,11 +1015,74 @@
         modalCloseButton.addEventListener('click', closeProfileModal);
         modalSaveButton.addEventListener('click', handleProfileSave);
         
-        // --- NEW: Edit/Delete Modal Listeners ---
         editModalCancelButton.addEventListener('click', closeEditModal);
         editModalSaveButton.addEventListener('click', saveEdit);
         confirmModalNoButton.addEventListener('click', closeConfirmModal);
         confirmModalYesButton.addEventListener('click', handleDelete);
+
+        // --- NEW: Context Menu & Selection Listeners ---
+        
+        // Handle right-clicks on the feed
+        feedContainer.addEventListener('contextmenu', (e) => {
+            const bubble = e.target.closest('.message-bubble');
+            if (!bubble) return;
+            
+            const isMine = bubble.dataset.isMine === 'true';
+            if (!isMine) return; // Only show context menu for own messages
+            
+            // If in selection mode, don't show context menu
+            if (isSelectionMode) {
+                e.preventDefault();
+                handleMessageClick(bubble); // Just toggle selection
+                return;
+            }
+            
+            showContextMenu(e, bubble.dataset); // Pass the dataset
+        });
+
+        // Handle left-clicks on the feed (for selection mode)
+        feedContainer.addEventListener('click', (e) => {
+            if (!isSelectionMode) return;
+            
+            const bubble = e.target.closest('.message-bubble');
+            if (!bubble) return;
+            
+            e.preventDefault(); // Prevent any other click behavior
+            handleMessageClick(bubble);
+        });
+        
+        // Global click to hide context menu
+        document.addEventListener('click', (e) => {
+            if (!contextMenu.contains(e.target)) {
+                hideContextMenu();
+            }
+        }, true); // Use capture phase
+
+        // Context menu button clicks
+        menuEdit.addEventListener('click', () => {
+            if (currentContextMenuData) {
+                showEditModal(currentContextMenuData.id, currentPage, currentContextMenuData.text);
+            }
+            hideContextMenu();
+        });
+        
+        menuDelete.addEventListener('click', () => {
+            if (currentContextMenuData) {
+                showConfirmModal(async () => {
+                    await deleteDoc(doc(db, currentPage, currentContextMenuData.id));
+                });
+            }
+            hideContextMenu();
+        });
+        
+        menuSelect.addEventListener('click', () => {
+            enterSelectionMode();
+            hideContextMenu(); // enterSelectionMode will add the first item
+        });
+        
+        // Selection bar button clicks
+        selectionCancel.addEventListener('click', exitSelectionMode);
+        selectionDelete.addEventListener('click', handleMultiDelete);
 
 
         // Handle Enter/Shift+Enter for Confessions
@@ -929,7 +1091,7 @@
                 e.preventDefault(); 
                 confessionForm.requestSubmit(confessionButton);
             } else {
-                updateTypingStatus(true); // User is typing
+                updateTypingStatus(true); 
             }
         });
 
@@ -939,7 +1101,7 @@
                 e.preventDefault(); 
                 chatForm.requestSubmit(chatButton);
             } else {
-                updateTypingStatus(true); // User is typing
+                updateTypingStatus(true);
             }
         });
 
