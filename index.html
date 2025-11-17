@@ -108,8 +108,10 @@
         /* Feed container */
         #feedContainer {
             background-color: rgba(0, 0, 0, 0.3);
-            border: 1px solid #00e5ff;
-            box-shadow: 0 0 10px #00e5ff inset;
+            /* border: 1px solid #00e5ff; */
+            /* Removed, now uses neon-border */
+            /* box-shadow: 0 0 10px #00e5ff inset; */
+            /* Removed, now uses neon-border */
             overflow-y: auto;
             scroll-behavior: smooth;
         }
@@ -125,7 +127,8 @@
             /* Ensure long words break */
             white-space: pre-wrap;
             /* Respect newlines */
-            padding: 0.5rem 0.75rem; /* Tighter padding */
+            padding: 0.5rem 0.75rem;
+            /* Tighter padding */
         }
 
         /* "My" message bubbles */
@@ -144,7 +147,8 @@
             color: #00e5ff;
             opacity: 0.6;
             text-shadow: none;
-            margin-top: 2px; /* Tighter margin */
+            margin-top: 2px;
+            /* Tighter margin */
         }
 
         /* Navigation styling */
@@ -165,18 +169,22 @@
 
         /* Profile picture in chat */
         .chat-pfp {
-            width: 32px; /* Smaller */
-            height: 32px; /* Smaller */
+            width: 32px;
+            /* Smaller */
+            height: 32px;
+            /* Smaller */
             border-radius: 50%;
             border: 2px solid #00e5ff;
             object-fit: cover;
             flex-shrink: 0;
         }
 
-        /* NEW: Typing indicator styling */
+        /* Typing indicator styling */
         #typingIndicator {
-            height: 1.5rem; /* 24px */
-            font-size: 0.875rem; /* 14px */
+            height: 1.5rem;
+            /* 24px */
+            font-size: 0.875rem;
+            /* 14px */
             color: #00e5ff;
             opacity: 0.7;
             text-shadow: 0 0 5px #00e5ff;
@@ -185,16 +193,16 @@
     </style>
 </head>
 
-<body class="flex flex-col h-screen p-4 max-w-4xl mx-auto gap-4">
+<body class="flex flex-col h-screen bg-[#0a0a1a]">
 
     <!-- Header -->
-    <header class="flex justify-between items-center p-4 neon-border gap-4">
+    <header class="flex justify-between items-center p-2 sm:p-4 border-b-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20 gap-2 sm:gap-4">
         <!-- Left Side: Title -->
-        <h1 class="text-2xl sm:text-3xl font-bold glow">KIIT CONFESSIONS</h1>
+        <h1 class="text-xl sm:text-3xl font-bold glow">KIIT CONFESSIONS</h1>
 
         <!-- Right Side: Nav and Profile -->
-        <div class="flex items-center gap-4">
-            <nav class="flex text-lg gap-4">
+        <div class="flex items-center gap-2 sm:gap-4">
+            <nav class="flex text-base sm:text-lg gap-2 sm:gap-4">
                 <div id="navConfessions" class="nav-item">CONFESSIONS</div>
                 <div id="navChat" class="nav-item active">CHAT</div>
             </nav>
@@ -209,14 +217,14 @@
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col gap-2 overflow-hidden"> <!-- Changed gap-4 to gap-2 -->
+    <main class="flex-1 flex flex-col gap-2 p-2 sm:p-4 overflow-hidden"> <!-- Changed layout -->
         <!-- Feed Container -->
-        <div id="feedContainer" class="flex-1 flex flex-col p-4 rounded-lg gap-2 overflow-y-auto"> <!-- Tighter gap -->
+        <div id="feedContainer" class="flex-1 flex flex-col p-2 sm:p-4 rounded-lg gap-2 overflow-y-auto neon-border"> <!-- Added neon-border here -->
             <!-- Messages will be injected here -->
             <div id="loading" class="text-center p-4">CONNECTING TO GRID...</div>
         </div>
 
-        <!-- NEW: Typing Indicator -->
+        <!-- Typing Indicator -->
         <div id="typingIndicator" class="px-4 h-6 text-sm opacity-70">&nbsp;</div>
 
         <!-- Input Forms (one for each page) -->
@@ -236,7 +244,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="text-center text-xs opacity-50">
+    <footer class="text-center text-xs opacity-50 p-1 sm:p-2 border-t border-[#00e5ff]/20">
         ANONYMOUS GRID // DISCONNECT ANYTIME
     </footer>
 
@@ -307,7 +315,7 @@
         const chatForm = document.getElementById('chatForm');
         const chatInput = document.getElementById('chatInput');
         const chatButton = document.getElementById('chatButton');
-        const typingIndicator = document.getElementById('typingIndicator'); // --- NEW
+        const typingIndicator = document.getElementById('typingIndicator');
 
         // --- Modal DOM Elements ---
         const profileButton = document.getElementById('profileButton');
@@ -328,14 +336,14 @@
         
         let confessionsCollection;
         let chatCollection;
-        let typingStatusCollection; // --- NEW
+        let typingStatusCollection;
         let unsubscribeConfessions = () => {};
         let unsubscribeChat = () => {};
         let unsubscribeUserProfiles = () => {};
-        let unsubscribeTypingStatus = () => {}; // --- NEW
+        let unsubscribeTypingStatus = () => {};
         let currentPage = 'chat';
         
-        let typingTimeout = null; // --- NEW: For typing indicator
+        let typingTimeout = null;
 
         // --- Firebase Initialization ---
         async function initFirebase() {
@@ -361,7 +369,7 @@
 
                 confessionsCollection = collection(db, 'confessions');
                 chatCollection = collection(db, 'chat');
-                typingStatusCollection = collection(db, 'typingStatus'); // --- NEW
+                typingStatusCollection = collection(db, 'typingStatus');
 
                 showPage(currentPage); // This will be 'chat'
 
@@ -493,7 +501,7 @@
                 confessionForm.classList.remove('flex');
                 typingIndicator.classList.remove('hidden'); // Show typing on chat page
                 listenForChat();
-                listenForTyping(); // --- NEW: Start listening for typing
+                listenForTyping(); // Start listening for typing
             }
         }
 
@@ -540,7 +548,7 @@
             });
         }
 
-        // --- NEW: Typing Indicator Logic ---
+        // --- Typing Indicator Logic ---
         function listenForTyping() {
             unsubscribeTypingStatus = onSnapshot(typingStatusCollection, (snapshot) => {
                 const now = Date.now();
@@ -571,7 +579,7 @@
             });
         }
 
-        // --- NEW: Function to update our typing status ---
+        // --- Function to update our typing status ---
         async function updateTypingStatus(isTyping) {
             if (!db || !currentUserId) return;
             
@@ -698,7 +706,7 @@
                         userId: currentUserId // Only save the user's ID
                     });
                     confessionInput.value = '';
-                    updateTypingStatus(false); // --- NEW: Clear typing status on send
+                    updateTypingStatus(false); // Clear typing status on send
                 } catch (error) {
                     console.error("Error adding confession: ", error);
                 }
@@ -716,7 +724,7 @@
                         userId: currentUserId // Only save the user's ID
                     });
                     chatInput.value = '';
-                    updateTypingStatus(false); // --- NEW: Clear typing status on send
+                    updateTypingStatus(false); // Clear typing status on send
                 } catch (error)
                  {
                     console.error("Error adding chat message: ", error);
@@ -741,7 +749,7 @@
                 e.preventDefault(); 
                 confessionForm.requestSubmit(confessionButton);
             } else {
-                updateTypingStatus(true); // --- NEW: User is typing
+                updateTypingStatus(true); // User is typing
             }
         });
 
@@ -751,7 +759,7 @@
                 e.preventDefault(); 
                 chatForm.requestSubmit(chatButton);
             } else {
-                updateTypingStatus(true); // --- NEW: User is typing
+                updateTypingStatus(true); // User is typing
             }
         });
 
