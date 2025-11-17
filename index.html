@@ -5,14 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Konvo // Anonymous Chat</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Font 'Inter' for readability -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Custom Styles for Tron Theme -->
     <style>
         /* Base styling */
         body {
@@ -271,17 +268,88 @@
             border-top: 2px solid #00e5ff;
             padding: 0.5rem 1rem;
         }
+
+        /* --- ADDED FOR ANIMATIONS --- */
+
+        /* 1. Modal Backdrop & Content Animation */
+        .modal-base {
+            /* This replaces the 'hidden fixed inset-0...' classes */
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+
+            /* Animation states */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease-out, visibility 0s linear 0.2s;
+        }
+
+        .modal-base.is-open {
+            opacity: 1;
+            visibility: visible;
+            transition-delay: 0s;
+        }
+
+        .modal-content {
+            /* This class goes on the inner <div> of the modal */
+            transform: scale(0.95);
+            opacity: 0;
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+        }
+
+        .modal-base.is-open .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* 2. Dropdown Menu (Kebab) Animation */
+        #contextMenu {
+            /* Add/replace these properties on the existing #contextMenu */
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.95);
+            transform-origin: top right;
+            transition: opacity 0.1s ease-out, visibility 0s linear 0.1s, transform 0.1s ease-out;
+        }
+
+        #contextMenu.is-open {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            transition-delay: 0s;
+        }
+
+        /* 3. New Message Animation */
+        @keyframes messagePopIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0px);
+            }
+        }
+
+        .animate-pop-in {
+            animation: messagePopIn 0.2s ease-out;
+        }
+
+        /* --- END OF ADDED CSS --- */
     </style>
 </head>
 
-<body class="flex flex-col h-screen bg-[#0a0a1a]">
+<body class="flex flex-col bg-[#0a0a1a]" style="height: 100dvh;">
 
-    <!-- Header -->
-    <header class="flex justify-between items-center p-2 sm:p-4 border-b-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20 gap-2 sm:gap-4">
-        <!-- Left Side: Title -->
+    <header
+        class="flex justify-between items-center p-2 sm:p-4 border-b-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20 gap-2 sm:gap-4">
         <h1 class="text-xl sm:text-3xl font-bold glow">KONVO</h1>
 
-        <!-- Right Side: Nav and Profile -->
         <div class="flex items-center gap-2 sm:gap-4">
             <nav class="flex text-base sm:text-lg gap-2 sm:gap-4">
                 <div id="navConfessions" class="nav-item">CONFESSIONS</div>
@@ -297,17 +365,11 @@
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="flex-1 flex flex-col overflow-hidden">
-        <!-- Full-height chat area -->
-        <!-- Feed Container -->
         <div id="feedContainer" class="flex-1 flex flex-col p-2 sm:p-4 gap-2 overflow-y-auto">
-            <!-- Removed neon-border, added padding -->
-            <!-- Messages will be injected here -->
             <div id="loading" class="text-center p-4">CONNECTING TO GRID...</div>
         </div>
 
-        <!-- NEW: Selection Bar -->
         <div id="selectionBar" class="hidden flex justify-between items-center">
             <span id="selectionCount" class="text-lg">0 selected</span>
             <div class="flex gap-4">
@@ -316,17 +378,13 @@
             </div>
         </div>
 
-        <!-- Typing Indicator -->
         <div id="typingIndicator" class="px-4 h-6 text-sm opacity-70">&nbsp;</div>
 
-        <!-- Input Forms (one for each page) -->
         <form id="confessionForm"
             class="hidden gap-3 p-2 sm:p-4 border-t-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20">
-            <textarea id="confessionInput" rows="2"
-                class="flex-1 p-3 rounded-lg resize-none focus:outline-none"
+            <textarea id="confessionInput" rows="2" class="flex-1 p-3 rounded-lg resize-none focus:outline-none"
                 placeholder="TYPE YOUR CONFESSION... (SHIFT+ENTER FOR NEW LINE)" required></textarea>
-            <button id="confessionButton" type="submit"
-                class="px-6 py-2 rounded-lg font-bold">CONFESS</button>
+            <button id="confessionButton" type="submit" class="px-6 py-2 rounded-lg font-bold">CONFESS</button>
         </form>
 
         <form id="chatForm" class="flex gap-3 p-2 sm:p-4 border-t-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20">
@@ -337,19 +395,16 @@
     </main>
 
 
-    <!-- Profile Modal -->
-    <div id="profileModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
-        <div class="bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
+    <div id="profileModal" class="modal-base">
+        <div class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
             <h2 class="text-2xl font-bold glow">EDIT PROFILE</h2>
 
-            <!-- Username Input -->
             <div class="flex flex-col gap-2">
                 <label for="modalUsernameInput" class="text-sm opacity-70">Username</label>
                 <input type="text" id="modalUsernameInput" placeholder="SET YOUR USERNAME..."
                     class="w-full p-3 rounded-lg focus:outline-none" />
             </div>
 
-            <!-- Action Buttons -->
             <div class="flex gap-4 mt-4">
                 <button id="modalCloseButton" class="flex-1 px-6 py-2 rounded-lg font-bold">CANCEL</button>
                 <button id="modalSaveButton" class="flex-1 px-6 py-2 rounded-lg font-bold">SAVE</button>
@@ -357,15 +412,13 @@
         </div>
     </div>
 
-    <!-- Edit Message Modal -->
-    <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
-        <div class="bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
+    <div id="editModal" class="modal-base">
+        <div class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
             <h2 class="text-2xl font-bold glow">EDIT MESSAGE</h2>
 
             <textarea id="modalEditTextArea" rows="4"
                 class="w-full p-3 rounded-lg resize-none focus:outline-none"></textarea>
 
-            <!-- Action Buttons -->
             <div class="flex gap-4 mt-4">
                 <button id="editModalCancelButton" class="flex-1 px-6 py-2 rounded-lg font-bold">CANCEL</button>
                 <button id="editModalSaveButton" class="flex-1 px-6 py-2 rounded-lg font-bold">SAVE</button>
@@ -373,13 +426,11 @@
         </div>
     </div>
 
-    <!-- Confirm Delete Modal -->
-    <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
-        <div class="bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
+    <div id="confirmModal" class="modal-base">
+        <div class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
             <h2 class="text-xl font-bold glow">DELETE MESSAGE</h2>
             <p id="confirmModalText" class="text-base opacity-90">Are you sure you want to permanently delete this
                 message?</p>
-            <!-- Action Buttons -->
             <div class="flex gap-4 mt-4">
                 <button id="confirmModalNoButton" class="flex-1 px-6 py-2 rounded-lg font-bold">CANCEL</button>
                 <button id="confirmModalYesButton"
@@ -388,8 +439,7 @@
         </div>
     </div>
 
-    <!-- NEW: Custom Context Menu (now used as dropdown) -->
-    <div id="contextMenu" class="hidden">
+    <div id="contextMenu" class="">
         <ul>
             <li id="menuEdit">Edit</li>
             <li id="menuDelete">Delete</li>
@@ -399,7 +449,6 @@
     </div>
 
 
-    <!-- Firebase SDK -->
     <script type="module">
         // Import Firebase modules
         import {
@@ -608,11 +657,11 @@
         // --- Modal Controls ---
         function openProfileModal() {
             modalUsernameInput.value = currentUsername === 'Anonymous' ? '' : currentUsername;
-            profileModal.classList.remove('hidden');
+            profileModal.classList.add('is-open');
         }
 
         function closeProfileModal() {
-            profileModal.classList.add('hidden');
+            profileModal.classList.remove('is-open');
         }
 
         // --- Edit/Delete Modal Controls & Logic ---
@@ -620,11 +669,11 @@
             docToEditId = docId;
             collectionToEdit = collectionName;
             modalEditTextArea.value = currentText;
-            editModal.classList.remove('hidden');
+            editModal.classList.add('is-open');
         }
 
         function closeEditModal() {
-            editModal.classList.add('hidden');
+            editModal.classList.remove('is-open');
             docToEditId = null;
             collectionToEdit = null;
         }
@@ -652,11 +701,11 @@
 
         function showConfirmModal(callback) {
             deleteCallback = callback;
-            confirmModal.classList.remove('hidden');
+            confirmModal.classList.add('is-open');
         }
 
         function closeConfirmModal() {
-            confirmModal.classList.add('hidden');
+            confirmModal.classList.remove('is-open');
             deleteCallback = null;
         }
 
@@ -700,11 +749,11 @@
             const menuWidth = contextMenu.offsetWidth || 150;
             contextMenu.style.left = `${rect.right - menuWidth}px`;
 
-            contextMenu.classList.remove('hidden');
+            contextMenu.classList.add('is-open');
         }
 
         function hideDropdownMenu() {
-            contextMenu.classList.add('hidden');
+            contextMenu.classList.remove('is-open');
             // currentContextMenuData = null; // <-- This was the bug
         }
 
@@ -749,7 +798,7 @@
             isSelectionMode = false;
             selectionBar.classList.add('hidden');
             selectedMessages.clear();
-            
+
             // --- FIX: Manually show the correct form ---
             if (currentPage === 'chat') {
                 chatForm.classList.remove('hidden');
@@ -797,10 +846,10 @@
         // --- Page Navigation ---
         function showPage(page) {
             currentPage = page;
-            
+
             // --- FIX: Check if selection mode is on ---
-            if(isSelectionMode) {
-                exitSelectionMode(); 
+            if (isSelectionMode) {
+                exitSelectionMode();
             }
 
             unsubscribeConfessions();
@@ -822,7 +871,7 @@
             } else {
                 navChat.classList.add('active');
                 navConfessions.classList.remove('active');
-                 if (!isSelectionMode) { // Check again
+                if (!isSelectionMode) { // Check again
                     chatForm.classList.add('flex');
                     chatForm.classList.remove('hidden');
                 }
@@ -1032,6 +1081,23 @@
                 alignWrapper.appendChild(bubble);
                 feedContainer.appendChild(alignWrapper);
             });
+
+            // --- NEW: Animate last bubble if it's new ---
+            const bubbles = feedContainer.querySelectorAll('.message-bubble');
+            const lastBubble = bubbles[bubbles.length - 1];
+
+            // check if lastBubble exists and hasn't been animated yet
+            if (lastBubble && !lastBubble.hasAttribute('data-animated')) {
+                const now = Date.now();
+                const messageTime = parseInt(lastBubble.dataset.timestamp, 10);
+
+                // Only animate if the message is very new (posted in the last 3s)
+                if ((now - messageTime) < 3000) {
+                    lastBubble.classList.add('animate-pop-in');
+                }
+                lastBubble.setAttribute('data-animated', 'true'); // Prevent re-animation
+            }
+            // --- END NEW ---
 
             // Auto-scroll to bottom
             if (!isSelectionMode) { // Don't auto-scroll when selecting
