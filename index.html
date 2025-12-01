@@ -274,23 +274,41 @@
         background-color: rgba(0, 229, 255, 0.1);
       }
 
-      /* NEW: Reply arrow button */
-      .reply-btn {
-        background: none;
-        border: none;
-        padding: 0 4px;
-        margin: 0;
-        color: #00e5ff;
-        opacity: 0.6;
-        cursor: pointer;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
+      /* NEW: floating reply arrow outside bubble */
+      .message-wrapper {
+        position: relative;
       }
 
-      .reply-btn:hover {
+      .reply-floating-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        right: -24px; /* default: others' messages → right side */
+        left: auto;
+
+        background: none;
+        border: none;
+        color: #00e5ff;
+        opacity: 0;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 50%;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-shadow: 0 0 5px #00e5ff;
+      }
+
+      /* For my messages, put arrow on left */
+      .reply-floating-btn.my-side {
+        left: -24px;
+        right: auto;
+      }
+
+      /* Show arrow on hover */
+      .message-wrapper:hover .reply-floating-btn {
         opacity: 1;
-        background-color: rgba(0, 229, 255, 0.1);
       }
 
       .edited-marker {
@@ -641,6 +659,7 @@
     </div>
 
     <script type="module">
+      // Firebase imports
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
       import {
         getAuth,
@@ -674,6 +693,7 @@
         measurementId: "G-2JRL8TMMV7",
       };
 
+      // DOM elements
       const feedContainer = document.getElementById("feedContainer");
       const loading = document.getElementById("loading");
       const navConfessions = document.getElementById("navConfessions");
@@ -725,6 +745,7 @@
       const replyText = document.getElementById("replyText");
       const cancelReply = document.getElementById("cancelReply");
 
+      // State
       let db;
       let auth;
       let currentUserId = null;
@@ -751,6 +772,7 @@
 
       let replyToMessage = null;
 
+      // Init Firebase
       async function initFirebase() {
         try {
           const app = initializeApp(firebaseConfig);
@@ -1258,7 +1280,7 @@
           lastUserId = docUserId;
 
           const alignWrapper = document.createElement("div");
-          alignWrapper.className = `flex w-full ${
+          alignWrapper.className = `message-wrapper flex w-full ${
             isMine ? "justify-end" : "justify-start"
           }`;
 
@@ -1348,22 +1370,11 @@
             timeElement.appendChild(editedMarker);
           }
 
-          // Reply arrow button (for ALL messages)
-          const replyBtn = document.createElement("button");
-          replyBtn.className = "reply-btn";
-          replyBtn.innerHTML = `↩`;
-          replyBtn.title = "Reply";
-          replyBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            startReplyMode(bubble.dataset);
-          });
-          timeElement.appendChild(replyBtn);
-
           const timeText = document.createElement("span");
           timeText.textContent = time;
           timeElement.appendChild(timeText);
 
-          // Kebab for edit/delete/select (only logic restricts options)
+          // kebab for edit/delete/select
           const kebabBtn = document.createElement("button");
           kebabBtn.className = "kebab-btn";
           kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -1406,6 +1417,22 @@
           reactionContainer.appendChild(heartBtn);
           bubble.appendChild(reactionContainer);
 
+          // floating reply arrow outside message box
+          const replyBtn = document.createElement("button");
+          replyBtn.className = "reply-floating-btn";
+          replyBtn.innerHTML = "↩";
+          replyBtn.title = "Reply";
+
+          if (isMine) {
+            replyBtn.classList.add("my-side");
+          }
+
+          replyBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            startReplyMode(bubble.dataset);
+          });
+
+          alignWrapper.appendChild(replyBtn);
           alignWrapper.appendChild(bubble);
           feedContainer.appendChild(alignWrapper);
         });
@@ -1486,6 +1513,7 @@
         }
       }
 
+      // Event listeners
       confessionForm.addEventListener("submit", postConfession);
       chatForm.addEventListener("submit", postChatMessage);
       navConfessions.addEventListener("click", () => showPage("confessions"));
@@ -1607,6 +1635,7 @@
         replyBar.classList.remove("show");
       }
 
+      // Start app
       initFirebase();
     </script>
   </body>
