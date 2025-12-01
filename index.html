@@ -17,26 +17,20 @@
       body {
         font-family: "Inter", sans-serif;
         background-color: #0a0a1a;
-        /* Dark blue/black */
         color: #00e5ff;
-        /* Neon blue */
         text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff;
       }
 
-      /* Helper for glowing effect */
       .glow {
         text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff, 0 0 15px #00e5ff;
       }
 
-      /* Neon Borders */
       .neon-border {
         border: 2px solid #00e5ff;
         box-shadow: 0 0 10px #00e5ff, 0 0 15px #00e5ff inset;
         border-radius: 0.5rem;
-        /* 8px */
       }
 
-      /* Custom Scrollbar */
       ::-webkit-scrollbar {
         width: 8px;
       }
@@ -51,12 +45,10 @@
         box-shadow: 0 0 5px #00e5ff;
       }
 
-      /* Textarea and Button Styling */
       textarea,
       button {
         font-family: "Inter", sans-serif;
         background-color: rgba(0, 229, 255, 0.05);
-        /* Faint blue */
         border: 1px solid #00e5ff;
         color: #00e5ff;
         text-shadow: 0 0 5px #00e5ff;
@@ -81,11 +73,9 @@
         box-shadow: 0 0 15px #00e5ff;
       }
 
-      /* Style for text input */
       input[type="text"] {
         font-family: "Inter", sans-serif;
         background-color: rgba(0, 229, 255, 0.05);
-        /* Faint blue */
         border: 1px solid #00e5ff;
         color: #00e5ff;
         text-shadow: 0 0 5px #00e5ff;
@@ -103,64 +93,45 @@
         box-shadow: 0 0 10px #00e5ff;
       }
 
-      /* Feed container */
       #feedContainer {
         background-color: rgba(0, 0, 0, 0.3);
         overflow-y: auto;
         scroll-behavior: smooth;
       }
 
-      /* Individual message bubbles */
       .message-bubble {
         background-color: rgba(30, 30, 50, 0.7);
-        /* Dark grey-blue */
         border: 1px solid #007a8a;
-        /* Darker cyan */
         text-shadow: 0 0 3px #00e5ff;
         word-wrap: break-word;
-        /* Ensure long words break */
         white-space: pre-wrap;
-        /* Respect newlines */
         padding: 0.5rem 0.75rem;
-        /* Tighter padding */
         transition: background-color 0.2s;
       }
 
-      /* "My" message bubbles */
       .my-message {
         background-color: rgba(0, 50, 100, 0.8);
-        /* Dark blue */
         border: 1px solid #00e5ff;
-        /* Bright cyan */
         align-self: flex-end;
       }
 
-      /* NEW: Selected message styling */
       .selected-message {
         background-color: rgba(0, 229, 255, 0.2) !important;
         border-color: #00e5ff !important;
       }
 
-      /* Timestamp styling */
       .timestamp {
         font-size: 0.65rem;
-        /* 10px */
         color: #00e5ff;
         opacity: 0.6;
         text-shadow: none;
         margin-top: 2px;
-        /* Tighter margin */
         display: flex;
-        /* NEW: for edit/delete buttons */
         justify-content: flex-end;
-        /* NEW */
         align-items: center;
-        /* NEW */
         gap: 4px;
-        /* NEW */
       }
 
-      /* Reaction styling */
       .reaction-container {
         display: flex;
         align-items: center;
@@ -217,7 +188,6 @@
         background-color: rgba(0, 229, 255, 0.1);
       }
 
-      /* Reply styling */
       .reply-preview {
         background-color: rgba(0, 229, 255, 0.1);
         border-left: 3px solid #00e5ff;
@@ -245,7 +215,6 @@
         text-overflow: ellipsis;
       }
 
-      /* Reply input bar */
       #replyBar {
         background-color: rgba(0, 50, 100, 0.9);
         border-top: 2px solid #00e5ff;
@@ -289,7 +258,6 @@
         opacity: 1;
       }
 
-      /* NEW: Kebab button styling */
       .kebab-btn {
         background: none;
         border: none;
@@ -306,14 +274,31 @@
         background-color: rgba(0, 229, 255, 0.1);
       }
 
-      /* NEW: Edited marker styling */
+      /* NEW: Reply arrow button */
+      .reply-btn {
+        background: none;
+        border: none;
+        padding: 0 4px;
+        margin: 0;
+        color: #00e5ff;
+        opacity: 0.6;
+        cursor: pointer;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+      }
+
+      .reply-btn:hover {
+        opacity: 1;
+        background-color: rgba(0, 229, 255, 0.1);
+      }
+
       .edited-marker {
         font-size: 0.6rem;
         opacity: 0.5;
         margin-right: 4px;
       }
 
-      /* Navigation styling */
       .nav-item {
         cursor: pointer;
         padding: 8px 16px;
@@ -329,31 +314,24 @@
         border-bottom-color: #00e5ff;
       }
 
-      /* Profile picture in chat */
       .chat-pfp {
         width: 32px;
-        /* Smaller */
         height: 32px;
-        /* Smaller */
         border-radius: 50%;
         border: 2px solid #00e5ff;
         object-fit: cover;
         flex-shrink: 0;
       }
 
-      /* Typing indicator styling */
       #typingIndicator {
         height: 1.5rem;
-        /* 24px */
         font-size: 0.875rem;
-        /* 14px */
         color: #00e5ff;
         opacity: 0.7;
         text-shadow: 0 0 5px #00e5ff;
         transition: opacity 0.3s ease;
       }
 
-      /* NEW: Custom Context Menu */
       #contextMenu {
         position: fixed;
         z-index: 1000;
@@ -405,16 +383,12 @@
         padding: 0;
       }
 
-      /* NEW: Selection Bar */
       #selectionBar {
         background-color: rgba(0, 50, 100, 0.9);
         border-top: 2px solid #00e5ff;
         padding: 0.5rem 1rem;
       }
 
-      /* --- ADDED FOR ANIMATIONS --- */
-
-      /* 1. Modal Backdrop & Content Animation */
       .modal-base {
         position: fixed;
         inset: 0;
@@ -446,7 +420,6 @@
         opacity: 1;
       }
 
-      /* 3. New Message Animation */
       @keyframes messagePopIn {
         from {
           opacity: 0;
@@ -657,18 +630,17 @@
       </div>
     </div>
 
+    <!-- Context menu WITHOUT Reply -->
     <div id="contextMenu" class="">
       <ul>
         <li id="menuEdit">Edit</li>
         <li id="menuDelete">Delete</li>
         <li class="separator"></li>
-        <li id="menuReply">Reply</li>
         <li id="menuSelect">Select</li>
       </ul>
     </div>
 
     <script type="module">
-      // Import Firebase modules
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
       import {
         getAuth,
@@ -692,7 +664,6 @@
         arrayRemove,
       } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-      // --- Firebase Configuration ---
       const firebaseConfig = {
         apiKey: "AIzaSyCtFOOGfjbeLM-bAT5i2J601w9_95MQlxs",
         authDomain: "kiit-confessions.firebaseapp.com",
@@ -703,7 +674,6 @@
         measurementId: "G-2JRL8TMMV7",
       };
 
-      // --- DOM Elements ---
       const feedContainer = document.getElementById("feedContainer");
       const loading = document.getElementById("loading");
       const navConfessions = document.getElementById("navConfessions");
@@ -716,14 +686,12 @@
       const chatButton = document.getElementById("chatButton");
       const typingIndicator = document.getElementById("typingIndicator");
 
-      // --- Modal DOM Elements ---
       const profileButton = document.getElementById("profileButton");
       const profileModal = document.getElementById("profileModal");
       const modalCloseButton = document.getElementById("modalCloseButton");
       const modalSaveButton = document.getElementById("modalSaveButton");
       const modalUsernameInput = document.getElementById("modalUsernameInput");
 
-      // --- Edit/Delete Modal Elements ---
       const editModal = document.getElementById("editModal");
       const modalEditTextArea = document.getElementById("modalEditTextArea");
       const editModalCancelButton = document.getElementById(
@@ -742,11 +710,9 @@
         "confirmModalYesButton"
       );
 
-      // --- NEW: Context Menu & Selection Bar Elements ---
       const contextMenu = document.getElementById("contextMenu");
       const menuEdit = document.getElementById("menuEdit");
       const menuDelete = document.getElementById("menuDelete");
-      const menuReply = document.getElementById("menuReply");
       const menuSelect = document.getElementById("menuSelect");
 
       const selectionBar = document.getElementById("selectionBar");
@@ -759,7 +725,6 @@
       const replyText = document.getElementById("replyText");
       const cancelReply = document.getElementById("cancelReply");
 
-      // --- App State ---
       let db;
       let auth;
       let currentUserId = null;
@@ -776,40 +741,25 @@
       let currentPage = "chat";
       let typingTimeout = null;
 
-      // --- Edit/Delete State ---
       let docToEditId = null;
       let collectionToEdit = null;
       let deleteCallback = null;
 
-      // --- NEW: Selection State ---
       let isSelectionMode = false;
       let selectedMessages = new Set();
       let currentContextMenuData = null;
 
-      // --- Reply State ---
       let replyToMessage = null;
 
-      // --- Firebase Initialization ---
       async function initFirebase() {
         try {
-          if (
-            firebaseConfig.apiKey === "AIzaSyCtFOOGfjbeLM-bAT5i2J601w9_95MQlxs"
-          ) {
-            console.log("Firebase config loaded.");
-          } else {
-            throw new Error("Firebase configuration is missing or incorrect.");
-          }
-
           const app = initializeApp(firebaseConfig);
           db = getFirestore(app);
           auth = getAuth(app);
 
           const userCredential = await signInAnonymously(auth);
           currentUserId = userCredential.user.uid;
-          console.log(
-            "Firebase initialized and user signed in:",
-            currentUserId
-          );
+          console.log("Firebase initialized, user:", currentUserId);
 
           listenForUserProfiles();
           await loadUserProfile();
@@ -823,21 +773,15 @@
           console.error("Error initializing Firebase:", error);
           loading.textContent =
             "Error: Could not connect to the grid. Refresh page.";
-          if (error.message.includes("api-key-not-valid")) {
-            loading.textContent =
-              "Error: Firebase API Key is not valid. Check console.";
-          }
         }
       }
 
-      // --- User Profile Functions ---
       function listenForUserProfiles() {
         const usersCollection = collection(db, "users");
         unsubscribeUserProfiles = onSnapshot(usersCollection, (snapshot) => {
-          snapshot.docs.forEach((doc) => {
-            userProfiles[doc.id] = doc.data();
+          snapshot.docs.forEach((docSnap) => {
+            userProfiles[docSnap.id] = docSnap.data();
           });
-          console.log("User profiles cache updated:", userProfiles);
           if (currentPage === "chat") {
             listenForChat(true);
           } else {
@@ -884,9 +828,7 @@
               username: newUsername,
               profilePhotoURL: newProfilePhotoURL,
             },
-            {
-              merge: true,
-            }
+            { merge: true }
           );
           currentUsername = newUsername;
           currentProfilePhotoURL = newProfilePhotoURL;
@@ -899,7 +841,6 @@
         }
       }
 
-      // --- Modal Controls ---
       function openProfileModal() {
         modalUsernameInput.value =
           currentUsername === "Anonymous" ? "" : currentUsername;
@@ -910,7 +851,6 @@
         profileModal.classList.remove("is-open");
       }
 
-      // --- Edit/Delete Modal Controls & Logic ---
       function showEditModal(docId, collectionName, currentText) {
         docToEditId = docId;
         collectionToEdit = collectionName;
@@ -975,7 +915,6 @@
         }
       }
 
-      // --- NEW: Reaction Logic ---
       async function toggleReaction(
         docId,
         collectionName,
@@ -999,12 +938,9 @@
           }
         } catch (error) {
           console.error("Error toggling reaction:", error);
-          console.error("Error details:", error.code, error.message);
-
           if (error.code === "permission-denied") {
             alert(
-              "Permission denied: Firebase security rules need to be updated to allow reactions.\n\n" +
-                "Go to Firebase Console > Firestore Database > Rules and update the rules to allow reactions field updates."
+              "Permission denied: Firebase security rules need to be updated to allow reactions."
             );
           } else {
             alert(`Error adding reaction: ${error.message}`);
@@ -1034,7 +970,6 @@
         return `${userIds.length} people reacted`;
       }
 
-      // --- NEW: Dropdown Menu & Selection Logic ---
       function showDropdownMenu(event, data) {
         event.stopPropagation();
         currentContextMenuData = data;
@@ -1046,7 +981,6 @@
 
         menuEdit.style.display = isEditable && isMine ? "block" : "none";
         menuDelete.style.display = isMine ? "block" : "none";
-        menuReply.style.display = "block";
 
         const rect = event.currentTarget.getBoundingClientRect();
         contextMenu.style.top = `${rect.bottom + 2}px`;
@@ -1144,7 +1078,6 @@
         });
       }
 
-      // --- Page Navigation ---
       function showPage(page) {
         currentPage = page;
 
@@ -1162,10 +1095,8 @@
         if (page === "confessions") {
           navConfessions.classList.add("active");
           navChat.classList.remove("active");
-          if (!isSelectionMode) {
-            confessionForm.classList.add("flex");
-            confessionForm.classList.remove("hidden");
-          }
+          confessionForm.classList.add("flex");
+          confessionForm.classList.remove("hidden");
           chatForm.classList.add("hidden");
           chatForm.classList.remove("flex");
           typingIndicator.classList.add("hidden");
@@ -1173,10 +1104,8 @@
         } else {
           navChat.classList.add("active");
           navConfessions.classList.remove("active");
-          if (!isSelectionMode) {
-            chatForm.classList.add("flex");
-            chatForm.classList.remove("hidden");
-          }
+          chatForm.classList.add("flex");
+          chatForm.classList.remove("hidden");
           confessionForm.classList.add("hidden");
           confessionForm.classList.remove("flex");
           typingIndicator.classList.remove("hidden");
@@ -1185,7 +1114,6 @@
         }
       }
 
-      // --- Real-time Data Listeners ---
       let lastConfessionDocs = [];
       let lastChatDocs = [];
 
@@ -1235,16 +1163,15 @@
         );
       }
 
-      // --- Typing Indicator Logic ---
       function listenForTyping() {
         unsubscribeTypingStatus = onSnapshot(
           typingStatusCollection,
           (snapshot) => {
             const now = Date.now();
             const typingUsers = [];
-            snapshot.docs.forEach((doc) => {
-              const data = doc.data();
-              const userId = doc.id;
+            snapshot.docs.forEach((docSnap) => {
+              const data = docSnap.data();
+              const userId = docSnap.id;
               if (
                 data.isTyping &&
                 userId !== currentUserId &&
@@ -1290,7 +1217,6 @@
         }
       }
 
-      // --- Helper Function to Format Timestamp ---
       function formatTimestamp(firebaseTimestamp) {
         if (!firebaseTimestamp) return "...";
         const date = firebaseTimestamp.toDate();
@@ -1300,7 +1226,6 @@
         });
       }
 
-      // --- Render Function (UPDATED) ---
       function renderFeed(docs, type) {
         feedContainer.innerHTML = "";
         if (docs.length === 0) {
@@ -1423,11 +1348,22 @@
             timeElement.appendChild(editedMarker);
           }
 
+          // Reply arrow button (for ALL messages)
+          const replyBtn = document.createElement("button");
+          replyBtn.className = "reply-btn";
+          replyBtn.innerHTML = `↩`;
+          replyBtn.title = "Reply";
+          replyBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            startReplyMode(bubble.dataset);
+          });
+          timeElement.appendChild(replyBtn);
+
           const timeText = document.createElement("span");
           timeText.textContent = time;
           timeElement.appendChild(timeText);
 
-          // Kebab menu for ALL messages (Edit/Delete restricted in menu logic)
+          // Kebab for edit/delete/select (only logic restricts options)
           const kebabBtn = document.createElement("button");
           kebabBtn.className = "kebab-btn";
           kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -1492,7 +1428,6 @@
         }
       }
 
-      // --- Form Submission ---
       async function postConfession(e) {
         e.preventDefault();
         const text = confessionInput.value.trim();
@@ -1551,13 +1486,11 @@
         }
       }
 
-      // --- Event Listeners ---
       confessionForm.addEventListener("submit", postConfession);
       chatForm.addEventListener("submit", postChatMessage);
       navConfessions.addEventListener("click", () => showPage("confessions"));
       navChat.addEventListener("click", () => showPage("chat"));
 
-      // --- Modal Event Listeners ---
       profileButton.addEventListener("click", openProfileModal);
       modalCloseButton.addEventListener("click", closeProfileModal);
       modalSaveButton.addEventListener("click", handleProfileSave);
@@ -1567,7 +1500,6 @@
       confirmModalNoButton.addEventListener("click", closeConfirmModal);
       confirmModalYesButton.addEventListener("click", handleDelete);
 
-      // --- Context Menu & Selection Listeners ---
       feedContainer.addEventListener("click", (e) => {
         if (!isSelectionMode) return;
         if (e.target.closest(".kebab-btn")) return;
@@ -1613,13 +1545,6 @@
         hideDropdownMenu();
       });
 
-      menuReply.addEventListener("click", () => {
-        if (currentContextMenuData) {
-          startReplyMode(currentContextMenuData);
-        }
-        hideDropdownMenu();
-      });
-
       menuSelect.addEventListener("click", () => {
         enterSelectionMode();
         hideDropdownMenu();
@@ -1648,11 +1573,8 @@
         }
       });
 
-      // --- Reply Functions (FIXED) ---
       function startReplyMode(messageData) {
-        // messageData comes from bubble.dataset
         let repliedUserId = messageData.userId || null;
-
         if (!repliedUserId && messageData.isMine === "true") {
           repliedUserId = currentUserId;
         }
@@ -1685,7 +1607,6 @@
         replyBar.classList.remove("show");
       }
 
-      // Start the application
       initFirebase();
     </script>
   </body>
