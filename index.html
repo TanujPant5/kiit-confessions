@@ -31,16 +31,10 @@
         border-radius: 0.5rem;
       }
 
-      /* Scrollbar */
       ::-webkit-scrollbar { width: 8px; }
       ::-webkit-scrollbar-track { background: #0a0a1a; }
-      ::-webkit-scrollbar-thumb {
-        background: #00e5ff;
-        border-radius: 4px;
-        box-shadow: 0 0 5px #00e5ff;
-      }
+      ::-webkit-scrollbar-thumb { background: #00e5ff; border-radius: 4px; box-shadow: 0 0 5px #00e5ff; }
 
-      /* Inputs & Buttons */
       textarea, button, input[type="text"] {
         font-family: "Inter", sans-serif;
         background-color: rgba(0, 229, 255, 0.05);
@@ -49,32 +43,25 @@
         text-shadow: 0 0 5px #00e5ff;
         transition: all 0.3s ease;
       }
-
       textarea:focus, input[type="text"]:focus {
         outline: none;
         background-color: rgba(0, 229, 255, 0.1);
         box-shadow: 0 0 10px #00e5ff;
       }
-
       button:hover {
         background-color: #00e5ff;
         color: #0a0a1a;
         text-shadow: none;
         box-shadow: 0 0 15px #00e5ff;
       }
+      textarea::placeholder, input[type="text"]::placeholder { color: #00e5ff; opacity: 0.5; }
 
-      textarea::placeholder, input[type="text"]::placeholder {
-        color: #00e5ff; opacity: 0.5;
-      }
-
-      /* Feed */
       #feedContainer {
         background-color: rgba(0, 0, 0, 0.3);
         overflow-y: auto;
         scroll-behavior: smooth;
       }
 
-      /* Message Bubbles */
       .message-bubble {
         background-color: rgba(30, 30, 50, 0.7);
         border: 1px solid #007a8a;
@@ -82,17 +69,15 @@
         word-wrap: break-word;
         white-space: pre-wrap;
         padding: 0.75rem;
-        padding-bottom: 2rem; /* Extra space for bottom bar */
-        position: relative; /* For absolute positioning of interactions */
+        padding-bottom: 2.2rem; /* Extra space for bottom bar */
+        position: relative;
         transition: background-color 0.2s;
       }
-
       .my-message {
         background-color: rgba(0, 50, 100, 0.8);
         border: 1px solid #00e5ff;
         align-self: flex-end;
       }
-
       .selected-message {
         background-color: rgba(0, 229, 255, 0.2) !important;
         border-color: #00e5ff !important;
@@ -106,6 +91,7 @@
         display: flex;
         align-items: center;
         gap: 6px;
+        z-index: 10;
       }
 
       .like-btn {
@@ -117,26 +103,21 @@
         align-items: center;
         transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         color: #00e5ff;
-        opacity: 0.5; /* Default unliked state */
+        opacity: 0.5; 
       }
-
       .like-btn:hover {
         background: transparent;
         transform: scale(1.2);
         opacity: 0.8;
         box-shadow: none;
       }
-
-      /* State when liked */
       .like-btn.liked {
         opacity: 1;
         filter: drop-shadow(0 0 5px #00e5ff);
       }
-
       .like-btn.liked svg {
-        fill: #00e5ff; /* Fill the heart */
+        fill: #00e5ff; 
       }
-
       .like-count {
         font-size: 0.7rem;
         opacity: 0.8;
@@ -145,55 +126,62 @@
         text-align: center;
       }
 
-      /* Timestamp & Kebab Area */
-      .meta-area {
+      /* Timestamp & Meta */
+      .timestamp {
+        font-size: 0.65rem;
+        color: #00e5ff;
+        opacity: 0.6;
+        text-shadow: none;
         position: absolute;
         bottom: 6px;
         left: 10px;
-        font-size: 0.65rem;
-        opacity: 0.6;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
       }
 
       .kebab-btn {
-        background: none; border: none; padding: 0 4px;
-        color: #00e5ff; opacity: 0.5; cursor: pointer;
+        background: none; border: none; padding: 0 4px; margin: 0;
+        color: #00e5ff; opacity: 0.5; cursor: pointer; border-radius: 4px;
       }
-      .kebab-btn:hover { opacity: 1; background: transparent; box-shadow: none; }
-      
+      .kebab-btn:hover { opacity: 1; background-color: rgba(0, 229, 255, 0.1); }
       .edited-marker { font-size: 0.6rem; opacity: 0.5; margin-right: 4px; }
-
-      /* Modals & Animations */
-      .modal-base {
-        position: fixed; inset: 0;
-        background-color: rgba(0, 0, 0, 0.7);
-        display: flex; align-items: center; justify-content: center;
-        padding: 1rem;
-        opacity: 0; visibility: hidden;
-        transition: opacity 0.2s ease-out, visibility 0s linear 0.2s;
+      .chat-pfp { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #00e5ff; object-fit: cover; flex-shrink: 0; }
+      
+      #typingIndicator {
+        height: 1.5rem; font-size: 0.875rem; color: #00e5ff; opacity: 0.7;
+        text-shadow: 0 0 5px #00e5ff; transition: opacity 0.3s ease;
       }
-      .modal-base.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
-      .modal-content {
-        transform: scale(0.95); opacity: 0;
-        transition: transform 0.2s ease-out, opacity 0.2s ease-out;
-      }
-      .modal-base.is-open .modal-content { transform: scale(1); opacity: 1; }
 
       /* Context Menu */
       #contextMenu {
-        position: fixed; z-index: 1000;
-        background-color: #0a0a1a; border: 2px solid #00e5ff;
-        box-shadow: 0 0 10px #00e5ff; border-radius: 0.5rem;
-        min-width: 150px;
+        position: fixed; z-index: 1000; background-color: #0a0a1a;
+        border: 2px solid #00e5ff; box-shadow: 0 0 10px #00e5ff;
+        border-radius: 0.5rem; padding: 0.5rem 0; min-width: 150px;
         opacity: 0; visibility: hidden; transform: scale(0.95);
         transition: all 0.1s ease-out;
       }
       #contextMenu.is-open { opacity: 1; visibility: visible; transform: scale(1); }
-      #contextMenu li { padding: 0.5rem 1rem; cursor: pointer; }
+      #contextMenu li { padding: 0.5rem 1rem; cursor: pointer; transition: all 0.2s ease; }
       #contextMenu li:hover { background-color: #00e5ff; color: #0a0a1a; text-shadow: none; }
+      #contextMenu li.separator { height: 1px; background-color: #00e5ff; opacity: 0.3; margin: 0.25rem 0; padding: 0; }
+
+      /* Modals */
+      .modal-base {
+        position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.7);
+        display: flex; align-items: center; justify-content: center; padding: 1rem;
+        opacity: 0; visibility: hidden; transition: opacity 0.2s ease-out, visibility 0s linear 0.2s;
+      }
+      .modal-base.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
+      .modal-content { transform: scale(0.95); opacity: 0; transition: transform 0.2s ease-out, opacity 0.2s ease-out; }
+      .modal-base.is-open .modal-content { transform: scale(1); opacity: 1; }
+
+      /* Selection Bar */
+      #selectionBar { background-color: rgba(0, 50, 100, 0.9); border-top: 2px solid #00e5ff; padding: 0.5rem 1rem; }
       
+      .nav-item { cursor: pointer; padding: 8px 16px; border-bottom: 2px solid transparent; transition: all 0.3s ease; opacity: 0.6; }
+      .nav-item.active, .nav-item:hover { opacity: 1; text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff; border-bottom-color: #00e5ff; }
+
       @keyframes messagePopIn {
         from { opacity: 0; transform: translateY(5px); }
         to { opacity: 1; transform: translateY(0px); }
@@ -221,8 +209,8 @@
         <div id="loading" class="text-center p-4">CONNECTING TO GRID...</div>
       </div>
 
-      <div id="selectionBar" class="hidden flex justify-between items-center bg-[#003264] border-t-2 border-[#00e5ff] p-2">
-        <span id="selectionCount" class="text-lg ml-4">0 selected</span>
+      <div id="selectionBar" class="hidden flex justify-between items-center">
+        <span id="selectionCount" class="text-lg">0 selected</span>
         <div class="flex gap-4">
           <button id="selectionCancel" class="font-bold">CANCEL</button>
           <button id="selectionDelete" class="font-bold text-red-400">DELETE</button>
@@ -232,12 +220,12 @@
       <div id="typingIndicator" class="px-4 h-6 text-sm opacity-70">&nbsp;</div>
 
       <form id="confessionForm" class="hidden gap-3 p-2 sm:p-4 border-t-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20">
-        <textarea id="confessionInput" rows="2" class="flex-1 p-3 rounded-lg resize-none" placeholder="TYPE YOUR CONFESSION..." required></textarea>
+        <textarea id="confessionInput" rows="2" class="flex-1 p-3 rounded-lg resize-none focus:outline-none" placeholder="TYPE YOUR CONFESSION..." required></textarea>
         <button id="confessionButton" type="submit" class="px-6 py-2 rounded-lg font-bold">CONFESS</button>
       </form>
 
       <form id="chatForm" class="flex gap-3 p-2 sm:p-4 border-t-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20">
-        <textarea id="chatInput" rows="2" class="flex-1 p-3 rounded-lg resize-none" placeholder="TYPE YOUR MESSAGE..." required></textarea>
+        <textarea id="chatInput" rows="2" class="flex-1 p-3 rounded-lg resize-none focus:outline-none" placeholder="TYPE YOUR MESSAGE..." required></textarea>
         <button id="chatButton" type="submit" class="px-6 py-2 rounded-lg font-bold">SEND</button>
       </form>
     </main>
@@ -246,7 +234,7 @@
       <div class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
         <h2 class="text-2xl font-bold glow">EDIT PROFILE</h2>
         <div class="flex flex-col gap-2">
-          <label class="text-sm opacity-70">Username</label>
+          <label for="modalUsernameInput" class="text-sm opacity-70">Username</label>
           <input type="text" id="modalUsernameInput" placeholder="SET YOUR USERNAME..." class="w-full p-3 rounded-lg focus:outline-none" />
         </div>
         <div class="flex gap-4 mt-4">
@@ -270,7 +258,7 @@
     <div id="confirmModal" class="modal-base">
       <div class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
         <h2 class="text-xl font-bold glow">DELETE MESSAGE</h2>
-        <p id="confirmModalText" class="text-base opacity-90">Are you sure?</p>
+        <p id="confirmModalText" class="text-base opacity-90">Are you sure you want to permanently delete this message?</p>
         <div class="flex gap-4 mt-4">
           <button id="confirmModalNoButton" class="flex-1 px-6 py-2 rounded-lg font-bold">CANCEL</button>
           <button id="confirmModalYesButton" class="flex-1 px-6 py-2 rounded-lg font-bold bg-red-800 border-red-500 hover:bg-red-600">DELETE</button>
@@ -282,7 +270,7 @@
       <ul>
         <li id="menuEdit">Edit</li>
         <li id="menuDelete">Delete</li>
-        <li style="height:1px; background:#00e5ff; opacity:0.3; margin:0.25rem 0;"></li>
+        <li class="separator"></li>
         <li id="menuSelect">Select</li>
       </ul>
     </div>
@@ -312,218 +300,103 @@
       const navConfessions = document.getElementById("navConfessions");
       const navChat = document.getElementById("navChat");
       const confessionForm = document.getElementById("confessionForm");
+      const confessionInput = document.getElementById("confessionInput");
+      const confessionButton = document.getElementById("confessionButton");
       const chatForm = document.getElementById("chatForm");
       const chatInput = document.getElementById("chatInput");
+      const chatButton = document.getElementById("chatButton");
       const typingIndicator = document.getElementById("typingIndicator");
 
-      // Modals
+      // Modal Elements
+      const profileButton = document.getElementById("profileButton");
       const profileModal = document.getElementById("profileModal");
-      const editModal = document.getElementById("editModal");
-      const confirmModal = document.getElementById("confirmModal");
-      
-      const contextMenu = document.getElementById("contextMenu");
-      const selectionBar = document.getElementById("selectionBar");
+      const modalCloseButton = document.getElementById("modalCloseButton");
+      const modalSaveButton = document.getElementById("modalSaveButton");
+      const modalUsernameInput = document.getElementById("modalUsernameInput");
 
-      let db, auth, currentUserId, currentUsername;
+      const editModal = document.getElementById("editModal");
+      const modalEditTextArea = document.getElementById("modalEditTextArea");
+      const editModalCancelButton = document.getElementById("editModalCancelButton");
+      const editModalSaveButton = document.getElementById("editModalSaveButton");
+
+      const confirmModal = document.getElementById("confirmModal");
+      const confirmModalText = document.getElementById("confirmModalText");
+      const confirmModalNoButton = document.getElementById("confirmModalNoButton");
+      const confirmModalYesButton = document.getElementById("confirmModalYesButton");
+
+      const contextMenu = document.getElementById("contextMenu");
+      const menuEdit = document.getElementById("menuEdit");
+      const menuDelete = document.getElementById("menuDelete");
+      const menuSelect = document.getElementById("menuSelect");
+
+      const selectionBar = document.getElementById("selectionBar");
+      const selectionCount = document.getElementById("selectionCount");
+      const selectionCancel = document.getElementById("selectionCancel");
+      const selectionDelete = document.getElementById("selectionDelete");
+
+      // --- App State ---
+      let db, auth;
+      let currentUserId = null;
+      let currentUsername = "Anonymous";
       let userProfiles = {};
+      let confessionsCollection, chatCollection, typingStatusCollection;
+      let unsubscribeConfessions = () => {};
+      let unsubscribeChat = () => {};
+      let unsubscribeTypingStatus = () => {};
       let currentPage = "chat";
+      let typingTimeout = null;
+
+      let docToEditId = null;
+      let collectionToEdit = null;
+      let deleteCallback = null;
+
       let isSelectionMode = false;
       let selectedMessages = new Set();
       let currentContextMenuData = null;
-      let unsubscribeChat = () => {};
-      let unsubscribeConfessions = () => {};
-      let unsubscribeTypingStatus = () => {};
 
+      // --- Initialization ---
       async function initFirebase() {
         try {
           const app = initializeApp(firebaseConfig);
           db = getFirestore(app);
           auth = getAuth(app);
+
           const userCredential = await signInAnonymously(auth);
           currentUserId = userCredential.user.uid;
-          
+          console.log("Signed in:", currentUserId);
+
           listenForUserProfiles();
           await loadUserProfile();
-          showPage("chat");
+
+          confessionsCollection = collection(db, "confessions");
+          chatCollection = collection(db, "chat");
+          typingStatusCollection = collection(db, "typingStatus");
+
+          showPage(currentPage); 
         } catch (error) {
-          console.error(error);
-          loading.textContent = "CONNECTION FAILED.";
+          console.error("Init Error:", error);
+          loading.textContent = "Error: Could not connect to the grid.";
         }
       }
 
       function listenForUserProfiles() {
         onSnapshot(collection(db, "users"), (snapshot) => {
-          snapshot.docs.forEach(doc => userProfiles[doc.id] = doc.data());
+          snapshot.docs.forEach((doc) => { userProfiles[doc.id] = doc.data(); });
           if (currentPage === "chat") listenForChat(true);
           else listenForConfessions(true);
         });
       }
 
       async function loadUserProfile() {
-        if(!db || !currentUserId) return;
-        const docSnap = await getDoc(doc(db, "users", currentUserId));
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          currentUsername = data.username;
-          document.getElementById("modalUsernameInput").value = currentUsername || "";
-        } else {
-          currentUsername = "Anonymous";
+        if (!db || !currentUserId) return;
+        const userDoc = await getDoc(doc(db, "users", currentUserId));
+        if (userDoc.exists()) {
+          currentUsername = userDoc.data().username || "Anonymous";
         }
+        modalUsernameInput.value = currentUsername === "Anonymous" ? "" : currentUsername;
       }
 
-      // --- Navigation ---
-      function showPage(page) {
-        currentPage = page;
-        if(isSelectionMode) exitSelectionMode();
-        
-        unsubscribeChat();
-        unsubscribeConfessions();
-        feedContainer.innerHTML = '<div id="loading" class="text-center p-4">LOADING...</div>';
-
-        if (page === "chat") {
-            navChat.classList.add("active"); navConfessions.classList.remove("active");
-            chatForm.classList.replace("hidden", "flex");
-            confessionForm.classList.replace("flex", "hidden");
-            listenForChat();
-        } else {
-            navConfessions.classList.add("active"); navChat.classList.remove("active");
-            confessionForm.classList.replace("hidden", "flex");
-            chatForm.classList.replace("flex", "hidden");
-            listenForConfessions();
-        }
-      }
-
-      // --- Rendering Logic (With Likes) ---
-      let lastDocs = [];
-
-      function listenForChat(isRerender = false) {
-        if(isRerender) { renderFeed(lastDocs, "chat"); return; }
-        unsubscribeChat = onSnapshot(query(collection(db, "chat"), orderBy("timestamp", "asc")), (snapshot) => {
-            lastDocs = snapshot.docs;
-            renderFeed(lastDocs, "chat");
-        });
-      }
-
-      function listenForConfessions(isRerender = false) {
-        if(isRerender) { renderFeed(lastDocs, "confessions"); return; }
-        unsubscribeConfessions = onSnapshot(query(collection(db, "confessions"), orderBy("timestamp", "asc")), (snapshot) => {
-            lastDocs = snapshot.docs;
-            renderFeed(lastDocs, "confessions");
-        });
-      }
-
-      function renderFeed(docs, type) {
-        feedContainer.innerHTML = "";
-        let lastUserId = null;
-
-        if (docs.length === 0) {
-            feedContainer.innerHTML = `<div class="text-center p-4">NO ${type.toUpperCase()} YET.</div>`;
-            return;
-        }
-
-        docs.forEach(docSnap => {
-            const data = docSnap.data();
-            const isMine = data.userId === currentUserId;
-            const isConsecutive = data.userId === lastUserId;
-            lastUserId = data.userId;
-            
-            // --- LIKES LOGIC ---
-            const likes = data.likes || [];
-            const likeCount = likes.length;
-            const isLiked = likes.includes(currentUserId);
-
-            const alignWrapper = document.createElement("div");
-            alignWrapper.className = `flex w-full ${isMine ? "justify-end" : "justify-start"}`;
-
-            const bubble = document.createElement("div");
-            bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${isMine ? "my-message" : ""} ${isConsecutive ? "mt-0.5" : "mt-2"}`;
-            
-            // Dataset for interactions
-            bubble.dataset.id = docSnap.id;
-            bubble.dataset.text = data.text;
-            bubble.dataset.isMine = isMine;
-            bubble.dataset.timestamp = data.timestamp ? data.timestamp.toMillis() : 0;
-
-            if(isSelectionMode && selectedMessages.has(docSnap.id)) bubble.classList.add("selected-message");
-
-            // Header
-            if (!isConsecutive) {
-                const profile = userProfiles[data.userId] || {};
-                const name = profile.username || "Anonymous";
-                const pfp = profile.profilePhotoURL || `https://placehold.co/32x32/00e5ff/0a0a1a?text=${name[0]}`;
-                
-                const header = document.createElement("div");
-                header.className = `flex items-center gap-1.5 mb-1 ${isMine ? "justify-end" : ""}`;
-                header.innerHTML = `
-                   ${isMine ? `<div class="font-bold text-sm opacity-70">${name}</div><img src="${pfp}" class="chat-pfp">` 
-                          : `<img src="${pfp}" class="chat-pfp"><div class="font-bold text-sm opacity-70">${name}</div>`}
-                `;
-                bubble.appendChild(header);
-            }
-
-            // Text
-            const textElement = document.createElement("p");
-            textElement.className = isMine ? "text-right" : "text-left";
-            textElement.textContent = data.text;
-            bubble.appendChild(textElement);
-
-            // --- BOTTOM AREA: Meta (Left) & Likes (Right) ---
-            
-            // 1. Meta Area (Timestamp & Kebab)
-            const metaDiv = document.createElement("div");
-            metaDiv.className = "meta-area";
-            const dateObj = data.timestamp ? data.timestamp.toDate() : new Date();
-            const timeStr = dateObj.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            
-            if(data.edited) metaDiv.innerHTML += `<span class="edited-marker">(edited)</span>`;
-            metaDiv.innerHTML += `<span>${timeStr}</span>`;
-
-            if(isMine) {
-                const kebabBtn = document.createElement("button");
-                kebabBtn.className = "kebab-btn";
-                kebabBtn.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>`;
-                kebabBtn.onclick = (e) => showDropdownMenu(e, bubble.dataset);
-                metaDiv.appendChild(kebabBtn);
-            }
-            bubble.appendChild(metaDiv);
-
-            // 2. Like Button Area (Right)
-            const reactionContainer = document.createElement("div");
-            reactionContainer.className = "reaction-container";
-            
-            const likeBtn = document.createElement("button");
-            likeBtn.className = `like-btn ${isLiked ? "liked" : ""}`;
-            likeBtn.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-            `;
-            likeBtn.onclick = (e) => {
-                e.stopPropagation();
-                toggleLike(docSnap.id, isLiked);
-            };
-
-            const countSpan = document.createElement("span");
-            countSpan.className = "like-count";
-            countSpan.textContent = likeCount > 0 ? likeCount : "";
-
-            reactionContainer.appendChild(countSpan);
-            reactionContainer.appendChild(likeBtn);
-            bubble.appendChild(reactionContainer);
-
-            alignWrapper.appendChild(bubble);
-            feedContainer.appendChild(alignWrapper);
-        });
-
-        // Animation
-        const lastBubble = feedContainer.lastElementChild?.querySelector(".message-bubble");
-        if(lastBubble && !lastBubble.dataset.animated) {
-            if(Date.now() - (parseInt(lastBubble.dataset.timestamp)||0) < 3000) lastBubble.classList.add("animate-pop-in");
-            lastBubble.dataset.animated = "true";
-        }
-        
-        if(!isSelectionMode) feedContainer.scrollTop = feedContainer.scrollHeight;
-      }
-
-      // --- NEW: Toggle Like Function ---
+      // --- Toggle Like Function ---
       async function toggleLike(docId, isCurrentlyLiked) {
         if(!currentUserId) return;
         const docRef = doc(db, currentPage, docId);
@@ -536,141 +409,346 @@
         }
       }
 
-      // --- Core Event Handlers ---
-      chatForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const text = chatInput.value.trim();
-        if(!text) return;
-        // Initialize with empty likes array
-        await addDoc(collection(db, "chat"), { text, timestamp: serverTimestamp(), userId: currentUserId, likes: [] });
-        chatInput.value = "";
-      });
+      // --- Feed Rendering (with Likes) ---
+      let lastConfessionDocs = [];
+      let lastChatDocs = [];
 
-      confessionForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const text = document.getElementById("confessionInput").value.trim();
-        if(!text) return;
-        // Initialize with empty likes array
-        await addDoc(collection(db, "confessions"), { text, timestamp: serverTimestamp(), userId: currentUserId, likes: [] });
-        document.getElementById("confessionInput").value = "";
-      });
-
-      // --- Menus & Modals ---
-      function showDropdownMenu(e, data) {
-        e.stopPropagation();
-        currentContextMenuData = data;
-        const btnRect = e.currentTarget.getBoundingClientRect();
-        contextMenu.style.top = `${btnRect.bottom + 5}px`;
-        contextMenu.style.left = `${btnRect.right - 150}px`;
-        contextMenu.classList.add("is-open");
+      function listenForConfessions(isRerender = false) {
+        if (isRerender) { renderFeed(lastConfessionDocs, "confessions"); return; }
+        unsubscribeChat();
+        feedContainer.innerHTML = '<div id="loading" class="text-center p-4">LOADING CONFESSIONS...</div>';
+        const q = query(confessionsCollection, orderBy("timestamp", "asc"));
+        unsubscribeConfessions = onSnapshot(q, (snapshot) => {
+            lastConfessionDocs = snapshot.docs;
+            renderFeed(lastConfessionDocs, "confessions");
+        });
       }
+
+      function listenForChat(isRerender = false) {
+        if (isRerender) { renderFeed(lastChatDocs, "chat"); return; }
+        unsubscribeConfessions();
+        feedContainer.innerHTML = '<div id="loading" class="text-center p-4">LOADING CHAT...</div>';
+        const q = query(chatCollection, orderBy("timestamp", "asc"));
+        unsubscribeChat = onSnapshot(q, (snapshot) => {
+            lastChatDocs = snapshot.docs;
+            renderFeed(lastChatDocs, "chat");
+        });
+      }
+
+      function renderFeed(docs, type) {
+        feedContainer.innerHTML = "";
+        if (docs.length === 0) {
+          feedContainer.innerHTML = `<div class="text-center p-4">NO ${type.toUpperCase()} YET. BE THE FIRST!</div>`;
+          return;
+        }
+
+        let lastUserId = null;
+
+        docs.forEach((docInstance) => {
+          const data = docInstance.data();
+          const text = data.text || "...";
+          const docUserId = data.userId;
+          const isMine = currentUserId && docUserId === currentUserId;
+          const isConsecutive = docUserId && docUserId === lastUserId;
+          lastUserId = docUserId;
+
+          // --- Likes Logic ---
+          const likes = data.likes || [];
+          const likeCount = likes.length;
+          const isLiked = likes.includes(currentUserId);
+
+          const profile = userProfiles[docUserId] || {};
+          const username = profile.username || "Anonymous";
+          const photoURL = profile.profilePhotoURL || `https://placehold.co/32x32/00e5ff/0a0a1a?text=${username.charAt(0).toUpperCase() || "?"}`;
+
+          const alignWrapper = document.createElement("div");
+          alignWrapper.className = `flex w-full ${isMine ? "justify-end" : "justify-start"}`;
+
+          const bubble = document.createElement("div");
+          bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${isMine ? "my-message" : ""} ${isConsecutive ? "mt-0.5" : "mt-2"}`;
+          
+          bubble.dataset.id = docInstance.id;
+          bubble.dataset.text = text;
+          bubble.dataset.isMine = isMine;
+          bubble.dataset.timestamp = data.timestamp ? data.timestamp.toMillis() : 0;
+
+          if (isSelectionMode && selectedMessages.has(docInstance.id)) {
+            bubble.classList.add("selected-message");
+          }
+
+          // Header
+          if (!isConsecutive) {
+            const header = document.createElement("div");
+            header.className = `flex items-center gap-1.5 mb-1 ${isMine ? "justify-end" : ""}`;
+            header.innerHTML = `
+              ${isMine ? `<div class="font-bold text-sm opacity-70 text-right">${username}</div><img src="${photoURL}" class="chat-pfp order-2">` 
+                       : `<img src="${photoURL}" class="chat-pfp order-1"><div class="font-bold text-sm opacity-70 text-left">${username}</div>`}
+            `;
+            bubble.appendChild(header);
+          }
+
+          // Text
+          const p = document.createElement("p");
+          p.className = isMine ? "text-right" : "text-left";
+          p.textContent = text;
+          bubble.appendChild(p);
+
+          // Timestamp & Kebab (Bottom Left)
+          const timeDiv = document.createElement("div");
+          timeDiv.className = "timestamp";
+          
+          if(data.edited) timeDiv.innerHTML += `<span class="edited-marker">(edited)</span>`;
+          
+          const dateObj = data.timestamp ? data.timestamp.toDate() : new Date();
+          timeDiv.innerHTML += `<span>${dateObj.toLocaleTimeString([], {timeStyle: "short"})}</span>`;
+
+          if (isMine) {
+            const kebab = document.createElement("button");
+            kebab.className = "kebab-btn";
+            kebab.innerHTML = `<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>`;
+            kebab.addEventListener("click", (e) => showDropdownMenu(e, bubble.dataset));
+            timeDiv.appendChild(kebab);
+          }
+          bubble.appendChild(timeDiv);
+
+          // --- LIKE BUTTON (Bottom Right) ---
+          const reactionContainer = document.createElement("div");
+          reactionContainer.className = "reaction-container";
+          
+          const likeBtn = document.createElement("button");
+          likeBtn.className = `like-btn ${isLiked ? "liked" : ""}`;
+          likeBtn.innerHTML = `
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          `;
+          likeBtn.onclick = (e) => {
+             e.stopPropagation(); // Prevent selection mode trigger
+             toggleLike(docInstance.id, isLiked);
+          };
+
+          const countSpan = document.createElement("span");
+          countSpan.className = "like-count";
+          countSpan.textContent = likeCount > 0 ? likeCount : "";
+
+          reactionContainer.appendChild(countSpan);
+          reactionContainer.appendChild(likeBtn);
+          bubble.appendChild(reactionContainer);
+
+          alignWrapper.appendChild(bubble);
+          feedContainer.appendChild(alignWrapper);
+        });
+
+        // Animation
+        const lastBubble = feedContainer.lastElementChild?.querySelector(".message-bubble");
+        if (lastBubble && !lastBubble.hasAttribute("data-animated")) {
+          const now = Date.now();
+          const msgTime = parseInt(lastBubble.dataset.timestamp, 10);
+          if (now - msgTime < 3000) lastBubble.classList.add("animate-pop-in");
+          lastBubble.setAttribute("data-animated", "true");
+        }
+
+        if (!isSelectionMode) feedContainer.scrollTop = feedContainer.scrollHeight;
+      }
+
+      // --- Typing Logic (Restored) ---
+      function listenForTyping() {
+        unsubscribeTypingStatus = onSnapshot(typingStatusCollection, (snapshot) => {
+            const now = Date.now();
+            const typingUsers = [];
+            snapshot.docs.forEach((doc) => {
+              const data = doc.data();
+              if (data.isTyping && doc.id !== currentUserId && now - data.timestamp < 5000) {
+                typingUsers.push(userProfiles[doc.id]?.username || "Someone");
+              }
+            });
+            if (typingUsers.length === 0) typingIndicator.innerHTML = "&nbsp;";
+            else if (typingUsers.length === 1) typingIndicator.textContent = `${typingUsers[0]} is typing...`;
+            else typingIndicator.textContent = "Several users are typing...";
+        });
+      }
+
+      async function updateTypingStatus(isTyping) {
+        if (!db || !currentUserId) return;
+        if (typingTimeout) clearTimeout(typingTimeout);
+        await setDoc(doc(db, "typingStatus", currentUserId), { isTyping, timestamp: Date.now() });
+        if (isTyping) typingTimeout = setTimeout(() => updateTypingStatus(false), 3000);
+      }
+
+      // --- Event Handlers (Original Structure) ---
       
-      document.addEventListener("click", (e) => {
-        if (!contextMenu.contains(e.target) && !e.target.closest(".kebab-btn")) {
-             contextMenu.classList.remove("is-open");
-        }
-      }, true);
-
-      document.getElementById("menuDelete").addEventListener("click", () => {
-        if(currentContextMenuData) {
-            document.getElementById("confirmModalText").textContent = "Permanently delete this message?";
-            confirmModal.classList.add("is-open");
-            document.getElementById("confirmModalYesButton").onclick = async () => {
-                await deleteDoc(doc(db, currentPage, currentContextMenuData.id));
-                confirmModal.classList.remove("is-open");
-            };
-        }
-        contextMenu.classList.remove("is-open");
-      });
-
-      document.getElementById("menuEdit").addEventListener("click", () => {
-        if(currentContextMenuData) {
-            document.getElementById("modalEditTextArea").value = currentContextMenuData.text;
-            editModal.classList.add("is-open");
-            document.getElementById("editModalSaveButton").onclick = async () => {
-                await updateDoc(doc(db, currentPage, currentContextMenuData.id), {
-                    text: document.getElementById("modalEditTextArea").value,
-                    edited: true
-                });
-                editModal.classList.remove("is-open");
-            };
-        }
-        contextMenu.classList.remove("is-open");
-      });
-
-      document.getElementById("menuSelect").addEventListener("click", () => {
-        enterSelectionMode();
-        contextMenu.classList.remove("is-open");
-      });
-
-      // Selection Mode
-      function enterSelectionMode() {
-        isSelectionMode = true;
-        selectionBar.classList.remove("hidden");
-        chatForm.classList.add("hidden");
-        confessionForm.classList.add("hidden");
-        if(currentContextMenuData) {
-            selectedMessages.add(currentContextMenuData.id);
-            const bubble = document.querySelector(`.message-bubble[data-id="${currentContextMenuData.id}"]`);
-            if(bubble) bubble.classList.add("selected-message");
-        }
-        document.getElementById("selectionCount").textContent = `${selectedMessages.size} selected`;
-      }
-
-      function exitSelectionMode() {
-        isSelectionMode = false;
-        selectionBar.classList.add("hidden");
-        selectedMessages.clear();
-        document.querySelectorAll(".selected-message").forEach(el => el.classList.remove("selected-message"));
-        if(currentPage === 'chat') chatForm.classList.remove("hidden");
-        else confessionForm.classList.remove("hidden");
-      }
-
+      // Feed Click (Selection Mode)
       feedContainer.addEventListener("click", (e) => {
         if (!isSelectionMode) return;
+        // Don't trigger if clicking kebab or like
         if (e.target.closest(".kebab-btn") || e.target.closest(".like-btn")) return;
         const bubble = e.target.closest(".message-bubble");
         if (!bubble || bubble.dataset.isMine !== "true") return;
-
         e.preventDefault();
+        
         const id = bubble.dataset.id;
-        if(selectedMessages.has(id)) {
+        if (selectedMessages.has(id)) {
             selectedMessages.delete(id);
             bubble.classList.remove("selected-message");
         } else {
             selectedMessages.add(id);
             bubble.classList.add("selected-message");
         }
-        document.getElementById("selectionCount").textContent = `${selectedMessages.size} selected`;
-        if(selectedMessages.size === 0) exitSelectionMode();
+        updateSelectionBar();
       });
 
-      document.getElementById("selectionCancel").onclick = exitSelectionMode;
-      document.getElementById("selectionDelete").onclick = () => {
-        if(selectedMessages.size === 0) return;
-        document.getElementById("confirmModalText").textContent = `Delete ${selectedMessages.size} messages?`;
-        confirmModal.classList.add("is-open");
-        document.getElementById("confirmModalYesButton").onclick = async () => {
+      function updateSelectionBar() {
+        selectionCount.textContent = `${selectedMessages.size} selected`;
+        if (selectedMessages.size === 0 && isSelectionMode) exitSelectionMode();
+      }
+
+      function showDropdownMenu(event, data) {
+        event.stopPropagation();
+        currentContextMenuData = data;
+        const now = Date.now();
+        const msgTime = parseInt(data.timestamp, 10);
+        menuEdit.style.display = (now - msgTime < 300000) ? "block" : "none"; // 5 min edit limit
+
+        const rect = event.currentTarget.getBoundingClientRect();
+        contextMenu.style.top = `${rect.bottom + 2}px`;
+        contextMenu.style.left = `${rect.right - 150}px`;
+        contextMenu.classList.add("is-open");
+      }
+
+      function hideDropdownMenu() { contextMenu.classList.remove("is-open"); }
+      document.addEventListener("click", (e) => {
+        if (!contextMenu.contains(e.target) && !e.target.closest(".kebab-btn")) hideDropdownMenu();
+      }, true);
+
+      // Context Menu Actions
+      menuEdit.addEventListener("click", () => {
+        if (currentContextMenuData) showEditModal(currentContextMenuData.id, currentPage, currentContextMenuData.text);
+        hideDropdownMenu();
+      });
+      menuDelete.addEventListener("click", () => {
+        if (currentContextMenuData) {
+            const id = currentContextMenuData.id;
+            showConfirmModal(async () => await deleteDoc(doc(db, currentPage, id)));
+        }
+        hideDropdownMenu();
+      });
+      menuSelect.addEventListener("click", () => {
+        enterSelectionMode();
+        hideDropdownMenu();
+      });
+
+      // Modals Logic
+      function showEditModal(id, col, text) {
+        docToEditId = id; collectionToEdit = col;
+        modalEditTextArea.value = text;
+        editModal.classList.add("is-open");
+      }
+      function closeEditModal() { editModal.classList.remove("is-open"); docToEditId = null; }
+      
+      async function saveEdit() {
+        const text = modalEditTextArea.value.trim();
+        if (text && docToEditId) {
+            editModalSaveButton.textContent = "SAVING...";
+            try {
+                await updateDoc(doc(db, collectionToEdit, docToEditId), { text, edited: true });
+                closeEditModal();
+            } catch(e) { alert("Error: Edit failed."); }
+            editModalSaveButton.textContent = "SAVE";
+        }
+      }
+
+      function showConfirmModal(cb) { deleteCallback = cb; confirmModal.classList.add("is-open"); }
+      function closeConfirmModal() { confirmModal.classList.remove("is-open"); deleteCallback = null; }
+      async function handleDelete() {
+        if (deleteCallback) {
+            confirmModalYesButton.textContent = "...";
+            await deleteCallback();
+            closeConfirmModal();
+            confirmModalYesButton.textContent = "DELETE";
+        }
+      }
+
+      // Selection Mode Logic
+      function enterSelectionMode() {
+        isSelectionMode = true;
+        selectionBar.classList.remove("hidden");
+        chatForm.classList.add("hidden"); confessionForm.classList.add("hidden");
+        if (currentContextMenuData) {
+            selectedMessages.add(currentContextMenuData.id);
+            const b = document.querySelector(`.message-bubble[data-id="${currentContextMenuData.id}"]`);
+            if(b) b.classList.add("selected-message");
+        }
+        updateSelectionBar();
+      }
+      function exitSelectionMode() {
+        isSelectionMode = false;
+        selectionBar.classList.add("hidden");
+        selectedMessages.clear();
+        document.querySelectorAll(".selected-message").forEach(el => el.classList.remove("selected-message"));
+        if (currentPage === "chat") chatForm.classList.remove("hidden");
+        else confessionForm.classList.remove("hidden");
+      }
+
+      // Submit Handlers
+      async function handleSubmit(e, col, input) {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (text && db) {
+            await addDoc(collection(db, col), { text, timestamp: serverTimestamp(), userId: currentUserId, likes: [] });
+            input.value = "";
+            updateTypingStatus(false);
+        }
+      }
+      confessionForm.addEventListener("submit", (e) => handleSubmit(e, "confessions", confessionInput));
+      chatForm.addEventListener("submit", (e) => handleSubmit(e, "chat", chatInput));
+      
+      confessionInput.addEventListener("keydown", (e) => { if(e.key==="Enter" && !e.shiftKey) { e.preventDefault(); confessionForm.requestSubmit(); } else updateTypingStatus(true); });
+      chatInput.addEventListener("keydown", (e) => { if(e.key==="Enter" && !e.shiftKey) { e.preventDefault(); chatForm.requestSubmit(); } else updateTypingStatus(true); });
+
+      // Listeners
+      navConfessions.addEventListener("click", () => showPage("confessions"));
+      navChat.addEventListener("click", () => showPage("chat"));
+      profileButton.addEventListener("click", () => { modalUsernameInput.value = currentUsername; profileModal.classList.add("is-open"); });
+      modalCloseButton.addEventListener("click", () => profileModal.classList.remove("is-open"));
+      modalSaveButton.addEventListener("click", async () => {
+        const name = modalUsernameInput.value.trim() || "Anonymous";
+        const pfp = `https://placehold.co/32x32/0a0a1a/00e5ff?text=${name.charAt(0).toUpperCase()}`;
+        await setDoc(doc(db, "users", currentUserId), { username: name, profilePhotoURL: pfp }, { merge: true });
+        currentUsername = name;
+        profileModal.classList.remove("is-open");
+      });
+      
+      editModalCancelButton.addEventListener("click", closeEditModal);
+      editModalSaveButton.addEventListener("click", saveEdit);
+      confirmModalNoButton.addEventListener("click", closeConfirmModal);
+      confirmModalYesButton.addEventListener("click", handleDelete);
+      selectionCancel.addEventListener("click", exitSelectionMode);
+      selectionDelete.addEventListener("click", () => {
+         if (selectedMessages.size > 0) showConfirmModal(async () => {
             const batch = writeBatch(db);
             selectedMessages.forEach(id => batch.delete(doc(db, currentPage, id)));
             await batch.commit();
-            confirmModal.classList.remove("is-open");
             exitSelectionMode();
-        };
-      };
-      
-      document.getElementById("editModalCancelButton").onclick = () => editModal.classList.remove("is-open");
-      document.getElementById("confirmModalNoButton").onclick = () => confirmModal.classList.remove("is-open");
-      document.getElementById("profileButton").onclick = () => profileModal.classList.add("is-open");
-      document.getElementById("modalCloseButton").onclick = () => profileModal.classList.remove("is-open");
-      document.getElementById("modalSaveButton").onclick = async () => {
-        const username = document.getElementById("modalUsernameInput").value || "Anonymous";
-        await setDoc(doc(db, "users", currentUserId), { username, profilePhotoURL: `https://placehold.co/32x32/00e5ff/0a0a1a?text=${username[0]}` }, {merge:true});
-        profileModal.classList.remove("is-open");
-      };
+         });
+      });
 
-      navChat.addEventListener("click", () => showPage("chat"));
-      navConfessions.addEventListener("click", () => showPage("confessions"));
+      function showPage(page) {
+        currentPage = page;
+        if (isSelectionMode) exitSelectionMode();
+        unsubscribeConfessions(); unsubscribeChat(); unsubscribeTypingStatus();
+        typingIndicator.innerHTML = "&nbsp;";
+        
+        if (page === "confessions") {
+            navConfessions.classList.add("active"); navChat.classList.remove("active");
+            confessionForm.classList.remove("hidden"); chatForm.classList.add("hidden");
+            typingIndicator.classList.add("hidden");
+            listenForConfessions();
+        } else {
+            navChat.classList.add("active"); navConfessions.classList.remove("active");
+            chatForm.classList.remove("hidden"); confessionForm.classList.add("hidden");
+            typingIndicator.classList.remove("hidden");
+            listenForChat();
+            listenForTyping();
+        }
+      }
 
       initFirebase();
     </script>
