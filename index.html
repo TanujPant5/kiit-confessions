@@ -250,9 +250,13 @@
         background-color: rgba(0, 50, 100, 0.9);
         border-top: 2px solid #00e5ff;
         padding: 0.5rem 1rem;
-        display: flex;
+        display: none;
         justify-content: space-between;
         align-items: center;
+      }
+
+      #replyBar.show {
+        display: flex;
       }
 
       #replyBar .reply-info {
@@ -522,7 +526,7 @@
         </div>
       </div>
 
-      <div id="replyBar" class="hidden">
+      <div id="replyBar">
         <div class="reply-info">
           <div class="reply-author" id="replyAuthor"></div>
           <div class="reply-text" id="replyText"></div>
@@ -1714,7 +1718,7 @@
 
         replyAuthor.textContent = `Replying to ${username}`;
         replyText.textContent = replyToMessage.text;
-        replyBar.classList.remove("hidden");
+        replyBar.classList.add("show");
 
         // Focus the appropriate input
         if (currentPage === "chat") {
@@ -1726,7 +1730,7 @@
 
       function cancelReplyMode() {
         replyToMessage = null;
-        replyBar.classList.add("hidden");
+        replyBar.classList.remove("show");
       }
 
       // Start the application
