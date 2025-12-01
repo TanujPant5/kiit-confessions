@@ -106,7 +106,9 @@
         word-wrap: break-word;
         white-space: pre-wrap;
         padding: 0.5rem 0.75rem;
+        padding-bottom: 1.4rem; /* room for reaction pill */
         transition: background-color 0.2s;
+        position: relative; /* for edge reactions */
       }
 
       .my-message {
@@ -132,87 +134,102 @@
         gap: 4px;
       }
 
+      /* WhatsApp-style reaction pill at edge of message */
       .reaction-container {
-        display: flex;
+        position: absolute;
+        bottom: 4px;
+        right: 6px;
+        display: inline-flex;
         align-items: center;
-        gap: 4px;
-        margin-top: 4px;
-        flex-wrap: wrap;
+        gap: 2px;
+        background-color: rgba(0, 0, 0, 0.7);
+        border-radius: 9999px;
+        padding: 1px 4px;
+        font-size: 0.65rem;
+      }
+
+      /* When there are no reactions, hide until hover */
+      .reaction-container.empty {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease-out;
+      }
+
+      .message-bubble:hover .reaction-container.empty {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .reaction-btn,
+      .add-reaction-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        border-radius: 9999px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        font-size: 0.7rem;
+        opacity: 0.9;
       }
 
       .reaction-btn {
-        background: none;
-        border: 1px solid #00e5ff;
-        padding: 2px 8px;
-        border-radius: 12px;
-        color: #00e5ff;
-        opacity: 0.5;
-        cursor: pointer;
-        font-size: 0.75rem;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-      }
-
-      .reaction-btn:hover {
-        opacity: 1;
-        background-color: rgba(0, 229, 255, 0.1);
-        transform: scale(1.05);
-      }
-
-      .reaction-btn.reacted {
-        opacity: 1;
-        background-color: rgba(0, 229, 255, 0.2);
-        border-color: #00e5ff;
-      }
-
-      .reaction-btn.reacted:hover {
-        background-color: rgba(0, 229, 255, 0.3);
+        color: #ff5f87;
       }
 
       .add-reaction-btn {
-        background: none;
-        border: 1px solid #00e5ff;
-        padding: 2px 6px;
-        border-radius: 12px;
-        color: #00e5ff;
-        opacity: 0.3;
-        cursor: pointer;
-        font-size: 0.7rem;
-        transition: all 0.2s ease;
+        color: #ccccff;
       }
 
+      .reaction-btn:hover,
       .add-reaction-btn:hover {
         opacity: 1;
-        background-color: rgba(0, 229, 255, 0.1);
+        transform: translateY(-0.5px);
       }
 
-      .reply-preview {
-        background-color: rgba(0, 229, 255, 0.1);
-        border-left: 3px solid #00e5ff;
-        padding: 0.5rem;
-        margin-bottom: 0.5rem;
-        border-radius: 0.25rem;
-        font-size: 0.75rem;
-        opacity: 0.8;
+      .reaction-btn span {
+        line-height: 1;
+      }
+
+      .edited-marker {
+        font-size: 0.6rem;
+        opacity: 0.5;
+        margin-right: 4px;
+      }
+
+      .nav-item {
         cursor: pointer;
+        padding: 8px 16px;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s ease;
+        opacity: 0.6;
       }
 
-      .reply-preview:hover {
+      .nav-item.active,
+      .nav-item:hover {
         opacity: 1;
-        background-color: rgba(0, 229, 255, 0.15);
+        text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff;
+        border-bottom-color: #00e5ff;
       }
 
-      .reply-preview .reply-author {
-        font-weight: bold;
-        margin-bottom: 0.25rem;
+      .chat-pfp {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid #00e5ff;
+        object-fit: cover;
+        flex-shrink: 0;
       }
 
-      .reply-preview .reply-text {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+      #typingIndicator {
+        height: 1.5rem;
+        font-size: 0.875rem;
+        color: #00e5ff;
+        opacity: 0.7;
+        text-shadow: 0 0 5px #00e5ff;
+        transition: opacity 0.3s ease;
       }
 
       #replyBar {
@@ -301,43 +318,31 @@
         opacity: 1;
       }
 
-      .edited-marker {
-        font-size: 0.6rem;
-        opacity: 0.5;
-        margin-right: 4px;
-      }
-
-      .nav-item {
+      .reply-preview {
+        background-color: rgba(0, 229, 255, 0.1);
+        border-left: 3px solid #00e5ff;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        opacity: 0.8;
         cursor: pointer;
-        padding: 8px 16px;
-        border-bottom: 2px solid transparent;
-        transition: all 0.3s ease;
-        opacity: 0.6;
       }
 
-      .nav-item.active,
-      .nav-item:hover {
+      .reply-preview:hover {
         opacity: 1;
-        text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff;
-        border-bottom-color: #00e5ff;
+        background-color: rgba(0, 229, 255, 0.15);
       }
 
-      .chat-pfp {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        border: 2px solid #00e5ff;
-        object-fit: cover;
-        flex-shrink: 0;
+      .reply-preview .reply-author {
+        font-weight: bold;
+        margin-bottom: 0.25rem;
       }
 
-      #typingIndicator {
-        height: 1.5rem;
-        font-size: 0.875rem;
-        color: #00e5ff;
-        opacity: 0.7;
-        text-shadow: 0 0 5px #00e5ff;
-        transition: opacity 0.3s ease;
+      .reply-preview .reply-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       #contextMenu {
@@ -1378,6 +1383,7 @@
 
           bubble.appendChild(timeElement);
 
+          // WhatsApp-style reaction pill
           const reactionContainer = document.createElement("div");
           reactionContainer.className = "reaction-container";
 
@@ -1398,6 +1404,7 @@
             heartBtn.className = "add-reaction-btn";
             heartBtn.innerHTML = "❤️";
             heartBtn.title = "React with heart";
+            reactionContainer.classList.add("empty");
           }
 
           heartBtn.addEventListener("click", (e) => {
