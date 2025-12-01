@@ -363,6 +363,20 @@
         border-radius: 0.5rem;
         padding: 0.5rem 0;
         min-width: 150px;
+
+        opacity: 0;
+        visibility: hidden;
+        transform: scale(0.95);
+        transform-origin: top right;
+        transition: opacity 0.1s ease-out, visibility 0s linear 0.1s,
+          transform 0.1s ease-out;
+      }
+
+      #contextMenu.is-open {
+        opacity: 1;
+        visibility: visible;
+        transform: scale(1);
+        transition-delay: 0s;
       }
 
       #contextMenu ul {
@@ -402,7 +416,6 @@
 
       /* 1. Modal Backdrop & Content Animation */
       .modal-base {
-        /* This replaces the 'hidden fixed inset-0...' classes */
         position: fixed;
         inset: 0;
         background-color: rgba(0, 0, 0, 0.7);
@@ -411,7 +424,6 @@
         justify-content: center;
         padding: 1rem;
 
-        /* Animation states */
         opacity: 0;
         visibility: hidden;
         transition: opacity 0.2s ease-out, visibility 0s linear 0.2s;
@@ -424,7 +436,6 @@
       }
 
       .modal-content {
-        /* This class goes on the inner <div> of the modal */
         transform: scale(0.95);
         opacity: 0;
         transition: transform 0.2s ease-out, opacity 0.2s ease-out;
@@ -433,24 +444,6 @@
       .modal-base.is-open .modal-content {
         transform: scale(1);
         opacity: 1;
-      }
-
-      /* 2. Dropdown Menu (Kebab) Animation */
-      #contextMenu {
-        /* Add/replace these properties on the existing #contextMenu */
-        opacity: 0;
-        visibility: hidden;
-        transform: scale(0.95);
-        transform-origin: top right;
-        transition: opacity 0.1s ease-out, visibility 0s linear 0.1s,
-          transform 0.1s ease-out;
-      }
-
-      #contextMenu.is-open {
-        opacity: 1;
-        visibility: visible;
-        transform: scale(1);
-        transition-delay: 0s;
       }
 
       /* 3. New Message Animation */
@@ -469,8 +462,6 @@
       .animate-pop-in {
         animation: messagePopIn 0.2s ease-out;
       }
-
-      /* --- END OF ADDED CSS --- */
     </style>
   </head>
 
@@ -696,7 +687,7 @@
         orderBy,
         updateDoc,
         deleteDoc,
-        writeBatch, // --- NEW
+        writeBatch,
         arrayUnion,
         arrayRemove,
       } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -793,10 +784,10 @@
       // --- NEW: Selection State ---
       let isSelectionMode = false;
       let selectedMessages = new Set();
-      let currentContextMenuData = null; // Store dataset of right-clicked message
+      let currentContextMenuData = null;
 
       // --- Reply State ---
-      let replyToMessage = null; // Store message being replied to
+      let replyToMessage = null;
 
       // --- Firebase Initialization ---
       async function initFirebase() {
@@ -827,7 +818,7 @@
           chatCollection = collection(db, "chat");
           typingStatusCollection = collection(db, "typingStatus");
 
-          showPage(currentPage); // This will be 'chat'
+          showPage(currentPage);
         } catch (error) {
           console.error("Error initializing Firebase:", error);
           loading.textContent =
@@ -973,12 +964,10 @@
           try {
             await deleteCallback();
           } catch (error) {
-            // --- UPDATED: Better Error Logging ---
-            console.error("DELETE FAILED:", error); // Log the real error
+            console.error("DELETE FAILED:", error);
             alert(
               "Error: Could not delete message. Check console (F12) for details."
             );
-            // ---
           }
           closeConfirmModal();
           confirmModalYesButton.textContent = "DELETE";
@@ -987,8 +976,12 @@
       }
 
       // --- NEW: Reaction Logic ---
-
-      async function toggleReaction(docId, collectionName, reactionType, hasReacted) {
+      async function toggleReaction(
+        docId,
+        collectionName,
+        reactionType,
+        hasReacted
+      ) {
         if (!db || !currentUserId) return;
 
         try {
@@ -996,12 +989,10 @@
           const reactionField = `reactions.${reactionType}`;
 
           if (hasReacted) {
-            // Remove reaction
             await updateDoc(docRef, {
               [reactionField]: arrayRemove(currentUserId),
             });
           } else {
-            // Add reaction
             await updateDoc(docRef, {
               [reactionField]: arrayUnion(currentUserId),
             });
@@ -1009,11 +1000,11 @@
         } catch (error) {
           console.error("Error toggling reaction:", error);
           console.error("Error details:", error.code, error.message);
-          
+
           if (error.code === "permission-denied") {
             alert(
               "Permission denied: Firebase security rules need to be updated to allow reactions.\n\n" +
-              "Go to Firebase Console > Firestore Database > Rules and update the rules to allow reactions field updates."
+                "Go to Firebase Console > Firestore Database > Rules and update the rules to allow reactions field updates."
             );
           } else {
             alert(`Error adding reaction: ${error.message}`);
@@ -1036,7 +1027,6 @@
           });
           return `${names[0]} and ${names[1]} reacted`;
         }
-        // More than 2
         const hasCurrentUser = userIds.includes(currentUserId);
         if (hasCurrentUser) {
           return `You and ${userIds.length - 1} others reacted`;
@@ -1045,27 +1035,21 @@
       }
 
       // --- NEW: Dropdown Menu & Selection Logic ---
-
       function showDropdownMenu(event, data) {
-        // This function now opens the menu relative to the clicked button
-        event.stopPropagation(); // Stop click from bubbling up to document
-        currentContextMenuData = data; // Store data from the bubble
+        event.stopPropagation();
+        currentContextMenuData = data;
 
-        // Check for 5-min edit window
         const now = Date.now();
         const messageTime = parseInt(currentContextMenuData.timestamp, 10);
-        const isEditable = now - messageTime < 300000; // 5 mins in ms
+        const isEditable = now - messageTime < 300000;
         const isMine = currentContextMenuData.isMine === "true";
 
         menuEdit.style.display = isEditable && isMine ? "block" : "none";
         menuDelete.style.display = isMine ? "block" : "none";
-        menuReply.style.display = "block"; // Reply always available
+        menuReply.style.display = "block";
 
-        // Position and show menu
         const rect = event.currentTarget.getBoundingClientRect();
-        contextMenu.style.top = `${rect.bottom + 2}px`; // Position below button
-
-        // Right-align the menu
+        contextMenu.style.top = `${rect.bottom + 2}px`;
         const menuWidth = contextMenu.offsetWidth || 150;
         contextMenu.style.left = `${rect.right - menuWidth}px`;
 
@@ -1074,7 +1058,6 @@
 
       function hideDropdownMenu() {
         contextMenu.classList.remove("is-open");
-        // currentContextMenuData = null; // <-- This was the bug
       }
 
       function handleMessageClick(bubble) {
@@ -1083,7 +1066,7 @@
         const docId = bubble.dataset.id;
         const isMine = bubble.dataset.isMine === "true";
 
-        if (!isMine) return; // Can only select own messages
+        if (!isMine) return;
 
         if (selectedMessages.has(docId)) {
           selectedMessages.delete(docId);
@@ -1099,10 +1082,9 @@
       function enterSelectionMode() {
         isSelectionMode = true;
         selectionBar.classList.remove("hidden");
-        chatForm.classList.add("hidden"); // Hide input forms
+        chatForm.classList.add("hidden");
         confessionForm.classList.add("hidden");
 
-        // Add the right-clicked message to selection
         if (currentContextMenuData) {
           const docId = currentContextMenuData.id;
           selectedMessages.add(docId);
@@ -1121,7 +1103,6 @@
         selectionBar.classList.add("hidden");
         selectedMessages.clear();
 
-        // --- FIX: Manually show the correct form ---
         if (currentPage === "chat") {
           chatForm.classList.remove("hidden");
           chatForm.classList.add("flex");
@@ -1129,9 +1110,7 @@
           confessionForm.classList.remove("hidden");
           confessionForm.classList.add("flex");
         }
-        // showPage(currentPage); // <-- THIS WAS THE BUG
 
-        // Remove all selected-message classes
         document.querySelectorAll(".selected-message").forEach((el) => {
           el.classList.remove("selected-message");
         });
@@ -1142,7 +1121,6 @@
         selectionCount.textContent = `${count} selected`;
 
         if (count === 0 && isSelectionMode) {
-          // Only exit if we were already in selection mode
           exitSelectionMode();
         }
       }
@@ -1151,7 +1129,6 @@
         const count = selectedMessages.size;
         if (count === 0) return;
 
-        // Show a custom confirmation
         confirmModalText.textContent = `Are you sure you want to permanently delete these ${count} messages?`;
         showConfirmModal(async () => {
           const batch = writeBatch(db);
@@ -1163,7 +1140,7 @@
           await batch.commit();
           exitSelectionMode();
           confirmModalText.textContent =
-            "Are you sure you want to permanently delete this message?"; // Reset modal text
+            "Are you sure you want to permanently delete this message?";
         });
       }
 
@@ -1171,12 +1148,10 @@
       function showPage(page) {
         currentPage = page;
 
-        // --- FIX: Check if selection mode is on ---
         if (isSelectionMode) {
           exitSelectionMode();
         }
 
-        // Cancel reply mode when changing pages
         cancelReplyMode();
 
         unsubscribeConfessions();
@@ -1188,7 +1163,6 @@
           navConfessions.classList.add("active");
           navChat.classList.remove("active");
           if (!isSelectionMode) {
-            // Check again in case exitSelectionMode ran
             confessionForm.classList.add("flex");
             confessionForm.classList.remove("hidden");
           }
@@ -1200,7 +1174,6 @@
           navChat.classList.add("active");
           navConfessions.classList.remove("active");
           if (!isSelectionMode) {
-            // Check again
             chatForm.classList.add("flex");
             chatForm.classList.remove("hidden");
           }
@@ -1369,16 +1342,14 @@
             isMine ? "my-message" : ""
           } ${isConsecutive ? "mt-0.5" : "mt-2"}`;
 
-          // --- NEW: Add dataset attributes for context menu ---
           bubble.dataset.id = docInstance.id;
           bubble.dataset.text = text;
           bubble.dataset.isMine = isMine;
-          bubble.dataset.userid = docUserId; // Store the userId
+          bubble.dataset.userId = docUserId;
           bubble.dataset.timestamp = data.timestamp
             ? data.timestamp.toMillis()
             : 0;
 
-          // --- NEW: Add selected class if in selection set ---
           if (isSelectionMode && selectedMessages.has(docInstance.id)) {
             bubble.classList.add("selected-message");
           }
@@ -1401,37 +1372,39 @@
             bubble.appendChild(headerElement);
           }
 
-          // --- NEW: Show reply preview if this message is a reply ---
           if (data.replyTo) {
             const replyPreview = document.createElement("div");
             replyPreview.className = "reply-preview";
-            
+
             const replyAuthorEl = document.createElement("div");
             replyAuthorEl.className = "reply-author";
             const replyToProfile = userProfiles[data.replyTo.userId] || {};
             replyAuthorEl.textContent = replyToProfile.username || "Anonymous";
-            
+
             const replyTextEl = document.createElement("div");
             replyTextEl.className = "reply-text";
             replyTextEl.textContent = data.replyTo.text;
-            
+
             replyPreview.appendChild(replyAuthorEl);
             replyPreview.appendChild(replyTextEl);
-            
-            // Click to scroll to original message
+
             replyPreview.addEventListener("click", () => {
               const originalBubble = document.querySelector(
                 `.message-bubble[data-id="${data.replyTo.messageId}"]`
               );
               if (originalBubble) {
-                originalBubble.scrollIntoView({ behavior: "smooth", block: "center" });
-                originalBubble.style.backgroundColor = "rgba(0, 229, 255, 0.3)";
+                originalBubble.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+                originalBubble.style.backgroundColor =
+                  "rgba(0, 229, 255, 0.3)";
                 setTimeout(() => {
                   originalBubble.style.backgroundColor = "";
                 }, 1000);
               }
             });
-            
+
             bubble.appendChild(replyPreview);
           }
 
@@ -1454,37 +1427,28 @@
           timeText.textContent = time;
           timeElement.appendChild(timeText);
 
-          // --- UPDATED: Add Kebab Menu Button ---
-          if (isMine) {
-            const kebabBtn = document.createElement("button");
-            kebabBtn.className = "kebab-btn";
-            // SVG for three vertical dots
-            kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          // Kebab menu for ALL messages (Edit/Delete restricted in menu logic)
+          const kebabBtn = document.createElement("button");
+          kebabBtn.className = "kebab-btn";
+          kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
                     </svg>`;
-
-            kebabBtn.addEventListener("click", (e) => {
-              showDropdownMenu(e, bubble.dataset);
-            });
-
-            timeElement.appendChild(kebabBtn);
-          }
+          kebabBtn.addEventListener("click", (e) => {
+            showDropdownMenu(e, bubble.dataset);
+          });
+          timeElement.appendChild(kebabBtn);
 
           bubble.appendChild(timeElement);
 
-          // --- NEW: Add Reactions Section ---
           const reactionContainer = document.createElement("div");
           reactionContainer.className = "reaction-container";
 
-          // Get reactions from data
           const reactions = data.reactions || {};
           const heartReactions = reactions.heart || [];
           const hasReacted = heartReactions.includes(currentUserId);
 
-          // Single heart button that shows count if any reactions exist
           const heartBtn = document.createElement("button");
-          heartBtn.className = hasReacted ? "reaction-btn reacted" : "add-reaction-btn";
-          
+
           if (heartReactions.length > 0) {
             heartBtn.className = "reaction-btn";
             if (hasReacted) {
@@ -1505,32 +1469,25 @@
 
           reactionContainer.appendChild(heartBtn);
           bubble.appendChild(reactionContainer);
-          // --- END NEW ---
 
           alignWrapper.appendChild(bubble);
           feedContainer.appendChild(alignWrapper);
         });
 
-        // --- NEW: Animate last bubble if it's new ---
         const bubbles = feedContainer.querySelectorAll(".message-bubble");
         const lastBubble = bubbles[bubbles.length - 1];
 
-        // check if lastBubble exists and hasn't been animated yet
         if (lastBubble && !lastBubble.hasAttribute("data-animated")) {
           const now = Date.now();
           const messageTime = parseInt(lastBubble.dataset.timestamp, 10);
 
-          // Only animate if the message is very new (posted in the last 3s)
           if (now - messageTime < 3000) {
             lastBubble.classList.add("animate-pop-in");
           }
-          lastBubble.setAttribute("data-animated", "true"); // Prevent re-animation
+          lastBubble.setAttribute("data-animated", "true");
         }
-        // --- END NEW ---
 
-        // Auto-scroll to bottom
         if (!isSelectionMode) {
-          // Don't auto-scroll when selecting
           feedContainer.scrollTop = feedContainer.scrollHeight;
         }
       }
@@ -1546,8 +1503,7 @@
               timestamp: serverTimestamp(),
               userId: currentUserId,
             };
-            
-            // Add reply data if replying to a message
+
             if (replyToMessage) {
               messageData.replyTo = {
                 messageId: replyToMessage.id,
@@ -1555,7 +1511,7 @@
                 text: replyToMessage.text,
               };
             }
-            
+
             await addDoc(confessionsCollection, messageData);
             confessionInput.value = "";
             cancelReplyMode();
@@ -1576,8 +1532,7 @@
               timestamp: serverTimestamp(),
               userId: currentUserId,
             };
-            
-            // Add reply data if replying to a message
+
             if (replyToMessage) {
               messageData.replyTo = {
                 messageId: replyToMessage.id,
@@ -1585,7 +1540,7 @@
                 text: replyToMessage.text,
               };
             }
-            
+
             await addDoc(chatCollection, messageData);
             chatInput.value = "";
             cancelReplyMode();
@@ -1612,27 +1567,21 @@
       confirmModalNoButton.addEventListener("click", closeConfirmModal);
       confirmModalYesButton.addEventListener("click", handleDelete);
 
-      // --- UPDATED: Context Menu & Selection Listeners ---
-
-      // Handle left-clicks on the feed (for selection mode)
+      // --- Context Menu & Selection Listeners ---
       feedContainer.addEventListener("click", (e) => {
         if (!isSelectionMode) return;
-
-        // Don't trigger selection if clicking the kebab button
         if (e.target.closest(".kebab-btn")) return;
 
         const bubble = e.target.closest(".message-bubble");
         if (!bubble) return;
 
-        e.preventDefault(); // Prevent any other click behavior
+        e.preventDefault();
         handleMessageClick(bubble);
       });
 
-      // Global click to hide dropdown menu
       document.addEventListener(
         "click",
         (e) => {
-          // Hide if click is not on the menu AND not on a kebab button
           if (
             !contextMenu.contains(e.target) &&
             !e.target.closest(".kebab-btn")
@@ -1641,9 +1590,8 @@
           }
         },
         true
-      ); // Use capture phase
+      );
 
-      // Context menu button clicks (no change, they target the global menu)
       menuEdit.addEventListener("click", () => {
         if (currentContextMenuData) {
           showEditModal(
@@ -1657,9 +1605,9 @@
 
       menuDelete.addEventListener("click", () => {
         if (currentContextMenuData) {
-          const docId = currentContextMenuData.id; // <-- CAPTURE THE ID HERE
+          const docId = currentContextMenuData.id;
           showConfirmModal(async () => {
-            await deleteDoc(doc(db, currentPage, docId)); // <-- USE THE CAPTURED ID
+            await deleteDoc(doc(db, currentPage, docId));
           });
         }
         hideDropdownMenu();
@@ -1674,17 +1622,14 @@
 
       menuSelect.addEventListener("click", () => {
         enterSelectionMode();
-        hideDropdownMenu(); // enterSelectionMode will add the first item
+        hideDropdownMenu();
       });
 
-      // Selection bar button clicks
       selectionCancel.addEventListener("click", exitSelectionMode);
       selectionDelete.addEventListener("click", handleMultiDelete);
 
-      // Reply bar button click
       cancelReply.addEventListener("click", cancelReplyMode);
 
-      // Handle Enter/Shift+Enter for Confessions
       confessionInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
@@ -1694,7 +1639,6 @@
         }
       });
 
-      // Handle Enter/Shift+Enter for Chat
       chatInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
@@ -1704,23 +1648,31 @@
         }
       });
 
-      // --- Reply Functions ---
+      // --- Reply Functions (FIXED) ---
       function startReplyMode(messageData) {
+        // messageData comes from bubble.dataset
+        let repliedUserId = messageData.userId || null;
+
+        if (!repliedUserId && messageData.isMine === "true") {
+          repliedUserId = currentUserId;
+        }
+
         replyToMessage = {
           id: messageData.id,
-          userId: messageData.userid || messageData.isMine === "true" ? currentUserId : null,
+          userId: repliedUserId,
           text: messageData.text,
         };
 
-        // Get username from profiles
-        const profile = userProfiles[replyToMessage.userId] || {};
+        const profile =
+          repliedUserId && userProfiles[repliedUserId]
+            ? userProfiles[repliedUserId]
+            : {};
         const username = profile.username || "Anonymous";
 
         replyAuthor.textContent = `Replying to ${username}`;
         replyText.textContent = replyToMessage.text;
         replyBar.classList.add("show");
 
-        // Focus the appropriate input
         if (currentPage === "chat") {
           chatInput.focus();
         } else {
