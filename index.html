@@ -274,25 +274,22 @@
         background-color: rgba(0, 229, 255, 0.1);
       }
 
-      /* NEW: floating reply arrow outside bubble */
+      /* Message row that holds bubble + arrow */
       .message-wrapper {
-        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
       }
 
+      /* Reply arrow button beside message box */
       .reply-floating-btn {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        right: -24px; /* default: others' messages → right side */
-        left: auto;
-
         background: none;
         border: none;
         color: #00e5ff;
-        opacity: 0;
+        opacity: 0.6;
         cursor: pointer;
         padding: 2px 4px;
-        border-radius: 50%;
+        border-radius: 9999px;
         font-size: 0.9rem;
         display: flex;
         align-items: center;
@@ -300,13 +297,6 @@
         text-shadow: 0 0 5px #00e5ff;
       }
 
-      /* For my messages, put arrow on left */
-      .reply-floating-btn.my-side {
-        left: -24px;
-        right: auto;
-      }
-
-      /* Show arrow on hover */
       .message-wrapper:hover .reply-floating-btn {
         opacity: 1;
       }
@@ -659,7 +649,6 @@
     </div>
 
     <script type="module">
-      // Firebase imports
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
       import {
         getAuth,
@@ -772,7 +761,6 @@
 
       let replyToMessage = null;
 
-      // Init Firebase
       async function initFirebase() {
         try {
           const app = initializeApp(firebaseConfig);
@@ -781,7 +769,6 @@
 
           const userCredential = await signInAnonymously(auth);
           currentUserId = userCredential.user.uid;
-          console.log("Firebase initialized, user:", currentUserId);
 
           listenForUserProfiles();
           await loadUserProfile();
@@ -1279,10 +1266,15 @@
           const isConsecutive = docUserId && docUserId === lastUserId;
           lastUserId = docUserId;
 
+          // Row aligned to left/right
           const alignWrapper = document.createElement("div");
-          alignWrapper.className = `message-wrapper flex w-full ${
+          alignWrapper.className = `flex w-full ${
             isMine ? "justify-end" : "justify-start"
           }`;
+
+          // Inner row: bubble + reply arrow
+          const row = document.createElement("div");
+          row.className = "message-wrapper";
 
           const bubble = document.createElement("div");
           bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${
@@ -1374,7 +1366,6 @@
           timeText.textContent = time;
           timeElement.appendChild(timeText);
 
-          // kebab for edit/delete/select
           const kebabBtn = document.createElement("button");
           kebabBtn.className = "kebab-btn";
           kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -1417,23 +1408,28 @@
           reactionContainer.appendChild(heartBtn);
           bubble.appendChild(reactionContainer);
 
-          // floating reply arrow outside message box
+          // Reply arrow: left for my messages, right for others
           const replyBtn = document.createElement("button");
           replyBtn.className = "reply-floating-btn";
           replyBtn.innerHTML = "↩";
           replyBtn.title = "Reply";
-
-          if (isMine) {
-            replyBtn.classList.add("my-side");
-          }
 
           replyBtn.addEventListener("click", (e) => {
             e.stopPropagation();
             startReplyMode(bubble.dataset);
           });
 
-          alignWrapper.appendChild(replyBtn);
-          alignWrapper.appendChild(bubble);
+          if (isMine) {
+            // my messages: [↩][bubble]
+            row.appendChild(replyBtn);
+            row.appendChild(bubble);
+          } else {
+            // others: [bubble][↩]
+            row.appendChild(bubble);
+            row.appendChild(replyBtn);
+          }
+
+          alignWrapper.appendChild(row);
           feedContainer.appendChild(alignWrapper);
         });
 
@@ -1513,7 +1509,6 @@
         }
       }
 
-      // Event listeners
       confessionForm.addEventListener("submit", postConfession);
       chatForm.addEventListener("submit", postChatMessage);
       navConfessions.addEventListener("click", () => showPage("confessions"));
@@ -1635,7 +1630,6 @@
         replyBar.classList.remove("show");
       }
 
-      // Start app
       initFirebase();
     </script>
   </body>
