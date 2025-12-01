@@ -17,58 +17,40 @@
       body {
         font-family: "Inter", sans-serif;
         background-color: #0a0a1a;
-        /* Dark blue/black */
         color: #00e5ff;
-        /* Neon blue */
         text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff;
       }
 
-      /* Helper for glowing effect */
       .glow {
         text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff, 0 0 15px #00e5ff;
       }
 
-      /* Neon Borders */
       .neon-border {
         border: 2px solid #00e5ff;
         box-shadow: 0 0 10px #00e5ff, 0 0 15px #00e5ff inset;
         border-radius: 0.5rem;
-        /* 8px */
       }
 
-      /* Custom Scrollbar */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-
-      ::-webkit-scrollbar-track {
-        background: #0a0a1a;
-      }
-
+      /* Scrollbar */
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #0a0a1a; }
       ::-webkit-scrollbar-thumb {
         background: #00e5ff;
         border-radius: 4px;
         box-shadow: 0 0 5px #00e5ff;
       }
 
-      /* Textarea and Button Styling */
-      textarea,
-      button {
+      /* Inputs & Buttons */
+      textarea, button, input[type="text"] {
         font-family: "Inter", sans-serif;
         background-color: rgba(0, 229, 255, 0.05);
-        /* Faint blue */
         border: 1px solid #00e5ff;
         color: #00e5ff;
         text-shadow: 0 0 5px #00e5ff;
         transition: all 0.3s ease;
       }
 
-      textarea::placeholder {
-        color: #00e5ff;
-        opacity: 0.5;
-      }
-
-      textarea:focus {
+      textarea:focus, input[type="text"]:focus {
         outline: none;
         background-color: rgba(0, 229, 255, 0.1);
         box-shadow: 0 0 10px #00e5ff;
@@ -81,487 +63,239 @@
         box-shadow: 0 0 15px #00e5ff;
       }
 
-      /* Style for text input */
-      input[type="text"] {
-        font-family: "Inter", sans-serif;
-        background-color: rgba(0, 229, 255, 0.05);
-        /* Faint blue */
-        border: 1px solid #00e5ff;
-        color: #00e5ff;
-        text-shadow: 0 0 5px #00e5ff;
-        transition: all 0.3s ease;
+      textarea::placeholder, input[type="text"]::placeholder {
+        color: #00e5ff; opacity: 0.5;
       }
 
-      input[type="text"]::placeholder {
-        color: #00e5ff;
-        opacity: 0.5;
-      }
-
-      input[type="text"]:focus {
-        outline: none;
-        background-color: rgba(0, 229, 255, 0.1);
-        box-shadow: 0 0 10px #00e5ff;
-      }
-
-      /* Feed container */
+      /* Feed */
       #feedContainer {
         background-color: rgba(0, 0, 0, 0.3);
         overflow-y: auto;
         scroll-behavior: smooth;
       }
 
-      /* Individual message bubbles */
+      /* Message Bubbles */
       .message-bubble {
         background-color: rgba(30, 30, 50, 0.7);
-        /* Dark grey-blue */
         border: 1px solid #007a8a;
-        /* Darker cyan */
         text-shadow: 0 0 3px #00e5ff;
         word-wrap: break-word;
-        /* Ensure long words break */
         white-space: pre-wrap;
-        /* Respect newlines */
-        padding: 0.5rem 0.75rem;
-        /* Tighter padding */
+        padding: 0.75rem;
+        padding-bottom: 2rem; /* Extra space for bottom bar */
+        position: relative; /* For absolute positioning of interactions */
         transition: background-color 0.2s;
       }
 
-      /* "My" message bubbles */
       .my-message {
         background-color: rgba(0, 50, 100, 0.8);
-        /* Dark blue */
         border: 1px solid #00e5ff;
-        /* Bright cyan */
         align-self: flex-end;
       }
 
-      /* NEW: Selected message styling */
       .selected-message {
         background-color: rgba(0, 229, 255, 0.2) !important;
         border-color: #00e5ff !important;
       }
 
-      /* Timestamp styling */
-      .timestamp {
-        font-size: 0.65rem;
-        /* 10px */
-        color: #00e5ff;
-        opacity: 0.6;
-        text-shadow: none;
-        margin-top: 2px;
-        /* Tighter margin */
+      /* --- NEW: Like Button Styling --- */
+      .reaction-container {
+        position: absolute;
+        bottom: 4px;
+        right: 8px;
         display: flex;
-        /* NEW: for edit/delete buttons */
-        justify-content: flex-end;
-        /* NEW */
         align-items: center;
-        /* NEW */
-        gap: 4px;
-        /* NEW */
+        gap: 6px;
       }
 
-      /* NEW: Kebab button styling */
-      .kebab-btn {
+      .like-btn {
         background: none;
         border: none;
-        padding: 0 4px;
-        margin: 0;
-        color: #00e5ff;
-        opacity: 0.5;
+        padding: 4px;
         cursor: pointer;
-        border-radius: 4px;
-      }
-
-      .kebab-btn:hover {
-        opacity: 1;
-        background-color: rgba(0, 229, 255, 0.1);
-      }
-
-      /* NEW: Edited marker styling */
-      .edited-marker {
-        font-size: 0.6rem;
-        opacity: 0.5;
-        margin-right: 4px;
-      }
-
-      /* Navigation styling */
-      .nav-item {
-        cursor: pointer;
-        padding: 8px 16px;
-        border-bottom: 2px solid transparent;
-        transition: all 0.3s ease;
-        opacity: 0.6;
-      }
-
-      .nav-item.active,
-      .nav-item:hover {
-        opacity: 1;
-        text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff;
-        border-bottom-color: #00e5ff;
-      }
-
-      /* Profile picture in chat */
-      .chat-pfp {
-        width: 32px;
-        /* Smaller */
-        height: 32px;
-        /* Smaller */
-        border-radius: 50%;
-        border: 2px solid #00e5ff;
-        object-fit: cover;
-        flex-shrink: 0;
-      }
-
-      /* Typing indicator styling */
-      #typingIndicator {
-        height: 1.5rem;
-        /* 24px */
-        font-size: 0.875rem;
-        /* 14px */
-        color: #00e5ff;
-        opacity: 0.7;
-        text-shadow: 0 0 5px #00e5ff;
-        transition: opacity 0.3s ease;
-      }
-
-      /* NEW: Custom Context Menu */
-      #contextMenu {
-        position: fixed;
-        z-index: 1000;
-        background-color: #0a0a1a;
-        border: 2px solid #00e5ff;
-        box-shadow: 0 0 10px #00e5ff;
-        border-radius: 0.5rem;
-        padding: 0.5rem 0;
-        min-width: 150px;
-      }
-
-      #contextMenu ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-
-      #contextMenu li {
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-
-      #contextMenu li:hover {
-        background-color: #00e5ff;
-        color: #0a0a1a;
-        text-shadow: none;
-      }
-
-      #contextMenu li.separator {
-        height: 1px;
-        background-color: #00e5ff;
-        opacity: 0.3;
-        margin: 0.25rem 0;
-        padding: 0;
-      }
-
-      /* NEW: Selection Bar */
-      #selectionBar {
-        background-color: rgba(0, 50, 100, 0.9);
-        border-top: 2px solid #00e5ff;
-        padding: 0.5rem 1rem;
-      }
-
-      /* --- ADDED FOR ANIMATIONS --- */
-
-      /* 1. Modal Backdrop & Content Animation */
-      .modal-base {
-        /* This replaces the 'hidden fixed inset-0...' classes */
-        position: fixed;
-        inset: 0;
-        background-color: rgba(0, 0, 0, 0.7);
         display: flex;
         align-items: center;
-        justify-content: center;
-        padding: 1rem;
+        transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        color: #00e5ff;
+        opacity: 0.5; /* Default unliked state */
+      }
 
-        /* Animation states */
-        opacity: 0;
-        visibility: hidden;
+      .like-btn:hover {
+        background: transparent;
+        transform: scale(1.2);
+        opacity: 0.8;
+        box-shadow: none;
+      }
+
+      /* State when liked */
+      .like-btn.liked {
+        opacity: 1;
+        filter: drop-shadow(0 0 5px #00e5ff);
+      }
+
+      .like-btn.liked svg {
+        fill: #00e5ff; /* Fill the heart */
+      }
+
+      .like-count {
+        font-size: 0.7rem;
+        opacity: 0.8;
+        font-weight: bold;
+        min-width: 10px;
+        text-align: center;
+      }
+
+      /* Timestamp & Kebab Area */
+      .meta-area {
+        position: absolute;
+        bottom: 6px;
+        left: 10px;
+        font-size: 0.65rem;
+        opacity: 0.6;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .kebab-btn {
+        background: none; border: none; padding: 0 4px;
+        color: #00e5ff; opacity: 0.5; cursor: pointer;
+      }
+      .kebab-btn:hover { opacity: 1; background: transparent; box-shadow: none; }
+      
+      .edited-marker { font-size: 0.6rem; opacity: 0.5; margin-right: 4px; }
+
+      /* Modals & Animations */
+      .modal-base {
+        position: fixed; inset: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex; align-items: center; justify-content: center;
+        padding: 1rem;
+        opacity: 0; visibility: hidden;
         transition: opacity 0.2s ease-out, visibility 0s linear 0.2s;
       }
-
-      .modal-base.is-open {
-        opacity: 1;
-        visibility: visible;
-        transition-delay: 0s;
-      }
-
+      .modal-base.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
       .modal-content {
-        /* This class goes on the inner <div> of the modal */
-        transform: scale(0.95);
-        opacity: 0;
+        transform: scale(0.95); opacity: 0;
         transition: transform 0.2s ease-out, opacity 0.2s ease-out;
       }
+      .modal-base.is-open .modal-content { transform: scale(1); opacity: 1; }
 
-      .modal-base.is-open .modal-content {
-        transform: scale(1);
-        opacity: 1;
-      }
-
-      /* 2. Dropdown Menu (Kebab) Animation */
+      /* Context Menu */
       #contextMenu {
-        /* Add/replace these properties on the existing #contextMenu */
-        opacity: 0;
-        visibility: hidden;
-        transform: scale(0.95);
-        transform-origin: top right;
-        transition: opacity 0.1s ease-out, visibility 0s linear 0.1s,
-          transform 0.1s ease-out;
+        position: fixed; z-index: 1000;
+        background-color: #0a0a1a; border: 2px solid #00e5ff;
+        box-shadow: 0 0 10px #00e5ff; border-radius: 0.5rem;
+        min-width: 150px;
+        opacity: 0; visibility: hidden; transform: scale(0.95);
+        transition: all 0.1s ease-out;
       }
-
-      #contextMenu.is-open {
-        opacity: 1;
-        visibility: visible;
-        transform: scale(1);
-        transition-delay: 0s;
-      }
-
-      /* 3. New Message Animation */
+      #contextMenu.is-open { opacity: 1; visibility: visible; transform: scale(1); }
+      #contextMenu li { padding: 0.5rem 1rem; cursor: pointer; }
+      #contextMenu li:hover { background-color: #00e5ff; color: #0a0a1a; text-shadow: none; }
+      
       @keyframes messagePopIn {
-        from {
-          opacity: 0;
-          transform: translateY(5px);
-        }
-
-        to {
-          opacity: 1;
-          transform: translateY(0px);
-        }
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0px); }
       }
-
-      .animate-pop-in {
-        animation: messagePopIn 0.2s ease-out;
-      }
-
-      /* --- END OF ADDED CSS --- */
+      .animate-pop-in { animation: messagePopIn 0.2s ease-out; }
     </style>
   </head>
 
   <body class="flex flex-col bg-[#0a0a1a]" style="height: 100dvh">
-    <header
-      class="flex justify-between items-center p-2 sm:p-4 border-b-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20 gap-2 sm:gap-4"
-    >
+    <header class="flex justify-between items-center p-2 sm:p-4 border-b-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20 gap-2 sm:gap-4">
       <h1 class="text-xl sm:text-3xl font-bold glow">KONVO</h1>
-
       <div class="flex items-center gap-2 sm:gap-4">
         <nav class="flex text-base sm:text-lg gap-2 sm:gap-4">
           <div id="navConfessions" class="nav-item">CONFESSIONS</div>
           <div id="navChat" class="nav-item active">CHAT</div>
         </nav>
-        <button
-          id="profileButton"
-          class="p-2 rounded-full hover:bg-gray-700 transition"
-          title="Edit Profile"
-        >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            ></path>
-          </svg>
+        <button id="profileButton" class="p-2 rounded-full hover:bg-gray-700 transition" title="Edit Profile">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
         </button>
       </div>
     </header>
 
     <main class="flex-1 flex flex-col overflow-hidden">
-      <div
-        id="feedContainer"
-        class="flex-1 flex flex-col p-2 sm:p-4 gap-2 overflow-y-auto"
-      >
+      <div id="feedContainer" class="flex-1 flex flex-col p-2 sm:p-4 gap-2 overflow-y-auto">
         <div id="loading" class="text-center p-4">CONNECTING TO GRID...</div>
       </div>
 
-      <div id="selectionBar" class="hidden flex justify-between items-center">
-        <span id="selectionCount" class="text-lg">0 selected</span>
+      <div id="selectionBar" class="hidden flex justify-between items-center bg-[#003264] border-t-2 border-[#00e5ff] p-2">
+        <span id="selectionCount" class="text-lg ml-4">0 selected</span>
         <div class="flex gap-4">
           <button id="selectionCancel" class="font-bold">CANCEL</button>
-          <button id="selectionDelete" class="font-bold text-red-400">
-            DELETE
-          </button>
+          <button id="selectionDelete" class="font-bold text-red-400">DELETE</button>
         </div>
       </div>
 
       <div id="typingIndicator" class="px-4 h-6 text-sm opacity-70">&nbsp;</div>
 
-      <form
-        id="confessionForm"
-        class="hidden gap-3 p-2 sm:p-4 border-t-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20"
-      >
-        <textarea
-          id="confessionInput"
-          rows="2"
-          class="flex-1 p-3 rounded-lg resize-none focus:outline-none"
-          placeholder="TYPE YOUR CONFESSION..."
-          required
-        ></textarea>
-        <button
-          id="confessionButton"
-          type="submit"
-          class="px-6 py-2 rounded-lg font-bold"
-        >
-          CONFESS
-        </button>
+      <form id="confessionForm" class="hidden gap-3 p-2 sm:p-4 border-t-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20">
+        <textarea id="confessionInput" rows="2" class="flex-1 p-3 rounded-lg resize-none" placeholder="TYPE YOUR CONFESSION..." required></textarea>
+        <button id="confessionButton" type="submit" class="px-6 py-2 rounded-lg font-bold">CONFESS</button>
       </form>
 
-      <form
-        id="chatForm"
-        class="flex gap-3 p-2 sm:p-4 border-t-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20"
-      >
-        <textarea
-          id="chatInput"
-          rows="2"
-          class="flex-1 p-3 rounded-lg resize-none focus:outline-none"
-          placeholder="TYPE YOUR MESSAGE..."
-          required
-        ></textarea>
-        <button
-          id="chatButton"
-          type="submit"
-          class="px-6 py-2 rounded-lg font-bold"
-        >
-          SEND
-        </button>
+      <form id="chatForm" class="flex gap-3 p-2 sm:p-4 border-t-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20">
+        <textarea id="chatInput" rows="2" class="flex-1 p-3 rounded-lg resize-none" placeholder="TYPE YOUR MESSAGE..." required></textarea>
+        <button id="chatButton" type="submit" class="px-6 py-2 rounded-lg font-bold">SEND</button>
       </form>
     </main>
 
     <div id="profileModal" class="modal-base">
-      <div
-        class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4"
-      >
+      <div class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
         <h2 class="text-2xl font-bold glow">EDIT PROFILE</h2>
-
         <div class="flex flex-col gap-2">
-          <label for="modalUsernameInput" class="text-sm opacity-70"
-            >Username</label
-          >
-          <input
-            type="text"
-            id="modalUsernameInput"
-            placeholder="SET YOUR USERNAME..."
-            class="w-full p-3 rounded-lg focus:outline-none"
-          />
+          <label class="text-sm opacity-70">Username</label>
+          <input type="text" id="modalUsernameInput" placeholder="SET YOUR USERNAME..." class="w-full p-3 rounded-lg focus:outline-none" />
         </div>
-
         <div class="flex gap-4 mt-4">
-          <button
-            id="modalCloseButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold"
-          >
-            CANCEL
-          </button>
-          <button
-            id="modalSaveButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold"
-          >
-            SAVE
-          </button>
+          <button id="modalCloseButton" class="flex-1 px-6 py-2 rounded-lg font-bold">CANCEL</button>
+          <button id="modalSaveButton" class="flex-1 px-6 py-2 rounded-lg font-bold">SAVE</button>
         </div>
       </div>
     </div>
 
     <div id="editModal" class="modal-base">
-      <div
-        class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4"
-      >
+      <div class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
         <h2 class="text-2xl font-bold glow">EDIT MESSAGE</h2>
-
-        <textarea
-          id="modalEditTextArea"
-          rows="4"
-          class="w-full p-3 rounded-lg resize-none focus:outline-none"
-        ></textarea>
-
+        <textarea id="modalEditTextArea" rows="4" class="w-full p-3 rounded-lg resize-none focus:outline-none"></textarea>
         <div class="flex gap-4 mt-4">
-          <button
-            id="editModalCancelButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold"
-          >
-            CANCEL
-          </button>
-          <button
-            id="editModalSaveButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold"
-          >
-            SAVE
-          </button>
+          <button id="editModalCancelButton" class="flex-1 px-6 py-2 rounded-lg font-bold">CANCEL</button>
+          <button id="editModalSaveButton" class="flex-1 px-6 py-2 rounded-lg font-bold">SAVE</button>
         </div>
       </div>
     </div>
 
     <div id="confirmModal" class="modal-base">
-      <div
-        class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4"
-      >
+      <div class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4">
         <h2 class="text-xl font-bold glow">DELETE MESSAGE</h2>
-        <p id="confirmModalText" class="text-base opacity-90">
-          Are you sure you want to permanently delete this message?
-        </p>
+        <p id="confirmModalText" class="text-base opacity-90">Are you sure?</p>
         <div class="flex gap-4 mt-4">
-          <button
-            id="confirmModalNoButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold"
-          >
-            CANCEL
-          </button>
-          <button
-            id="confirmModalYesButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold bg-red-800 border-red-500 hover:bg-red-600"
-          >
-            DELETE
-          </button>
+          <button id="confirmModalNoButton" class="flex-1 px-6 py-2 rounded-lg font-bold">CANCEL</button>
+          <button id="confirmModalYesButton" class="flex-1 px-6 py-2 rounded-lg font-bold bg-red-800 border-red-500 hover:bg-red-600">DELETE</button>
         </div>
       </div>
     </div>
 
-    <div id="contextMenu" class="">
+    <div id="contextMenu">
       <ul>
         <li id="menuEdit">Edit</li>
         <li id="menuDelete">Delete</li>
-        <li class="separator"></li>
+        <li style="height:1px; background:#00e5ff; opacity:0.3; margin:0.25rem 0;"></li>
         <li id="menuSelect">Select</li>
       </ul>
     </div>
 
     <script type="module">
-      // Import Firebase modules
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-      import {
-        getAuth,
-        signInAnonymously,
-      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-      import {
-        getFirestore,
-        collection,
-        addDoc,
-        onSnapshot,
-        query,
-        serverTimestamp,
-        doc,
-        setDoc,
-        getDoc,
-        orderBy,
-        updateDoc,
-        deleteDoc,
-        writeBatch, // --- NEW
+      import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import { 
+        getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, 
+        doc, setDoc, getDoc, orderBy, updateDoc, deleteDoc, writeBatch,
+        arrayUnion, arrayRemove // --- IMPORTED FOR LIKES
       } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-      // --- Firebase Configuration ---
       const firebaseConfig = {
         apiKey: "AIzaSyCtFOOGfjbeLM-bAT5i2J601w9_95MQlxs",
         authDomain: "kiit-confessions.firebaseapp.com",
@@ -578,815 +312,366 @@
       const navConfessions = document.getElementById("navConfessions");
       const navChat = document.getElementById("navChat");
       const confessionForm = document.getElementById("confessionForm");
-      const confessionInput = document.getElementById("confessionInput");
-      const confessionButton = document.getElementById("confessionButton");
       const chatForm = document.getElementById("chatForm");
       const chatInput = document.getElementById("chatInput");
-      const chatButton = document.getElementById("chatButton");
       const typingIndicator = document.getElementById("typingIndicator");
 
-      // --- Modal DOM Elements ---
-      const profileButton = document.getElementById("profileButton");
+      // Modals
       const profileModal = document.getElementById("profileModal");
-      const modalCloseButton = document.getElementById("modalCloseButton");
-      const modalSaveButton = document.getElementById("modalSaveButton");
-      const modalUsernameInput = document.getElementById("modalUsernameInput");
-
-      // --- Edit/Delete Modal Elements ---
       const editModal = document.getElementById("editModal");
-      const modalEditTextArea = document.getElementById("modalEditTextArea");
-      const editModalCancelButton = document.getElementById(
-        "editModalCancelButton"
-      );
-      const editModalSaveButton = document.getElementById(
-        "editModalSaveButton"
-      );
-
       const confirmModal = document.getElementById("confirmModal");
-      const confirmModalText = document.getElementById("confirmModalText");
-      const confirmModalNoButton = document.getElementById(
-        "confirmModalNoButton"
-      );
-      const confirmModalYesButton = document.getElementById(
-        "confirmModalYesButton"
-      );
-
-      // --- NEW: Context Menu & Selection Bar Elements ---
+      
       const contextMenu = document.getElementById("contextMenu");
-      const menuEdit = document.getElementById("menuEdit");
-      const menuDelete = document.getElementById("menuDelete");
-      const menuSelect = document.getElementById("menuSelect");
-
       const selectionBar = document.getElementById("selectionBar");
-      const selectionCount = document.getElementById("selectionCount");
-      const selectionCancel = document.getElementById("selectionCancel");
-      const selectionDelete = document.getElementById("selectionDelete");
 
-      // --- App State ---
-      let db;
-      let auth;
-      let currentUserId = null;
-      let currentUsername = "Anonymous";
-      let currentProfilePhotoURL = null;
+      let db, auth, currentUserId, currentUsername;
       let userProfiles = {};
-      let confessionsCollection;
-      let chatCollection;
-      let typingStatusCollection;
-      let unsubscribeConfessions = () => {};
-      let unsubscribeChat = () => {};
-      let unsubscribeUserProfiles = () => {};
-      let unsubscribeTypingStatus = () => {};
       let currentPage = "chat";
-      let typingTimeout = null;
-
-      // --- Edit/Delete State ---
-      let docToEditId = null;
-      let collectionToEdit = null;
-      let deleteCallback = null;
-
-      // --- NEW: Selection State ---
       let isSelectionMode = false;
       let selectedMessages = new Set();
-      let currentContextMenuData = null; // Store dataset of right-clicked message
+      let currentContextMenuData = null;
+      let unsubscribeChat = () => {};
+      let unsubscribeConfessions = () => {};
+      let unsubscribeTypingStatus = () => {};
 
-      // --- Firebase Initialization ---
       async function initFirebase() {
         try {
-          if (
-            firebaseConfig.apiKey === "AIzaSyCtFOOGfjbeLM-bAT5i2J601w9_95MQlxs"
-          ) {
-            console.log("Firebase config loaded.");
-          } else {
-            throw new Error("Firebase configuration is missing or incorrect.");
-          }
-
           const app = initializeApp(firebaseConfig);
           db = getFirestore(app);
           auth = getAuth(app);
-
           const userCredential = await signInAnonymously(auth);
           currentUserId = userCredential.user.uid;
-          console.log(
-            "Firebase initialized and user signed in:",
-            currentUserId
-          );
-
+          
           listenForUserProfiles();
           await loadUserProfile();
-
-          confessionsCollection = collection(db, "confessions");
-          chatCollection = collection(db, "chat");
-          typingStatusCollection = collection(db, "typingStatus");
-
-          showPage(currentPage); // This will be 'chat'
+          showPage("chat");
         } catch (error) {
-          console.error("Error initializing Firebase:", error);
-          loading.textContent =
-            "Error: Could not connect to the grid. Refresh page.";
-          if (error.message.includes("api-key-not-valid")) {
-            loading.textContent =
-              "Error: Firebase API Key is not valid. Check console.";
-          }
+          console.error(error);
+          loading.textContent = "CONNECTION FAILED.";
         }
       }
 
-      // --- User Profile Functions ---
       function listenForUserProfiles() {
-        const usersCollection = collection(db, "users");
-        unsubscribeUserProfiles = onSnapshot(usersCollection, (snapshot) => {
-          snapshot.docs.forEach((doc) => {
-            userProfiles[doc.id] = doc.data();
-          });
-          console.log("User profiles cache updated:", userProfiles);
-          if (currentPage === "chat") {
-            listenForChat(true);
-          } else {
-            listenForConfessions(true);
-          }
+        onSnapshot(collection(db, "users"), (snapshot) => {
+          snapshot.docs.forEach(doc => userProfiles[doc.id] = doc.data());
+          if (currentPage === "chat") listenForChat(true);
+          else listenForConfessions(true);
         });
       }
 
       async function loadUserProfile() {
-        if (!db || !currentUserId) return;
-        const userDocRef = doc(db, "users", currentUserId);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          currentUsername = data.username || "Anonymous";
-          currentProfilePhotoURL = data.profilePhotoURL || null;
+        if(!db || !currentUserId) return;
+        const docSnap = await getDoc(doc(db, "users", currentUserId));
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          currentUsername = data.username;
+          document.getElementById("modalUsernameInput").value = currentUsername || "";
         } else {
           currentUsername = "Anonymous";
-          currentProfilePhotoURL = null;
         }
-        modalUsernameInput.value =
-          currentUsername === "Anonymous" ? "" : currentUsername;
       }
 
-      async function handleProfileSave() {
-        if (!db || !currentUserId) return;
-        modalSaveButton.textContent = "SAVING...";
-        modalSaveButton.disabled = true;
-        const newUsername = modalUsernameInput.value.trim() || "Anonymous";
-        let newProfilePhotoURL = null;
-        if (newUsername && newUsername !== "Anonymous") {
-          const firstLetter = newUsername.charAt(0).toUpperCase();
-          newProfilePhotoURL = `https://placehold.co/32x32/0a0a1a/00e5ff?text=${firstLetter}`;
+      // --- Navigation ---
+      function showPage(page) {
+        currentPage = page;
+        if(isSelectionMode) exitSelectionMode();
+        
+        unsubscribeChat();
+        unsubscribeConfessions();
+        feedContainer.innerHTML = '<div id="loading" class="text-center p-4">LOADING...</div>';
+
+        if (page === "chat") {
+            navChat.classList.add("active"); navConfessions.classList.remove("active");
+            chatForm.classList.replace("hidden", "flex");
+            confessionForm.classList.replace("flex", "hidden");
+            listenForChat();
         } else {
-          newProfilePhotoURL = `https://placehold.co/32x32/00e5ff/0a0a1a?text=?`;
+            navConfessions.classList.add("active"); navChat.classList.remove("active");
+            confessionForm.classList.replace("hidden", "flex");
+            chatForm.classList.replace("flex", "hidden");
+            listenForConfessions();
+        }
+      }
+
+      // --- Rendering Logic (With Likes) ---
+      let lastDocs = [];
+
+      function listenForChat(isRerender = false) {
+        if(isRerender) { renderFeed(lastDocs, "chat"); return; }
+        unsubscribeChat = onSnapshot(query(collection(db, "chat"), orderBy("timestamp", "asc")), (snapshot) => {
+            lastDocs = snapshot.docs;
+            renderFeed(lastDocs, "chat");
+        });
+      }
+
+      function listenForConfessions(isRerender = false) {
+        if(isRerender) { renderFeed(lastDocs, "confessions"); return; }
+        unsubscribeConfessions = onSnapshot(query(collection(db, "confessions"), orderBy("timestamp", "asc")), (snapshot) => {
+            lastDocs = snapshot.docs;
+            renderFeed(lastDocs, "confessions");
+        });
+      }
+
+      function renderFeed(docs, type) {
+        feedContainer.innerHTML = "";
+        let lastUserId = null;
+
+        if (docs.length === 0) {
+            feedContainer.innerHTML = `<div class="text-center p-4">NO ${type.toUpperCase()} YET.</div>`;
+            return;
         }
 
-        try {
-          const userDocRef = doc(db, "users", currentUserId);
-          await setDoc(
-            userDocRef,
-            {
-              username: newUsername,
-              profilePhotoURL: newProfilePhotoURL,
-            },
-            {
-              merge: true,
+        docs.forEach(docSnap => {
+            const data = docSnap.data();
+            const isMine = data.userId === currentUserId;
+            const isConsecutive = data.userId === lastUserId;
+            lastUserId = data.userId;
+            
+            // --- LIKES LOGIC ---
+            const likes = data.likes || [];
+            const likeCount = likes.length;
+            const isLiked = likes.includes(currentUserId);
+
+            const alignWrapper = document.createElement("div");
+            alignWrapper.className = `flex w-full ${isMine ? "justify-end" : "justify-start"}`;
+
+            const bubble = document.createElement("div");
+            bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${isMine ? "my-message" : ""} ${isConsecutive ? "mt-0.5" : "mt-2"}`;
+            
+            // Dataset for interactions
+            bubble.dataset.id = docSnap.id;
+            bubble.dataset.text = data.text;
+            bubble.dataset.isMine = isMine;
+            bubble.dataset.timestamp = data.timestamp ? data.timestamp.toMillis() : 0;
+
+            if(isSelectionMode && selectedMessages.has(docSnap.id)) bubble.classList.add("selected-message");
+
+            // Header
+            if (!isConsecutive) {
+                const profile = userProfiles[data.userId] || {};
+                const name = profile.username || "Anonymous";
+                const pfp = profile.profilePhotoURL || `https://placehold.co/32x32/00e5ff/0a0a1a?text=${name[0]}`;
+                
+                const header = document.createElement("div");
+                header.className = `flex items-center gap-1.5 mb-1 ${isMine ? "justify-end" : ""}`;
+                header.innerHTML = `
+                   ${isMine ? `<div class="font-bold text-sm opacity-70">${name}</div><img src="${pfp}" class="chat-pfp">` 
+                          : `<img src="${pfp}" class="chat-pfp"><div class="font-bold text-sm opacity-70">${name}</div>`}
+                `;
+                bubble.appendChild(header);
             }
-          );
-          currentUsername = newUsername;
-          currentProfilePhotoURL = newProfilePhotoURL;
-          closeProfileModal();
-        } catch (error) {
-          console.error("Error saving profile: ", error);
-        } finally {
-          modalSaveButton.textContent = "SAVE";
-          modalSaveButton.disabled = false;
+
+            // Text
+            const textElement = document.createElement("p");
+            textElement.className = isMine ? "text-right" : "text-left";
+            textElement.textContent = data.text;
+            bubble.appendChild(textElement);
+
+            // --- BOTTOM AREA: Meta (Left) & Likes (Right) ---
+            
+            // 1. Meta Area (Timestamp & Kebab)
+            const metaDiv = document.createElement("div");
+            metaDiv.className = "meta-area";
+            const dateObj = data.timestamp ? data.timestamp.toDate() : new Date();
+            const timeStr = dateObj.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            
+            if(data.edited) metaDiv.innerHTML += `<span class="edited-marker">(edited)</span>`;
+            metaDiv.innerHTML += `<span>${timeStr}</span>`;
+
+            if(isMine) {
+                const kebabBtn = document.createElement("button");
+                kebabBtn.className = "kebab-btn";
+                kebabBtn.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>`;
+                kebabBtn.onclick = (e) => showDropdownMenu(e, bubble.dataset);
+                metaDiv.appendChild(kebabBtn);
+            }
+            bubble.appendChild(metaDiv);
+
+            // 2. Like Button Area (Right)
+            const reactionContainer = document.createElement("div");
+            reactionContainer.className = "reaction-container";
+            
+            const likeBtn = document.createElement("button");
+            likeBtn.className = `like-btn ${isLiked ? "liked" : ""}`;
+            likeBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            `;
+            likeBtn.onclick = (e) => {
+                e.stopPropagation();
+                toggleLike(docSnap.id, isLiked);
+            };
+
+            const countSpan = document.createElement("span");
+            countSpan.className = "like-count";
+            countSpan.textContent = likeCount > 0 ? likeCount : "";
+
+            reactionContainer.appendChild(countSpan);
+            reactionContainer.appendChild(likeBtn);
+            bubble.appendChild(reactionContainer);
+
+            alignWrapper.appendChild(bubble);
+            feedContainer.appendChild(alignWrapper);
+        });
+
+        // Animation
+        const lastBubble = feedContainer.lastElementChild?.querySelector(".message-bubble");
+        if(lastBubble && !lastBubble.dataset.animated) {
+            if(Date.now() - (parseInt(lastBubble.dataset.timestamp)||0) < 3000) lastBubble.classList.add("animate-pop-in");
+            lastBubble.dataset.animated = "true";
         }
+        
+        if(!isSelectionMode) feedContainer.scrollTop = feedContainer.scrollHeight;
       }
 
-      // --- Modal Controls ---
-      function openProfileModal() {
-        modalUsernameInput.value =
-          currentUsername === "Anonymous" ? "" : currentUsername;
-        profileModal.classList.add("is-open");
-      }
-
-      function closeProfileModal() {
-        profileModal.classList.remove("is-open");
-      }
-
-      // --- Edit/Delete Modal Controls & Logic ---
-      function showEditModal(docId, collectionName, currentText) {
-        docToEditId = docId;
-        collectionToEdit = collectionName;
-        modalEditTextArea.value = currentText;
-        editModal.classList.add("is-open");
-      }
-
-      function closeEditModal() {
-        editModal.classList.remove("is-open");
-        docToEditId = null;
-        collectionToEdit = null;
-      }
-
-      async function saveEdit() {
-        const newText = modalEditTextArea.value.trim();
-        if (newText && docToEditId && collectionToEdit) {
-          editModalSaveButton.textContent = "SAVING...";
-          editModalSaveButton.disabled = true;
-          try {
-            const docRef = doc(db, collectionToEdit, docToEditId);
+      // --- NEW: Toggle Like Function ---
+      async function toggleLike(docId, isCurrentlyLiked) {
+        if(!currentUserId) return;
+        const docRef = doc(db, currentPage, docId);
+        try {
             await updateDoc(docRef, {
-              text: newText,
-              edited: true,
+                likes: isCurrentlyLiked ? arrayRemove(currentUserId) : arrayUnion(currentUserId)
             });
-            closeEditModal();
-          } catch (error) {
-            console.error("Error updating document:", error);
-            alert(
-              "Error: Could not save edit. The 5-minute edit window may have expired."
-            );
-          }
-          editModalSaveButton.textContent = "SAVE";
-          editModalSaveButton.disabled = false;
+        } catch(e) {
+            console.error("Like failed:", e);
         }
       }
 
-      function showConfirmModal(callback) {
-        deleteCallback = callback;
-        confirmModal.classList.add("is-open");
-      }
+      // --- Core Event Handlers ---
+      chatForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const text = chatInput.value.trim();
+        if(!text) return;
+        // Initialize with empty likes array
+        await addDoc(collection(db, "chat"), { text, timestamp: serverTimestamp(), userId: currentUserId, likes: [] });
+        chatInput.value = "";
+      });
 
-      function closeConfirmModal() {
-        confirmModal.classList.remove("is-open");
-        deleteCallback = null;
-      }
+      confessionForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const text = document.getElementById("confessionInput").value.trim();
+        if(!text) return;
+        // Initialize with empty likes array
+        await addDoc(collection(db, "confessions"), { text, timestamp: serverTimestamp(), userId: currentUserId, likes: [] });
+        document.getElementById("confessionInput").value = "";
+      });
 
-      async function handleDelete() {
-        if (deleteCallback) {
-          confirmModalYesButton.textContent = "DELETING...";
-          confirmModalYesButton.disabled = true;
-          try {
-            await deleteCallback();
-          } catch (error) {
-            // --- UPDATED: Better Error Logging ---
-            console.error("DELETE FAILED:", error); // Log the real error
-            alert(
-              "Error: Could not delete message. Check console (F12) for details."
-            );
-            // ---
-          }
-          closeConfirmModal();
-          confirmModalYesButton.textContent = "DELETE";
-          confirmModalYesButton.disabled = false;
-        }
-      }
-
-      // --- NEW: Dropdown Menu & Selection Logic ---
-
-      function showDropdownMenu(event, data) {
-        // This function now opens the menu relative to the clicked button
-        event.stopPropagation(); // Stop click from bubbling up to document
-        currentContextMenuData = data; // Store data from the bubble
-
-        // Check for 5-min edit window
-        const now = Date.now();
-        const messageTime = parseInt(currentContextMenuData.timestamp, 10);
-        const isEditable = now - messageTime < 300000; // 5 mins in ms
-
-        menuEdit.style.display = isEditable ? "block" : "none";
-
-        // Position and show menu
-        const rect = event.currentTarget.getBoundingClientRect();
-        contextMenu.style.top = `${rect.bottom + 2}px`; // Position below button
-
-        // Right-align the menu
-        const menuWidth = contextMenu.offsetWidth || 150;
-        contextMenu.style.left = `${rect.right - menuWidth}px`;
-
+      // --- Menus & Modals ---
+      function showDropdownMenu(e, data) {
+        e.stopPropagation();
+        currentContextMenuData = data;
+        const btnRect = e.currentTarget.getBoundingClientRect();
+        contextMenu.style.top = `${btnRect.bottom + 5}px`;
+        contextMenu.style.left = `${btnRect.right - 150}px`;
         contextMenu.classList.add("is-open");
       }
-
-      function hideDropdownMenu() {
-        contextMenu.classList.remove("is-open");
-        // currentContextMenuData = null; // <-- This was the bug
-      }
-
-      function handleMessageClick(bubble) {
-        if (!isSelectionMode) return;
-
-        const docId = bubble.dataset.id;
-        const isMine = bubble.dataset.isMine === "true";
-
-        if (!isMine) return; // Can only select own messages
-
-        if (selectedMessages.has(docId)) {
-          selectedMessages.delete(docId);
-          bubble.classList.remove("selected-message");
-        } else {
-          selectedMessages.add(docId);
-          bubble.classList.add("selected-message");
+      
+      document.addEventListener("click", (e) => {
+        if (!contextMenu.contains(e.target) && !e.target.closest(".kebab-btn")) {
+             contextMenu.classList.remove("is-open");
         }
+      }, true);
 
-        updateSelectionBar();
-      }
+      document.getElementById("menuDelete").addEventListener("click", () => {
+        if(currentContextMenuData) {
+            document.getElementById("confirmModalText").textContent = "Permanently delete this message?";
+            confirmModal.classList.add("is-open");
+            document.getElementById("confirmModalYesButton").onclick = async () => {
+                await deleteDoc(doc(db, currentPage, currentContextMenuData.id));
+                confirmModal.classList.remove("is-open");
+            };
+        }
+        contextMenu.classList.remove("is-open");
+      });
 
+      document.getElementById("menuEdit").addEventListener("click", () => {
+        if(currentContextMenuData) {
+            document.getElementById("modalEditTextArea").value = currentContextMenuData.text;
+            editModal.classList.add("is-open");
+            document.getElementById("editModalSaveButton").onclick = async () => {
+                await updateDoc(doc(db, currentPage, currentContextMenuData.id), {
+                    text: document.getElementById("modalEditTextArea").value,
+                    edited: true
+                });
+                editModal.classList.remove("is-open");
+            };
+        }
+        contextMenu.classList.remove("is-open");
+      });
+
+      document.getElementById("menuSelect").addEventListener("click", () => {
+        enterSelectionMode();
+        contextMenu.classList.remove("is-open");
+      });
+
+      // Selection Mode
       function enterSelectionMode() {
         isSelectionMode = true;
         selectionBar.classList.remove("hidden");
-        chatForm.classList.add("hidden"); // Hide input forms
+        chatForm.classList.add("hidden");
         confessionForm.classList.add("hidden");
-
-        // Add the right-clicked message to selection
-        if (currentContextMenuData) {
-          const docId = currentContextMenuData.id;
-          selectedMessages.add(docId);
-          const bubble = document.querySelector(
-            `.message-bubble[data-id="${docId}"]`
-          );
-          if (bubble) {
-            bubble.classList.add("selected-message");
-          }
+        if(currentContextMenuData) {
+            selectedMessages.add(currentContextMenuData.id);
+            const bubble = document.querySelector(`.message-bubble[data-id="${currentContextMenuData.id}"]`);
+            if(bubble) bubble.classList.add("selected-message");
         }
-        updateSelectionBar();
+        document.getElementById("selectionCount").textContent = `${selectedMessages.size} selected`;
       }
 
       function exitSelectionMode() {
         isSelectionMode = false;
         selectionBar.classList.add("hidden");
         selectedMessages.clear();
-
-        // --- FIX: Manually show the correct form ---
-        if (currentPage === "chat") {
-          chatForm.classList.remove("hidden");
-          chatForm.classList.add("flex");
-        } else {
-          confessionForm.classList.remove("hidden");
-          confessionForm.classList.add("flex");
-        }
-        // showPage(currentPage); // <-- THIS WAS THE BUG
-
-        // Remove all selected-message classes
-        document.querySelectorAll(".selected-message").forEach((el) => {
-          el.classList.remove("selected-message");
-        });
+        document.querySelectorAll(".selected-message").forEach(el => el.classList.remove("selected-message"));
+        if(currentPage === 'chat') chatForm.classList.remove("hidden");
+        else confessionForm.classList.remove("hidden");
       }
 
-      function updateSelectionBar() {
-        const count = selectedMessages.size;
-        selectionCount.textContent = `${count} selected`;
-
-        if (count === 0 && isSelectionMode) {
-          // Only exit if we were already in selection mode
-          exitSelectionMode();
-        }
-      }
-
-      async function handleMultiDelete() {
-        const count = selectedMessages.size;
-        if (count === 0) return;
-
-        // Show a custom confirmation
-        confirmModalText.textContent = `Are you sure you want to permanently delete these ${count} messages?`;
-        showConfirmModal(async () => {
-          const batch = writeBatch(db);
-          selectedMessages.forEach((docId) => {
-            const docRef = doc(db, currentPage, docId);
-            batch.delete(docRef);
-          });
-
-          await batch.commit();
-          exitSelectionMode();
-          confirmModalText.textContent =
-            "Are you sure you want to permanently delete this message?"; // Reset modal text
-        });
-      }
-
-      // --- Page Navigation ---
-      function showPage(page) {
-        currentPage = page;
-
-        // --- FIX: Check if selection mode is on ---
-        if (isSelectionMode) {
-          exitSelectionMode();
-        }
-
-        unsubscribeConfessions();
-        unsubscribeChat();
-        unsubscribeTypingStatus();
-        typingIndicator.innerHTML = "&nbsp;";
-
-        if (page === "confessions") {
-          navConfessions.classList.add("active");
-          navChat.classList.remove("active");
-          if (!isSelectionMode) {
-            // Check again in case exitSelectionMode ran
-            confessionForm.classList.add("flex");
-            confessionForm.classList.remove("hidden");
-          }
-          chatForm.classList.add("hidden");
-          chatForm.classList.remove("flex");
-          typingIndicator.classList.add("hidden");
-          listenForConfessions();
-        } else {
-          navChat.classList.add("active");
-          navConfessions.classList.remove("active");
-          if (!isSelectionMode) {
-            // Check again
-            chatForm.classList.add("flex");
-            chatForm.classList.remove("hidden");
-          }
-          confessionForm.classList.add("hidden");
-          confessionForm.classList.remove("flex");
-          typingIndicator.classList.remove("hidden");
-          listenForChat();
-          listenForTyping();
-        }
-      }
-
-      // --- Real-time Data Listeners ---
-      let lastConfessionDocs = [];
-      let lastChatDocs = [];
-
-      function listenForConfessions(isRerender = false) {
-        if (isRerender) {
-          renderFeed(lastConfessionDocs, "confessions");
-          return;
-        }
-        unsubscribeChat();
-        feedContainer.innerHTML =
-          '<div id="loading" class="text-center p-4">LOADING CONFESSIONS...</div>';
-
-        const q = query(confessionsCollection, orderBy("timestamp", "asc"));
-        unsubscribeConfessions = onSnapshot(
-          q,
-          (snapshot) => {
-            lastConfessionDocs = snapshot.docs;
-            renderFeed(lastConfessionDocs, "confessions");
-          },
-          (error) => {
-            console.error("Error listening to confessions:", error);
-            loading.textContent = "Error loading confessions.";
-          }
-        );
-      }
-
-      function listenForChat(isRerender = false) {
-        if (isRerender) {
-          renderFeed(lastChatDocs, "chat");
-          return;
-        }
-        unsubscribeConfessions();
-        feedContainer.innerHTML =
-          '<div id="loading" class="text-center p-4">LOADING CHAT...</div>';
-
-        const q = query(chatCollection, orderBy("timestamp", "asc"));
-        unsubscribeChat = onSnapshot(
-          q,
-          (snapshot) => {
-            lastChatDocs = snapshot.docs;
-            renderFeed(lastChatDocs, "chat");
-          },
-          (error) => {
-            console.error("Error listening to chat:", error);
-            loading.textContent = "Error loading chat.";
-          }
-        );
-      }
-
-      // --- Typing Indicator Logic ---
-      function listenForTyping() {
-        unsubscribeTypingStatus = onSnapshot(
-          typingStatusCollection,
-          (snapshot) => {
-            const now = Date.now();
-            const typingUsers = [];
-            snapshot.docs.forEach((doc) => {
-              const data = doc.data();
-              const userId = doc.id;
-              if (
-                data.isTyping &&
-                userId !== currentUserId &&
-                now - data.timestamp < 5000
-              ) {
-                const username = userProfiles[userId]?.username || "Someone";
-                typingUsers.push(username);
-              }
-            });
-            if (typingUsers.length === 0) {
-              typingIndicator.innerHTML = "&nbsp;";
-            } else if (typingUsers.length === 1) {
-              typingIndicator.textContent = `${typingUsers[0]} is typing...`;
-            } else if (typingUsers.length === 2) {
-              typingIndicator.textContent = `${typingUsers[0]} and ${typingUsers[1]} are typing...`;
-            } else {
-              typingIndicator.textContent = "Several users are typing...";
-            }
-          }
-        );
-      }
-
-      async function updateTypingStatus(isTyping) {
-        if (!db || !currentUserId) return;
-        if (typingTimeout) {
-          clearTimeout(typingTimeout);
-          typingTimeout = null;
-        }
-        const typingDocRef = doc(db, "typingStatus", currentUserId);
-        if (isTyping) {
-          await setDoc(typingDocRef, {
-            isTyping: true,
-            timestamp: Date.now(),
-          });
-          typingTimeout = setTimeout(() => {
-            updateTypingStatus(false);
-          }, 3000);
-        } else {
-          await setDoc(typingDocRef, {
-            isTyping: false,
-            timestamp: Date.now(),
-          });
-        }
-      }
-
-      // --- Helper Function to Format Timestamp ---
-      function formatTimestamp(firebaseTimestamp) {
-        if (!firebaseTimestamp) return "...";
-        const date = firebaseTimestamp.toDate();
-        return date.toLocaleString([], {
-          dateStyle: "short",
-          timeStyle: "short",
-        });
-      }
-
-      // --- Render Function (UPDATED) ---
-      function renderFeed(docs, type) {
-        feedContainer.innerHTML = "";
-        if (docs.length === 0) {
-          const loadingEl = document.createElement("div");
-          loadingEl.id = "loading";
-          loadingEl.className = "text-center p-4";
-          loadingEl.textContent = `NO ${type.toUpperCase()} YET. BE THE FIRST!`;
-          feedContainer.appendChild(loadingEl);
-          return;
-        }
-
-        let lastUserId = null;
-
-        docs.forEach((docInstance) => {
-          const data = docInstance.data();
-          const text = data.text || "...";
-          const time = formatTimestamp(data.timestamp);
-          const docUserId = data.userId;
-
-          const profile = userProfiles[docUserId] || {};
-          const username = profile.username || "Anonymous";
-          const photoURL =
-            profile.profilePhotoURL ||
-            `https://placehold.co/32x32/00e5ff/0a0a1a?text=${
-              username.charAt(0).toUpperCase() || "?"
-            }`;
-
-          const isMine = currentUserId && docUserId === currentUserId;
-          const isConsecutive = docUserId && docUserId === lastUserId;
-          lastUserId = docUserId;
-
-          const alignWrapper = document.createElement("div");
-          alignWrapper.className = `flex w-full ${
-            isMine ? "justify-end" : "justify-start"
-          }`;
-
-          const bubble = document.createElement("div");
-          bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${
-            isMine ? "my-message" : ""
-          } ${isConsecutive ? "mt-0.5" : "mt-2"}`;
-
-          // --- NEW: Add dataset attributes for context menu ---
-          bubble.dataset.id = docInstance.id;
-          bubble.dataset.text = text;
-          bubble.dataset.isMine = isMine;
-          bubble.dataset.timestamp = data.timestamp
-            ? data.timestamp.toMillis()
-            : 0;
-
-          // --- NEW: Add selected class if in selection set ---
-          if (isSelectionMode && selectedMessages.has(docInstance.id)) {
-            bubble.classList.add("selected-message");
-          }
-
-          if (!isConsecutive) {
-            const headerElement = document.createElement("div");
-            headerElement.className = `flex items-center gap-1.5 mb-1 ${
-              isMine ? "justify-end" : ""
-            }`;
-            const imgElement = document.createElement("img");
-            imgElement.src = photoURL;
-            imgElement.className = `chat-pfp ${isMine ? "order-2" : "order-1"}`;
-            const usernameElement = document.createElement("div");
-            usernameElement.className = `font-bold text-sm opacity-70 ${
-              isMine ? "order-1 text-right" : "order-2 text-left"
-            }`;
-            usernameElement.textContent = username;
-            headerElement.appendChild(imgElement);
-            headerElement.appendChild(usernameElement);
-            bubble.appendChild(headerElement);
-          }
-
-          const textElement = document.createElement("p");
-          textElement.className = `${isMine ? "text-right" : "text-left"}`;
-          textElement.textContent = text;
-          bubble.appendChild(textElement);
-
-          const timeElement = document.createElement("div");
-          timeElement.className = "timestamp text-right";
-
-          if (data.edited) {
-            const editedMarker = document.createElement("span");
-            editedMarker.className = "edited-marker";
-            editedMarker.textContent = "(edited)";
-            timeElement.appendChild(editedMarker);
-          }
-
-          const timeText = document.createElement("span");
-          timeText.textContent = time;
-          timeElement.appendChild(timeText);
-
-          // --- UPDATED: Add Kebab Menu Button ---
-          if (isMine) {
-            const kebabBtn = document.createElement("button");
-            kebabBtn.className = "kebab-btn";
-            // SVG for three vertical dots
-            kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                    </svg>`;
-
-            kebabBtn.addEventListener("click", (e) => {
-              showDropdownMenu(e, bubble.dataset);
-            });
-
-            timeElement.appendChild(kebabBtn);
-          }
-
-          bubble.appendChild(timeElement);
-          alignWrapper.appendChild(bubble);
-          feedContainer.appendChild(alignWrapper);
-        });
-
-        // --- NEW: Animate last bubble if it's new ---
-        const bubbles = feedContainer.querySelectorAll(".message-bubble");
-        const lastBubble = bubbles[bubbles.length - 1];
-
-        // check if lastBubble exists and hasn't been animated yet
-        if (lastBubble && !lastBubble.hasAttribute("data-animated")) {
-          const now = Date.now();
-          const messageTime = parseInt(lastBubble.dataset.timestamp, 10);
-
-          // Only animate if the message is very new (posted in the last 3s)
-          if (now - messageTime < 3000) {
-            lastBubble.classList.add("animate-pop-in");
-          }
-          lastBubble.setAttribute("data-animated", "true"); // Prevent re-animation
-        }
-        // --- END NEW ---
-
-        // Auto-scroll to bottom
-        if (!isSelectionMode) {
-          // Don't auto-scroll when selecting
-          feedContainer.scrollTop = feedContainer.scrollHeight;
-        }
-      }
-
-      // --- Form Submission ---
-      async function postConfession(e) {
-        e.preventDefault();
-        const text = confessionInput.value.trim();
-        if (text && db) {
-          try {
-            await addDoc(confessionsCollection, {
-              text: text,
-              timestamp: serverTimestamp(),
-              userId: currentUserId,
-            });
-            confessionInput.value = "";
-            updateTypingStatus(false);
-          } catch (error) {
-            console.error("Error adding confession: ", error);
-          }
-        }
-      }
-
-      async function postChatMessage(e) {
-        e.preventDefault();
-        const text = chatInput.value.trim();
-        if (text && db) {
-          try {
-            await addDoc(chatCollection, {
-              text: text,
-              timestamp: serverTimestamp(),
-              userId: currentUserId,
-            });
-            chatInput.value = "";
-            updateTypingStatus(false);
-          } catch (error) {
-            console.error("Error adding chat message: ", error);
-          }
-        }
-      }
-
-      // --- Event Listeners ---
-      confessionForm.addEventListener("submit", postConfession);
-      chatForm.addEventListener("submit", postChatMessage);
-      navConfessions.addEventListener("click", () => showPage("confessions"));
-      navChat.addEventListener("click", () => showPage("chat"));
-
-      // --- Modal Event Listeners ---
-      profileButton.addEventListener("click", openProfileModal);
-      modalCloseButton.addEventListener("click", closeProfileModal);
-      modalSaveButton.addEventListener("click", handleProfileSave);
-
-      editModalCancelButton.addEventListener("click", closeEditModal);
-      editModalSaveButton.addEventListener("click", saveEdit);
-      confirmModalNoButton.addEventListener("click", closeConfirmModal);
-      confirmModalYesButton.addEventListener("click", handleDelete);
-
-      // --- UPDATED: Context Menu & Selection Listeners ---
-
-      // Handle left-clicks on the feed (for selection mode)
       feedContainer.addEventListener("click", (e) => {
         if (!isSelectionMode) return;
-
-        // Don't trigger selection if clicking the kebab button
-        if (e.target.closest(".kebab-btn")) return;
-
+        if (e.target.closest(".kebab-btn") || e.target.closest(".like-btn")) return;
         const bubble = e.target.closest(".message-bubble");
-        if (!bubble) return;
+        if (!bubble || bubble.dataset.isMine !== "true") return;
 
-        e.preventDefault(); // Prevent any other click behavior
-        handleMessageClick(bubble);
-      });
-
-      // Global click to hide dropdown menu
-      document.addEventListener(
-        "click",
-        (e) => {
-          // Hide if click is not on the menu AND not on a kebab button
-          if (
-            !contextMenu.contains(e.target) &&
-            !e.target.closest(".kebab-btn")
-          ) {
-            hideDropdownMenu();
-          }
-        },
-        true
-      ); // Use capture phase
-
-      // Context menu button clicks (no change, they target the global menu)
-      menuEdit.addEventListener("click", () => {
-        if (currentContextMenuData) {
-          showEditModal(
-            currentContextMenuData.id,
-            currentPage,
-            currentContextMenuData.text
-          );
-        }
-        hideDropdownMenu();
-      });
-
-      menuDelete.addEventListener("click", () => {
-        if (currentContextMenuData) {
-          const docId = currentContextMenuData.id; // <-- CAPTURE THE ID HERE
-          showConfirmModal(async () => {
-            await deleteDoc(doc(db, currentPage, docId)); // <-- USE THE CAPTURED ID
-          });
-        }
-        hideDropdownMenu();
-      });
-
-      menuSelect.addEventListener("click", () => {
-        enterSelectionMode();
-        hideDropdownMenu(); // enterSelectionMode will add the first item
-      });
-
-      // Selection bar button clicks
-      selectionCancel.addEventListener("click", exitSelectionMode);
-      selectionDelete.addEventListener("click", handleMultiDelete);
-
-      // Handle Enter/Shift+Enter for Confessions
-      confessionInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          confessionForm.requestSubmit(confessionButton);
+        e.preventDefault();
+        const id = bubble.dataset.id;
+        if(selectedMessages.has(id)) {
+            selectedMessages.delete(id);
+            bubble.classList.remove("selected-message");
         } else {
-          updateTypingStatus(true);
+            selectedMessages.add(id);
+            bubble.classList.add("selected-message");
         }
+        document.getElementById("selectionCount").textContent = `${selectedMessages.size} selected`;
+        if(selectedMessages.size === 0) exitSelectionMode();
       });
 
-      // Handle Enter/Shift+Enter for Chat
-      chatInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          chatForm.requestSubmit(chatButton);
-        } else {
-          updateTypingStatus(true);
-        }
-      });
+      document.getElementById("selectionCancel").onclick = exitSelectionMode;
+      document.getElementById("selectionDelete").onclick = () => {
+        if(selectedMessages.size === 0) return;
+        document.getElementById("confirmModalText").textContent = `Delete ${selectedMessages.size} messages?`;
+        confirmModal.classList.add("is-open");
+        document.getElementById("confirmModalYesButton").onclick = async () => {
+            const batch = writeBatch(db);
+            selectedMessages.forEach(id => batch.delete(doc(db, currentPage, id)));
+            await batch.commit();
+            confirmModal.classList.remove("is-open");
+            exitSelectionMode();
+        };
+      };
+      
+      document.getElementById("editModalCancelButton").onclick = () => editModal.classList.remove("is-open");
+      document.getElementById("confirmModalNoButton").onclick = () => confirmModal.classList.remove("is-open");
+      document.getElementById("profileButton").onclick = () => profileModal.classList.add("is-open");
+      document.getElementById("modalCloseButton").onclick = () => profileModal.classList.remove("is-open");
+      document.getElementById("modalSaveButton").onclick = async () => {
+        const username = document.getElementById("modalUsernameInput").value || "Anonymous";
+        await setDoc(doc(db, "users", currentUserId), { username, profilePhotoURL: `https://placehold.co/32x32/00e5ff/0a0a1a?text=${username[0]}` }, {merge:true});
+        profileModal.classList.remove("is-open");
+      };
 
-      // Start the application
+      navChat.addEventListener("click", () => showPage("chat"));
+      navConfessions.addEventListener("click", () => showPage("confessions"));
+
       initFirebase();
     </script>
   </body>
