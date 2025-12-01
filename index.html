@@ -160,6 +160,63 @@
         /* NEW */
       }
 
+      /* Reaction styling */
+      .reaction-container {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 4px;
+        flex-wrap: wrap;
+      }
+
+      .reaction-btn {
+        background: none;
+        border: 1px solid #00e5ff;
+        padding: 2px 8px;
+        border-radius: 12px;
+        color: #00e5ff;
+        opacity: 0.5;
+        cursor: pointer;
+        font-size: 0.75rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .reaction-btn:hover {
+        opacity: 1;
+        background-color: rgba(0, 229, 255, 0.1);
+        transform: scale(1.05);
+      }
+
+      .reaction-btn.reacted {
+        opacity: 1;
+        background-color: rgba(0, 229, 255, 0.2);
+        border-color: #00e5ff;
+      }
+
+      .reaction-btn.reacted:hover {
+        background-color: rgba(0, 229, 255, 0.3);
+      }
+
+      .add-reaction-btn {
+        background: none;
+        border: 1px solid #00e5ff;
+        padding: 2px 6px;
+        border-radius: 12px;
+        color: #00e5ff;
+        opacity: 0.3;
+        cursor: pointer;
+        font-size: 0.7rem;
+        transition: all 0.2s ease;
+      }
+
+      .add-reaction-btn:hover {
+        opacity: 1;
+        background-color: rgba(0, 229, 255, 0.1);
+      }
+
       /* NEW: Kebab button styling */
       .kebab-btn {
         background: none;
@@ -559,6 +616,8 @@
         updateDoc,
         deleteDoc,
         writeBatch, // --- NEW
+        arrayUnion,
+        arrayRemove,
       } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
       // --- Firebase Configuration ---
@@ -835,6 +894,54 @@
           confirmModalYesButton.textContent = "DELETE";
           confirmModalYesButton.disabled = false;
         }
+      }
+
+      // --- NEW: Reaction Logic ---
+
+      async function toggleReaction(docId, collectionName, reactionType, hasReacted) {
+        if (!db || !currentUserId) return;
+
+        try {
+          const docRef = doc(db, collectionName, docId);
+          const reactionField = `reactions.${reactionType}`;
+
+          if (hasReacted) {
+            // Remove reaction
+            await updateDoc(docRef, {
+              [reactionField]: arrayRemove(currentUserId),
+            });
+          } else {
+            // Add reaction
+            await updateDoc(docRef, {
+              [reactionField]: arrayUnion(currentUserId),
+            });
+          }
+        } catch (error) {
+          console.error("Error toggling reaction:", error);
+        }
+      }
+
+      function getReactionTooltip(userIds) {
+        if (userIds.length === 0) return "";
+        if (userIds.length === 1) {
+          const userId = userIds[0];
+          if (userId === currentUserId) return "You reacted";
+          const username = userProfiles[userId]?.username || "Someone";
+          return `${username} reacted`;
+        }
+        if (userIds.length === 2) {
+          const names = userIds.map((id) => {
+            if (id === currentUserId) return "You";
+            return userProfiles[id]?.username || "Someone";
+          });
+          return `${names[0]} and ${names[1]} reacted`;
+        }
+        // More than 2
+        const hasCurrentUser = userIds.includes(currentUserId);
+        if (hasCurrentUser) {
+          return `You and ${userIds.length - 1} others reacted`;
+        }
+        return `${userIds.length} people reacted`;
       }
 
       // --- NEW: Dropdown Menu & Selection Logic ---
@@ -1223,6 +1330,51 @@
           }
 
           bubble.appendChild(timeElement);
+
+          // --- NEW: Add Reactions Section ---
+          const reactionContainer = document.createElement("div");
+          reactionContainer.className = "reaction-container";
+
+          // Get reactions from data
+          const reactions = data.reactions || {};
+          const heartReactions = reactions.heart || [];
+
+          // Show heart reaction if any
+          if (heartReactions.length > 0) {
+            const heartBtn = document.createElement("button");
+            heartBtn.className = "reaction-btn";
+            const hasReacted = heartReactions.includes(currentUserId);
+            if (hasReacted) {
+              heartBtn.classList.add("reacted");
+            }
+
+            heartBtn.innerHTML = `❤️ <span>${heartReactions.length}</span>`;
+            heartBtn.title = getReactionTooltip(heartReactions);
+
+            heartBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              toggleReaction(docInstance.id, type, "heart", hasReacted);
+            });
+
+            reactionContainer.appendChild(heartBtn);
+          }
+
+          // Add reaction button (always show)
+          const addReactionBtn = document.createElement("button");
+          addReactionBtn.className = "add-reaction-btn";
+          addReactionBtn.innerHTML = "❤️";
+          addReactionBtn.title = "React with heart";
+
+          addReactionBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const hasReacted = heartReactions.includes(currentUserId);
+            toggleReaction(docInstance.id, type, "heart", hasReacted);
+          });
+
+          reactionContainer.appendChild(addReactionBtn);
+          bubble.appendChild(reactionContainer);
+          // --- END NEW ---
+
           alignWrapper.appendChild(bubble);
           feedContainer.appendChild(alignWrapper);
         });
