@@ -1172,6 +1172,9 @@
           exitSelectionMode();
         }
 
+        // Cancel reply mode when changing pages
+        cancelReplyMode();
+
         unsubscribeConfessions();
         unsubscribeChat();
         unsubscribeTypingStatus();
