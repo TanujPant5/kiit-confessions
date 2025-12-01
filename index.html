@@ -1338,40 +1338,31 @@
           // Get reactions from data
           const reactions = data.reactions || {};
           const heartReactions = reactions.heart || [];
+          const hasReacted = heartReactions.includes(currentUserId);
 
-          // Show heart reaction if any
+          // Single heart button that shows count if any reactions exist
+          const heartBtn = document.createElement("button");
+          heartBtn.className = hasReacted ? "reaction-btn reacted" : "add-reaction-btn";
+          
           if (heartReactions.length > 0) {
-            const heartBtn = document.createElement("button");
             heartBtn.className = "reaction-btn";
-            const hasReacted = heartReactions.includes(currentUserId);
             if (hasReacted) {
               heartBtn.classList.add("reacted");
             }
-
             heartBtn.innerHTML = `❤️ <span>${heartReactions.length}</span>`;
             heartBtn.title = getReactionTooltip(heartReactions);
-
-            heartBtn.addEventListener("click", (e) => {
-              e.stopPropagation();
-              toggleReaction(docInstance.id, type, "heart", hasReacted);
-            });
-
-            reactionContainer.appendChild(heartBtn);
+          } else {
+            heartBtn.className = "add-reaction-btn";
+            heartBtn.innerHTML = "❤️";
+            heartBtn.title = "React with heart";
           }
 
-          // Add reaction button (always show)
-          const addReactionBtn = document.createElement("button");
-          addReactionBtn.className = "add-reaction-btn";
-          addReactionBtn.innerHTML = "❤️";
-          addReactionBtn.title = "React with heart";
-
-          addReactionBtn.addEventListener("click", (e) => {
+          heartBtn.addEventListener("click", (e) => {
             e.stopPropagation();
-            const hasReacted = heartReactions.includes(currentUserId);
             toggleReaction(docInstance.id, type, "heart", hasReacted);
           });
 
-          reactionContainer.appendChild(addReactionBtn);
+          reactionContainer.appendChild(heartBtn);
           bubble.appendChild(reactionContainer);
           // --- END NEW ---
 
