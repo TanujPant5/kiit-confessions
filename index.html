@@ -135,10 +135,11 @@
       }
 
       /* WhatsApp-style reaction pill at edge of message */
+      /* WhatsApp-style reaction pill at edge of message */
       .reaction-container {
         position: absolute;
         bottom: 4px;
-        right: 6px;
+        right: 32px; /* ⬅️ was 6px earlier – move left so it doesn't cover kebab */
         display: inline-flex;
         align-items: center;
         gap: 2px;
@@ -1341,8 +1342,7 @@
                   behavior: "smooth",
                   block: "center",
                 });
-                originalBubble.style.backgroundColor =
-                  "rgba(0, 229, 255, 0.3)";
+                originalBubble.style.backgroundColor = "rgba(0, 229, 255, 0.3)";
                 setTimeout(() => {
                   originalBubble.style.backgroundColor = "";
                 }, 1000);
