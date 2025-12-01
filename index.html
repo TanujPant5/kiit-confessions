@@ -217,6 +217,74 @@
         background-color: rgba(0, 229, 255, 0.1);
       }
 
+      /* Reply styling */
+      .reply-preview {
+        background-color: rgba(0, 229, 255, 0.1);
+        border-left: 3px solid #00e5ff;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        opacity: 0.8;
+        cursor: pointer;
+      }
+
+      .reply-preview:hover {
+        opacity: 1;
+        background-color: rgba(0, 229, 255, 0.15);
+      }
+
+      .reply-preview .reply-author {
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+      }
+
+      .reply-preview .reply-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* Reply input bar */
+      #replyBar {
+        background-color: rgba(0, 50, 100, 0.9);
+        border-top: 2px solid #00e5ff;
+        padding: 0.5rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      #replyBar .reply-info {
+        flex: 1;
+        font-size: 0.85rem;
+      }
+
+      #replyBar .reply-author {
+        font-weight: bold;
+      }
+
+      #replyBar .reply-text {
+        opacity: 0.7;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 300px;
+      }
+
+      #replyBar button {
+        background: none;
+        border: none;
+        color: #00e5ff;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        opacity: 0.7;
+      }
+
+      #replyBar button:hover {
+        opacity: 1;
+      }
+
       /* NEW: Kebab button styling */
       .kebab-btn {
         background: none;
@@ -454,6 +522,14 @@
         </div>
       </div>
 
+      <div id="replyBar" class="hidden">
+        <div class="reply-info">
+          <div class="reply-author" id="replyAuthor"></div>
+          <div class="reply-text" id="replyText"></div>
+        </div>
+        <button id="cancelReply" title="Cancel reply">✕</button>
+      </div>
+
       <div id="typingIndicator" class="px-4 h-6 text-sm opacity-70">&nbsp;</div>
 
       <form
@@ -591,6 +667,7 @@
         <li id="menuEdit">Edit</li>
         <li id="menuDelete">Delete</li>
         <li class="separator"></li>
+        <li id="menuReply">Reply</li>
         <li id="menuSelect">Select</li>
       </ul>
     </div>
@@ -674,12 +751,18 @@
       const contextMenu = document.getElementById("contextMenu");
       const menuEdit = document.getElementById("menuEdit");
       const menuDelete = document.getElementById("menuDelete");
+      const menuReply = document.getElementById("menuReply");
       const menuSelect = document.getElementById("menuSelect");
 
       const selectionBar = document.getElementById("selectionBar");
       const selectionCount = document.getElementById("selectionCount");
       const selectionCancel = document.getElementById("selectionCancel");
       const selectionDelete = document.getElementById("selectionDelete");
+
+      const replyBar = document.getElementById("replyBar");
+      const replyAuthor = document.getElementById("replyAuthor");
+      const replyText = document.getElementById("replyText");
+      const cancelReply = document.getElementById("cancelReply");
 
       // --- App State ---
       let db;
@@ -707,6 +790,9 @@
       let isSelectionMode = false;
       let selectedMessages = new Set();
       let currentContextMenuData = null; // Store dataset of right-clicked message
+
+      // --- Reply State ---
+      let replyToMessage = null; // Store message being replied to
 
       // --- Firebase Initialization ---
       async function initFirebase() {
@@ -918,6 +1004,16 @@
           }
         } catch (error) {
           console.error("Error toggling reaction:", error);
+          console.error("Error details:", error.code, error.message);
+          
+          if (error.code === "permission-denied") {
+            alert(
+              "Permission denied: Firebase security rules need to be updated to allow reactions.\n\n" +
+              "Go to Firebase Console > Firestore Database > Rules and update the rules to allow reactions field updates."
+            );
+          } else {
+            alert(`Error adding reaction: ${error.message}`);
+          }
         }
       }
 
@@ -955,8 +1051,11 @@
         const now = Date.now();
         const messageTime = parseInt(currentContextMenuData.timestamp, 10);
         const isEditable = now - messageTime < 300000; // 5 mins in ms
+        const isMine = currentContextMenuData.isMine === "true";
 
-        menuEdit.style.display = isEditable ? "block" : "none";
+        menuEdit.style.display = isEditable && isMine ? "block" : "none";
+        menuDelete.style.display = isMine ? "block" : "none";
+        menuReply.style.display = "block"; // Reply always available
 
         // Position and show menu
         const rect = event.currentTarget.getBoundingClientRect();
@@ -1267,6 +1366,7 @@
           bubble.dataset.id = docInstance.id;
           bubble.dataset.text = text;
           bubble.dataset.isMine = isMine;
+          bubble.dataset.userid = docUserId; // Store the userId
           bubble.dataset.timestamp = data.timestamp
             ? data.timestamp.toMillis()
             : 0;
@@ -1292,6 +1392,40 @@
             headerElement.appendChild(imgElement);
             headerElement.appendChild(usernameElement);
             bubble.appendChild(headerElement);
+          }
+
+          // --- NEW: Show reply preview if this message is a reply ---
+          if (data.replyTo) {
+            const replyPreview = document.createElement("div");
+            replyPreview.className = "reply-preview";
+            
+            const replyAuthorEl = document.createElement("div");
+            replyAuthorEl.className = "reply-author";
+            const replyToProfile = userProfiles[data.replyTo.userId] || {};
+            replyAuthorEl.textContent = replyToProfile.username || "Anonymous";
+            
+            const replyTextEl = document.createElement("div");
+            replyTextEl.className = "reply-text";
+            replyTextEl.textContent = data.replyTo.text;
+            
+            replyPreview.appendChild(replyAuthorEl);
+            replyPreview.appendChild(replyTextEl);
+            
+            // Click to scroll to original message
+            replyPreview.addEventListener("click", () => {
+              const originalBubble = document.querySelector(
+                `.message-bubble[data-id="${data.replyTo.messageId}"]`
+              );
+              if (originalBubble) {
+                originalBubble.scrollIntoView({ behavior: "smooth", block: "center" });
+                originalBubble.style.backgroundColor = "rgba(0, 229, 255, 0.3)";
+                setTimeout(() => {
+                  originalBubble.style.backgroundColor = "";
+                }, 1000);
+              }
+            });
+            
+            bubble.appendChild(replyPreview);
           }
 
           const textElement = document.createElement("p");
@@ -1400,12 +1534,24 @@
         const text = confessionInput.value.trim();
         if (text && db) {
           try {
-            await addDoc(confessionsCollection, {
+            const messageData = {
               text: text,
               timestamp: serverTimestamp(),
               userId: currentUserId,
-            });
+            };
+            
+            // Add reply data if replying to a message
+            if (replyToMessage) {
+              messageData.replyTo = {
+                messageId: replyToMessage.id,
+                userId: replyToMessage.userId,
+                text: replyToMessage.text,
+              };
+            }
+            
+            await addDoc(confessionsCollection, messageData);
             confessionInput.value = "";
+            cancelReplyMode();
             updateTypingStatus(false);
           } catch (error) {
             console.error("Error adding confession: ", error);
@@ -1418,12 +1564,24 @@
         const text = chatInput.value.trim();
         if (text && db) {
           try {
-            await addDoc(chatCollection, {
+            const messageData = {
               text: text,
               timestamp: serverTimestamp(),
               userId: currentUserId,
-            });
+            };
+            
+            // Add reply data if replying to a message
+            if (replyToMessage) {
+              messageData.replyTo = {
+                messageId: replyToMessage.id,
+                userId: replyToMessage.userId,
+                text: replyToMessage.text,
+              };
+            }
+            
+            await addDoc(chatCollection, messageData);
             chatInput.value = "";
+            cancelReplyMode();
             updateTypingStatus(false);
           } catch (error) {
             console.error("Error adding chat message: ", error);
@@ -1500,6 +1658,13 @@
         hideDropdownMenu();
       });
 
+      menuReply.addEventListener("click", () => {
+        if (currentContextMenuData) {
+          startReplyMode(currentContextMenuData);
+        }
+        hideDropdownMenu();
+      });
+
       menuSelect.addEventListener("click", () => {
         enterSelectionMode();
         hideDropdownMenu(); // enterSelectionMode will add the first item
@@ -1508,6 +1673,9 @@
       // Selection bar button clicks
       selectionCancel.addEventListener("click", exitSelectionMode);
       selectionDelete.addEventListener("click", handleMultiDelete);
+
+      // Reply bar button click
+      cancelReply.addEventListener("click", cancelReplyMode);
 
       // Handle Enter/Shift+Enter for Confessions
       confessionInput.addEventListener("keydown", (e) => {
@@ -1528,6 +1696,35 @@
           updateTypingStatus(true);
         }
       });
+
+      // --- Reply Functions ---
+      function startReplyMode(messageData) {
+        replyToMessage = {
+          id: messageData.id,
+          userId: messageData.userid || messageData.isMine === "true" ? currentUserId : null,
+          text: messageData.text,
+        };
+
+        // Get username from profiles
+        const profile = userProfiles[replyToMessage.userId] || {};
+        const username = profile.username || "Anonymous";
+
+        replyAuthor.textContent = `Replying to ${username}`;
+        replyText.textContent = replyToMessage.text;
+        replyBar.classList.remove("hidden");
+
+        // Focus the appropriate input
+        if (currentPage === "chat") {
+          chatInput.focus();
+        } else {
+          confessionInput.focus();
+        }
+      }
+
+      function cancelReplyMode() {
+        replyToMessage = null;
+        replyBar.classList.add("hidden");
+      }
 
       // Start the application
       initFirebase();
