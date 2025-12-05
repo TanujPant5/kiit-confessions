@@ -1,0 +1,977 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import {
+  getAuth,
+  signInAnonymously,
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  serverTimestamp,
+  doc,
+  setDoc,
+  getDoc,
+  orderBy,
+  updateDoc,
+  deleteDoc,
+  writeBatch,
+  arrayUnion,
+  arrayRemove,
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCtFOOGfjbeLM-bAT5i2J601w9_95MQlxs",
+  authDomain: "kiit-confessions.firebaseapp.com",
+  projectId: "kiit-confessions",
+  storageBucket: "kiit-confessions.firebasestorage.app",
+  messagingSenderId: "844059847809",
+  appId: "1:844059847809:web:98a8a39a3a33c2dd7d3180",
+  measurementId: "G-2JRL8TMMV7",
+};
+
+// DOM elements
+const feedContainer = document.getElementById("feedContainer");
+const loading = document.getElementById("loading");
+const navConfessions = document.getElementById("navConfessions");
+const navChat = document.getElementById("navChat");
+const confessionForm = document.getElementById("confessionForm");
+const confessionInput = document.getElementById("confessionInput");
+const confessionButton = document.getElementById("confessionButton");
+const chatForm = document.getElementById("chatForm");
+const chatInput = document.getElementById("chatInput");
+const chatButton = document.getElementById("chatButton");
+const typingIndicator = document.getElementById("typingIndicator");
+
+const profileButton = document.getElementById("profileButton");
+const profileModal = document.getElementById("profileModal");
+const modalCloseButton = document.getElementById("modalCloseButton");
+const modalSaveButton = document.getElementById("modalSaveButton");
+const modalUsernameInput = document.getElementById("modalUsernameInput");
+
+const editModal = document.getElementById("editModal");
+const modalEditTextArea = document.getElementById("modalEditTextArea");
+const editModalCancelButton = document.getElementById(
+  "editModalCancelButton"
+);
+const editModalSaveButton = document.getElementById("editModalSaveButton");
+
+const confirmModal = document.getElementById("confirmModal");
+const confirmModalText = document.getElementById("confirmModalText");
+const confirmModalNoButton = document.getElementById("confirmModalNoButton");
+const confirmModalYesButton = document.getElementById("confirmModalYesButton");
+
+const contextMenu = document.getElementById("contextMenu");
+const menuEdit = document.getElementById("menuEdit");
+const menuDelete = document.getElementById("menuDelete");
+const menuSelect = document.getElementById("menuSelect");
+
+const selectionBar = document.getElementById("selectionBar");
+const selectionCount = document.getElementById("selectionCount");
+const selectionCancel = document.getElementById("selectionCancel");
+const selectionDelete = document.getElementById("selectionDelete");
+
+const replyBar = document.getElementById("replyBar");
+const replyAuthor = document.getElementById("replyAuthor");
+const replyText = document.getElementById("replyText");
+const cancelReply = document.getElementById("cancelReply");
+
+// State
+let db;
+let auth;
+let currentUserId = null;
+let currentUsername = "Anonymous";
+let currentProfilePhotoURL = null;
+let userProfiles = {};
+let confessionsCollection;
+let chatCollection;
+let typingStatusCollection;
+let unsubscribeConfessions = () => {};
+let unsubscribeChat = () => {};
+let unsubscribeUserProfiles = () => {};
+let unsubscribeTypingStatus = () => {};
+let currentPage = "chat";
+let typingTimeout = null;
+
+let docToEditId = null;
+let collectionToEdit = null;
+let deleteCallback = null;
+
+let isSelectionMode = false;
+let selectedMessages = new Set();
+let currentContextMenuData = null;
+
+let replyToMessage = null;
+
+async function initFirebase() {
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
+
+    const userCredential = await signInAnonymously(auth);
+    currentUserId = userCredential.user.uid;
+
+    listenForUserProfiles();
+    await loadUserProfile();
+
+    confessionsCollection = collection(db, "confessions");
+    chatCollection = collection(db, "chat");
+    typingStatusCollection = collection(db, "typingStatus");
+
+    showPage(currentPage);
+  } catch (error) {
+    console.error("Error initializing Firebase:", error);
+    loading.textContent =
+      "Error: Could not connect to the grid. Refresh page.";
+  }
+}
+
+function listenForUserProfiles() {
+  const usersCollection = collection(db, "users");
+  unsubscribeUserProfiles = onSnapshot(usersCollection, (snapshot) => {
+    snapshot.docs.forEach((docSnap) => {
+      userProfiles[docSnap.id] = docSnap.data();
+    });
+    if (currentPage === "chat") {
+      listenForChat(true);
+    } else {
+      listenForConfessions(true);
+    }
+  });
+}
+
+async function loadUserProfile() {
+  if (!db || !currentUserId) return;
+  const userDocRef = doc(db, "users", currentUserId);
+  const userDoc = await getDoc(userDocRef);
+
+  if (userDoc.exists()) {
+    const data = userDoc.data();
+    currentUsername = data.username || "Anonymous";
+    currentProfilePhotoURL = data.profilePhotoURL || null;
+  } else {
+    currentUsername = "Anonymous";
+    currentProfilePhotoURL = null;
+  }
+  modalUsernameInput.value =
+    currentUsername === "Anonymous" ? "" : currentUsername;
+}
+
+async function handleProfileSave() {
+  if (!db || !currentUserId) return;
+  modalSaveButton.textContent = "SAVING...";
+  modalSaveButton.disabled = true;
+  const newUsername = modalUsernameInput.value.trim() || "Anonymous";
+  let newProfilePhotoURL = null;
+  if (newUsername && newUsername !== "Anonymous") {
+    const firstLetter = newUsername.charAt(0).toUpperCase();
+    newProfilePhotoURL = `https://placehold.co/32x32/0a0a1a/00e5ff?text=${firstLetter}`;
+  } else {
+    newProfilePhotoURL = `https://placehold.co/32x32/00e5ff/0a0a1a?text=?`;
+  }
+
+  try {
+    const userDocRef = doc(db, "users", currentUserId);
+    await setDoc(
+      userDocRef,
+      {
+        username: newUsername,
+        profilePhotoURL: newProfilePhotoURL,
+      },
+      { merge: true }
+    );
+    currentUsername = newUsername;
+    currentProfilePhotoURL = newProfilePhotoURL;
+    closeProfileModal();
+  } catch (error) {
+    console.error("Error saving profile: ", error);
+  } finally {
+    modalSaveButton.textContent = "SAVE";
+    modalSaveButton.disabled = false;
+  }
+}
+
+function openProfileModal() {
+  modalUsernameInput.value =
+    currentUsername === "Anonymous" ? "" : currentUsername;
+  profileModal.classList.add("is-open");
+}
+
+function closeProfileModal() {
+  profileModal.classList.remove("is-open");
+}
+
+function showEditModal(docId, collectionName, currentText) {
+  docToEditId = docId;
+  collectionToEdit = collectionName;
+  modalEditTextArea.value = currentText;
+  editModal.classList.add("is-open");
+}
+
+function closeEditModal() {
+  editModal.classList.remove("is-open");
+  docToEditId = null;
+  collectionToEdit = null;
+}
+
+async function saveEdit() {
+  const newText = modalEditTextArea.value.trim();
+  if (newText && docToEditId && collectionToEdit) {
+    editModalSaveButton.textContent = "SAVING...";
+    editModalSaveButton.disabled = true;
+    try {
+      const docRef = doc(db, collectionToEdit, docToEditId);
+      await updateDoc(docRef, {
+        text: newText,
+        edited: true,
+      });
+      closeEditModal();
+    } catch (error) {
+      console.error("Error updating document:", error);
+      alert(
+        "Error: Could not save edit. The 5-minute edit window may have expired."
+      );
+    }
+    editModalSaveButton.textContent = "SAVE";
+    editModalSaveButton.disabled = false;
+  }
+}
+
+function showConfirmModal(callback) {
+  deleteCallback = callback;
+  confirmModal.classList.add("is-open");
+}
+
+function closeConfirmModal() {
+  confirmModal.classList.remove("is-open");
+  deleteCallback = null;
+}
+
+async function handleDelete() {
+  if (deleteCallback) {
+    confirmModalYesButton.textContent = "DELETING...";
+    confirmModalYesButton.disabled = true;
+    try {
+      await deleteCallback();
+    } catch (error) {
+      console.error("DELETE FAILED:", error);
+      alert(
+        "Error: Could not delete message. Check console (F12) for details."
+      );
+    }
+    closeConfirmModal();
+    confirmModalYesButton.textContent = "DELETE";
+    confirmModalYesButton.disabled = false;
+  }
+}
+
+async function toggleReaction(
+  docId,
+  collectionName,
+  reactionType,
+  hasReacted
+) {
+  if (!db || !currentUserId) return;
+
+  try {
+    const docRef = doc(db, collectionName, docId);
+    const reactionField = `reactions.${reactionType}`;
+
+    if (hasReacted) {
+      await updateDoc(docRef, {
+        [reactionField]: arrayRemove(currentUserId),
+      });
+    } else {
+      await updateDoc(docRef, {
+        [reactionField]: arrayUnion(currentUserId),
+      });
+    }
+  } catch (error) {
+    console.error("Error toggling reaction:", error);
+    if (error.code === "permission-denied") {
+      alert(
+        "Permission denied: Firebase security rules need to be updated to allow reactions."
+      );
+    } else {
+      alert(`Error adding reaction: ${error.message}`);
+    }
+  }
+}
+
+function getReactionTooltip(userIds) {
+  if (userIds.length === 0) return "";
+  if (userIds.length === 1) {
+    const userId = userIds[0];
+    if (userId === currentUserId) return "You reacted";
+    const username = userProfiles[userId]?.username || "Someone";
+    return `${username} reacted`;
+  }
+  if (userIds.length === 2) {
+    const names = userIds.map((id) => {
+      if (id === currentUserId) return "You";
+      return userProfiles[id]?.username || "Someone";
+    });
+    return `${names[0]} and ${names[1]} reacted`;
+  }
+  const hasCurrentUser = userIds.includes(currentUserId);
+  if (hasCurrentUser) {
+    return `You and ${userIds.length - 1} others reacted`;
+  }
+  return `${userIds.length} people reacted`;
+}
+
+function showDropdownMenu(event, data) {
+  event.stopPropagation();
+  currentContextMenuData = data;
+
+  const now = Date.now();
+  const messageTime = parseInt(currentContextMenuData.timestamp, 10);
+  const isEditable = now - messageTime < 300000;
+  const isMine = currentContextMenuData.isMine === "true";
+
+  menuEdit.style.display = isEditable && isMine ? "block" : "none";
+  menuDelete.style.display = isMine ? "block" : "none";
+
+  const rect = event.currentTarget.getBoundingClientRect();
+  contextMenu.style.top = `${rect.bottom + 2}px`;
+  const menuWidth = contextMenu.offsetWidth || 150;
+  contextMenu.style.left = `${rect.right - menuWidth}px`;
+
+  contextMenu.classList.add("is-open");
+}
+
+function hideDropdownMenu() {
+  contextMenu.classList.remove("is-open");
+}
+
+function handleMessageClick(bubble) {
+  if (!isSelectionMode) return;
+
+  const docId = bubble.dataset.id;
+  const isMine = bubble.dataset.isMine === "true";
+
+  if (!isMine) return;
+
+  if (selectedMessages.has(docId)) {
+    selectedMessages.delete(docId);
+    bubble.classList.remove("selected-message");
+  } else {
+    selectedMessages.add(docId);
+    bubble.classList.add("selected-message");
+  }
+
+  updateSelectionBar();
+}
+
+function enterSelectionMode() {
+  isSelectionMode = true;
+  selectionBar.classList.remove("hidden");
+  chatForm.classList.add("hidden");
+  confessionForm.classList.add("hidden");
+
+  if (currentContextMenuData) {
+    const docId = currentContextMenuData.id;
+    selectedMessages.add(docId);
+    const bubble = document.querySelector(
+      `.message-bubble[data-id="${docId}"]`
+    );
+    if (bubble) {
+      bubble.classList.add("selected-message");
+    }
+  }
+  updateSelectionBar();
+}
+
+function exitSelectionMode() {
+  isSelectionMode = false;
+  selectionBar.classList.add("hidden");
+  selectedMessages.clear();
+
+  if (currentPage === "chat") {
+    chatForm.classList.remove("hidden");
+    chatForm.classList.add("flex");
+  } else {
+    confessionForm.classList.remove("hidden");
+    confessionForm.classList.add("flex");
+  }
+
+  document.querySelectorAll(".selected-message").forEach((el) => {
+    el.classList.remove("selected-message");
+  });
+}
+
+function updateSelectionBar() {
+  const count = selectedMessages.size;
+  selectionCount.textContent = `${count} selected`;
+
+  if (count === 0 && isSelectionMode) {
+    exitSelectionMode();
+  }
+}
+
+async function handleMultiDelete() {
+  const count = selectedMessages.size;
+  if (count === 0) return;
+
+  confirmModalText.textContent = `Are you sure you want to permanently delete these ${count} messages?`;
+  showConfirmModal(async () => {
+    const batch = writeBatch(db);
+    selectedMessages.forEach((docId) => {
+      const docRef = doc(db, currentPage, docId);
+      batch.delete(docRef);
+    });
+
+    await batch.commit();
+    exitSelectionMode();
+    confirmModalText.textContent =
+      "Are you sure you want to permanently delete this message?";
+  });
+}
+
+function showPage(page) {
+  currentPage = page;
+
+  if (isSelectionMode) {
+    exitSelectionMode();
+  }
+
+  cancelReplyMode();
+
+  unsubscribeConfessions();
+  unsubscribeChat();
+  unsubscribeTypingStatus();
+  typingIndicator.innerHTML = "&nbsp;";
+
+  if (page === "confessions") {
+    navConfessions.classList.add("active");
+    navChat.classList.remove("active");
+    confessionForm.classList.add("flex");
+    confessionForm.classList.remove("hidden");
+    chatForm.classList.add("hidden");
+    chatForm.classList.remove("flex");
+    typingIndicator.classList.add("hidden");
+    listenForConfessions();
+  } else {
+    navChat.classList.add("active");
+    navConfessions.classList.remove("active");
+    chatForm.classList.add("flex");
+    chatForm.classList.remove("hidden");
+    confessionForm.classList.add("hidden");
+    confessionForm.classList.remove("flex");
+    typingIndicator.classList.remove("hidden");
+    listenForChat();
+    listenForTyping();
+  }
+}
+
+let lastConfessionDocs = [];
+let lastChatDocs = [];
+
+function listenForConfessions(isRerender = false) {
+  if (isRerender) {
+    renderFeed(lastConfessionDocs, "confessions");
+    return;
+  }
+  unsubscribeChat();
+  feedContainer.innerHTML =
+    '<div id="loading" class="text-center p-4">LOADING CONFESSIONS...</div>';
+
+  const q = query(confessionsCollection, orderBy("timestamp", "asc"));
+  unsubscribeConfessions = onSnapshot(
+    q,
+    (snapshot) => {
+      lastConfessionDocs = snapshot.docs;
+      renderFeed(lastConfessionDocs, "confessions");
+    },
+    (error) => {
+      console.error("Error listening to confessions:", error);
+      loading.textContent = "Error loading confessions.";
+    }
+  );
+}
+
+function listenForChat(isRerender = false) {
+  if (isRerender) {
+    renderFeed(lastChatDocs, "chat");
+    return;
+  }
+  unsubscribeConfessions();
+  feedContainer.innerHTML =
+    '<div id="loading" class="text-center p-4">LOADING CHAT...</div>';
+
+  const q = query(chatCollection, orderBy("timestamp", "asc"));
+  unsubscribeChat = onSnapshot(
+    q,
+    (snapshot) => {
+      lastChatDocs = snapshot.docs;
+      renderFeed(lastChatDocs, "chat");
+    },
+    (error) => {
+      console.error("Error listening to chat:", error);
+      loading.textContent = "Error loading chat.";
+    }
+  );
+}
+
+function listenForTyping() {
+  unsubscribeTypingStatus = onSnapshot(
+    typingStatusCollection,
+    (snapshot) => {
+      const now = Date.now();
+      const typingUsers = [];
+      snapshot.docs.forEach((docSnap) => {
+        const data = docSnap.data();
+        const userId = docSnap.id;
+        if (
+          data.isTyping &&
+          userId !== currentUserId &&
+          now - data.timestamp < 5000
+        ) {
+          const username = userProfiles[userId]?.username || "Someone";
+          typingUsers.push(username);
+        }
+      });
+      if (typingUsers.length === 0) {
+        typingIndicator.innerHTML = "&nbsp;";
+      } else if (typingUsers.length === 1) {
+        typingIndicator.textContent = `${typingUsers[0]} is typing...`;
+      } else if (typingUsers.length === 2) {
+        typingIndicator.textContent = `${typingUsers[0]} and ${typingUsers[1]} are typing...`;
+      } else {
+        typingIndicator.textContent = "Several users are typing...";
+      }
+    }
+  );
+}
+
+async function updateTypingStatus(isTyping) {
+  if (!db || !currentUserId) return;
+  if (typingTimeout) {
+    clearTimeout(typingTimeout);
+    typingTimeout = null;
+  }
+  const typingDocRef = doc(db, "typingStatus", currentUserId);
+  if (isTyping) {
+    await setDoc(typingDocRef, {
+      isTyping: true,
+      timestamp: Date.now(),
+    });
+    typingTimeout = setTimeout(() => {
+      updateTypingStatus(false);
+    }, 3000);
+  } else {
+    await setDoc(typingDocRef, {
+      isTyping: false,
+      timestamp: Date.now(),
+    });
+  }
+}
+
+function formatTimestamp(firebaseTimestamp) {
+  if (!firebaseTimestamp) return "...";
+  const date = firebaseTimestamp.toDate();
+  return date.toLocaleString([], {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
+
+function renderFeed(docs, type) {
+  feedContainer.innerHTML = "";
+  if (docs.length === 0) {
+    const loadingEl = document.createElement("div");
+    loadingEl.id = "loading";
+    loadingEl.className = "text-center p-4";
+    loadingEl.textContent = `NO ${type.toUpperCase()} YET. BE THE FIRST!`;
+    feedContainer.appendChild(loadingEl);
+    return;
+  }
+
+  let lastUserId = null;
+
+  docs.forEach((docInstance) => {
+    const data = docInstance.data();
+    const text = data.text || "...";
+    const time = formatTimestamp(data.timestamp);
+    const docUserId = data.userId;
+
+    const profile = userProfiles[docUserId] || {};
+    const username = profile.username || "Anonymous";
+    const photoURL =
+      profile.profilePhotoURL ||
+      `https://placehold.co/32x32/00e5ff/0a0a1a?text=${
+        username.charAt(0).toUpperCase() || "?"
+      }`;
+
+    const isMine = currentUserId && docUserId === currentUserId;
+    const isConsecutive = docUserId && docUserId === lastUserId;
+    lastUserId = docUserId;
+
+    // Row aligned to left/right
+    const alignWrapper = document.createElement("div");
+    alignWrapper.className = `flex w-full ${
+      isMine ? "justify-end" : "justify-start"
+    }`;
+
+    // Inner row: bubble + reply arrow
+    const row = document.createElement("div");
+    row.className = "message-wrapper";
+
+    const bubble = document.createElement("div");
+    bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${
+      isMine ? "my-message" : ""
+    } ${isConsecutive ? "mt-0.5" : "mt-2"}`;
+
+    bubble.dataset.id = docInstance.id;
+    bubble.dataset.text = text;
+    bubble.dataset.isMine = isMine;
+    bubble.dataset.userId = docUserId;
+    bubble.dataset.timestamp = data.timestamp
+      ? data.timestamp.toMillis()
+      : 0;
+
+    if (isSelectionMode && selectedMessages.has(docInstance.id)) {
+      bubble.classList.add("selected-message");
+    }
+
+    if (!isConsecutive) {
+      const headerElement = document.createElement("div");
+      headerElement.className = `flex items-center gap-1.5 mb-1 ${
+        isMine ? "justify-end" : ""
+      }`;
+      const imgElement = document.createElement("img");
+      imgElement.src = photoURL;
+      imgElement.className = `chat-pfp ${isMine ? "order-2" : "order-1"}`;
+      const usernameElement = document.createElement("div");
+      usernameElement.className = `font-bold text-sm opacity-70 ${
+        isMine ? "order-1 text-right" : "order-2 text-left"
+      }`;
+      usernameElement.textContent = username;
+      headerElement.appendChild(imgElement);
+      headerElement.appendChild(usernameElement);
+      bubble.appendChild(headerElement);
+    }
+
+    if (data.replyTo) {
+      const replyPreview = document.createElement("div");
+      replyPreview.className = "reply-preview";
+
+      const replyAuthorEl = document.createElement("div");
+      replyAuthorEl.className = "reply-author";
+      const replyToProfile = userProfiles[data.replyTo.userId] || {};
+      replyAuthorEl.textContent = replyToProfile.username || "Anonymous";
+
+      const replyTextEl = document.createElement("div");
+      replyTextEl.className = "reply-text";
+      replyTextEl.textContent = data.replyTo.text;
+
+      replyPreview.appendChild(replyAuthorEl);
+      replyPreview.appendChild(replyTextEl);
+
+      replyPreview.addEventListener("click", () => {
+        const originalBubble = document.querySelector(
+          `.message-bubble[data-id="${data.replyTo.messageId}"]`
+        );
+        if (originalBubble) {
+          originalBubble.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+          originalBubble.style.backgroundColor = "rgba(0, 229, 255, 0.3)";
+          setTimeout(() => {
+            originalBubble.style.backgroundColor = "";
+          }, 1000);
+        }
+      });
+
+      bubble.appendChild(replyPreview);
+    }
+
+    const textElement = document.createElement("p");
+    textElement.className = `${isMine ? "text-right" : "text-left"}`;
+    textElement.textContent = text;
+    bubble.appendChild(textElement);
+
+    const timeElement = document.createElement("div");
+    timeElement.className = "timestamp text-right";
+
+    if (data.edited) {
+      const editedMarker = document.createElement("span");
+      editedMarker.className = "edited-marker";
+      editedMarker.textContent = "(edited)";
+      timeElement.appendChild(editedMarker);
+    }
+
+    const timeText = document.createElement("span");
+    timeText.textContent = time;
+    timeElement.appendChild(timeText);
+
+    const kebabBtn = document.createElement("button");
+    kebabBtn.className = "kebab-btn";
+    kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+              </svg>`;
+    kebabBtn.addEventListener("click", (e) => {
+      showDropdownMenu(e, bubble.dataset);
+    });
+    timeElement.appendChild(kebabBtn);
+
+    bubble.appendChild(timeElement);
+
+    // WhatsApp-style reaction pill
+    const reactionContainer = document.createElement("div");
+    reactionContainer.className = "reaction-container";
+
+    const reactions = data.reactions || {};
+    const heartReactions = reactions.heart || [];
+    const hasReacted = heartReactions.includes(currentUserId);
+
+    const heartBtn = document.createElement("button");
+
+    if (heartReactions.length > 0) {
+      heartBtn.className = "reaction-btn";
+      if (hasReacted) {
+        heartBtn.classList.add("reacted");
+      }
+      heartBtn.innerHTML = `❤️ <span>${heartReactions.length}</span>`;
+      heartBtn.title = getReactionTooltip(heartReactions);
+    } else {
+      heartBtn.className = "add-reaction-btn";
+      heartBtn.innerHTML = "❤️";
+      heartBtn.title = "React with heart";
+      reactionContainer.classList.add("empty");
+    }
+
+    heartBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleReaction(docInstance.id, type, "heart", hasReacted);
+    });
+
+    reactionContainer.appendChild(heartBtn);
+    bubble.appendChild(reactionContainer);
+
+    // Reply arrow: left for my messages, right for others
+    const replyBtn = document.createElement("button");
+    replyBtn.className = "reply-floating-btn";
+    replyBtn.innerHTML = "↩";
+    replyBtn.title = "Reply";
+
+    replyBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      startReplyMode(bubble.dataset);
+    });
+
+    if (isMine) {
+      // my messages: [↩][bubble]
+      row.appendChild(replyBtn);
+      row.appendChild(bubble);
+    } else {
+      // others: [bubble][↩]
+      row.appendChild(bubble);
+      row.appendChild(replyBtn);
+    }
+
+    alignWrapper.appendChild(row);
+    feedContainer.appendChild(alignWrapper);
+  });
+
+  const bubbles = feedContainer.querySelectorAll(".message-bubble");
+  const lastBubble = bubbles[bubbles.length - 1];
+
+  if (lastBubble && !lastBubble.hasAttribute("data-animated")) {
+    const now = Date.now();
+    const messageTime = parseInt(lastBubble.dataset.timestamp, 10);
+
+    if (now - messageTime < 3000) {
+      lastBubble.classList.add("animate-pop-in");
+    }
+    lastBubble.setAttribute("data-animated", "true");
+  }
+
+  if (!isSelectionMode) {
+    feedContainer.scrollTop = feedContainer.scrollHeight;
+  }
+}
+
+async function postConfession(e) {
+  e.preventDefault();
+  const text = confessionInput.value.trim();
+  if (text && db) {
+    try {
+      const messageData = {
+        text: text,
+        timestamp: serverTimestamp(),
+        userId: currentUserId,
+      };
+
+      if (replyToMessage) {
+        messageData.replyTo = {
+          messageId: replyToMessage.id,
+          userId: replyToMessage.userId,
+          text: replyToMessage.text,
+        };
+      }
+
+      await addDoc(confessionsCollection, messageData);
+      confessionInput.value = "";
+      cancelReplyMode();
+      updateTypingStatus(false);
+    } catch (error) {
+      console.error("Error adding confession: ", error);
+    }
+  }
+}
+
+async function postChatMessage(e) {
+  e.preventDefault();
+  const text = chatInput.value.trim();
+  if (text && db) {
+    try {
+      const messageData = {
+        text: text,
+        timestamp: serverTimestamp(),
+        userId: currentUserId,
+      };
+
+      if (replyToMessage) {
+        messageData.replyTo = {
+          messageId: replyToMessage.id,
+          userId: replyToMessage.userId,
+          text: replyToMessage.text,
+        };
+      }
+
+      await addDoc(chatCollection, messageData);
+      chatInput.value = "";
+      cancelReplyMode();
+      updateTypingStatus(false);
+    } catch (error) {
+      console.error("Error adding chat message: ", error);
+    }
+  }
+}
+
+confessionForm.addEventListener("submit", postConfession);
+chatForm.addEventListener("submit", postChatMessage);
+navConfessions.addEventListener("click", () => showPage("confessions"));
+navChat.addEventListener("click", () => showPage("chat"));
+
+profileButton.addEventListener("click", openProfileModal);
+modalCloseButton.addEventListener("click", closeProfileModal);
+modalSaveButton.addEventListener("click", handleProfileSave);
+
+editModalCancelButton.addEventListener("click", closeEditModal);
+editModalSaveButton.addEventListener("click", saveEdit);
+confirmModalNoButton.addEventListener("click", closeConfirmModal);
+confirmModalYesButton.addEventListener("click", handleDelete);
+
+feedContainer.addEventListener("click", (e) => {
+  if (!isSelectionMode) return;
+  if (e.target.closest(".kebab-btn")) return;
+
+  const bubble = e.target.closest(".message-bubble");
+  if (!bubble) return;
+
+  e.preventDefault();
+  handleMessageClick(bubble);
+});
+
+document.addEventListener(
+  "click",
+  (e) => {
+    if (
+      !contextMenu.contains(e.target) &&
+      !e.target.closest(".kebab-btn")
+    ) {
+      hideDropdownMenu();
+    }
+  },
+  true
+);
+
+menuEdit.addEventListener("click", () => {
+  if (currentContextMenuData) {
+    showEditModal(
+      currentContextMenuData.id,
+      currentPage,
+      currentContextMenuData.text
+    );
+  }
+  hideDropdownMenu();
+});
+
+menuDelete.addEventListener("click", () => {
+  if (currentContextMenuData) {
+    const docId = currentContextMenuData.id;
+    showConfirmModal(async () => {
+      await deleteDoc(doc(db, currentPage, docId));
+    });
+  }
+  hideDropdownMenu();
+});
+
+menuSelect.addEventListener("click", () => {
+  enterSelectionMode();
+  hideDropdownMenu();
+});
+
+selectionCancel.addEventListener("click", exitSelectionMode);
+selectionDelete.addEventListener("click", handleMultiDelete);
+
+cancelReply.addEventListener("click", cancelReplyMode);
+
+confessionInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    confessionForm.requestSubmit(confessionButton);
+  } else {
+    updateTypingStatus(true);
+  }
+});
+
+chatInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    chatForm.requestSubmit(chatButton);
+  } else {
+    updateTypingStatus(true);
+  }
+});
+
+function startReplyMode(messageData) {
+  let repliedUserId = messageData.userId || null;
+  if (!repliedUserId && messageData.isMine === "true") {
+    repliedUserId = currentUserId;
+  }
+
+  replyToMessage = {
+    id: messageData.id,
+    userId: repliedUserId,
+    text: messageData.text,
+  };
+
+  const profile =
+    repliedUserId && userProfiles[repliedUserId]
+      ? userProfiles[repliedUserId]
+      : {};
+  const username = profile.username || "Anonymous";
+
+  replyAuthor.textContent = `Replying to ${username}`;
+  replyText.textContent = replyToMessage.text;
+  replyBar.classList.add("show");
+
+  if (currentPage === "chat") {
+    chatInput.focus();
+  } else {
+    confessionInput.focus();
+  }
+}
+
+function cancelReplyMode() {
+  replyToMessage = null;
+  replyBar.classList.remove("show");
+}
+
+initFirebase();

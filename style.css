@@ -1,0 +1,435 @@
+/* Base styling */
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #0a0a1a;
+  color: #00e5ff;
+  text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff;
+}
+
+.glow {
+  text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff, 0 0 15px #00e5ff;
+}
+
+.neon-border {
+  border: 2px solid #00e5ff;
+  box-shadow: 0 0 10px #00e5ff, 0 0 15px #00e5ff inset;
+  border-radius: 0.5rem;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00e5ff;
+  border-radius: 4px;
+  box-shadow: 0 0 5px #00e5ff;
+}
+
+textarea,
+button {
+  font-family: "Inter", sans-serif;
+  background-color: rgba(0, 229, 255, 0.05);
+  border: 1px solid #00e5ff;
+  color: #00e5ff;
+  text-shadow: 0 0 5px #00e5ff;
+  transition: all 0.3s ease;
+}
+
+textarea::placeholder {
+  color: #00e5ff;
+  opacity: 0.5;
+}
+
+textarea:focus {
+  outline: none;
+  background-color: rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 10px #00e5ff;
+}
+
+button:hover {
+  background-color: #00e5ff;
+  color: #0a0a1a;
+  text-shadow: none;
+  box-shadow: 0 0 15px #00e5ff;
+}
+
+input[type="text"] {
+  font-family: "Inter", sans-serif;
+  background-color: rgba(0, 229, 255, 0.05);
+  border: 1px solid #00e5ff;
+  color: #00e5ff;
+  text-shadow: 0 0 5px #00e5ff;
+  transition: all 0.3s ease;
+}
+
+input[type="text"]::placeholder {
+  color: #00e5ff;
+  opacity: 0.5;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  background-color: rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 10px #00e5ff;
+}
+
+#feedContainer {
+  background-color: rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.message-bubble {
+  background-color: rgba(30, 30, 50, 0.7);
+  border: 1px solid #007a8a;
+  text-shadow: 0 0 3px #00e5ff;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  padding: 0.5rem 0.75rem;
+  padding-bottom: 1.4rem; /* room for reaction pill */
+  transition: background-color 0.2s;
+  position: relative; /* for edge reactions */
+}
+
+.my-message {
+  background-color: rgba(0, 50, 100, 0.8);
+  border: 1px solid #00e5ff;
+  align-self: flex-end;
+}
+
+.selected-message {
+  background-color: rgba(0, 229, 255, 0.2) !important;
+  border-color: #00e5ff !important;
+}
+
+.timestamp {
+  font-size: 0.65rem;
+  color: #00e5ff;
+  opacity: 0.6;
+  text-shadow: none;
+  margin-top: 2px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+
+/* WhatsApp-style reaction pill at edge of message */
+.reaction-container {
+  position: absolute;
+  bottom: 4px;
+  right: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 9999px;
+  padding: 1px 4px;
+  font-size: 0.65rem;
+}
+
+/* When there are no reactions, hide until hover */
+.reaction-container.empty {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease-out;
+}
+
+.message-bubble:hover .reaction-container.empty {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.reaction-btn,
+.add-reaction-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.7rem;
+  opacity: 0.9;
+}
+
+.reaction-btn {
+  color: #ff5f87;
+}
+
+.add-reaction-btn {
+  color: #ccccff;
+}
+
+.reaction-btn:hover,
+.add-reaction-btn:hover {
+  opacity: 1;
+  transform: translateY(-0.5px);
+}
+
+.reaction-btn span {
+  line-height: 1;
+}
+
+.edited-marker {
+  font-size: 0.6rem;
+  opacity: 0.5;
+  margin-right: 4px;
+}
+
+.nav-item {
+  cursor: pointer;
+  padding: 8px 16px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+  opacity: 0.6;
+}
+
+.nav-item.active,
+.nav-item:hover {
+  opacity: 1;
+  text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff;
+  border-bottom-color: #00e5ff;
+}
+
+.chat-pfp {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #00e5ff;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+#typingIndicator {
+  height: 1.5rem;
+  font-size: 0.875rem;
+  color: #00e5ff;
+  opacity: 0.7;
+  text-shadow: 0 0 5px #00e5ff;
+  transition: opacity 0.3s ease;
+}
+
+#replyBar {
+  background-color: rgba(0, 50, 100, 0.9);
+  border-top: 2px solid #00e5ff;
+  padding: 0.5rem 1rem;
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#replyBar.show {
+  display: flex;
+}
+
+#replyBar .reply-info {
+  flex: 1;
+  font-size: 0.85rem;
+}
+
+#replyBar .reply-author {
+  font-weight: bold;
+}
+
+#replyBar .reply-text {
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
+#replyBar button {
+  background: none;
+  border: none;
+  color: #00e5ff;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  opacity: 0.7;
+}
+
+#replyBar button:hover {
+  opacity: 1;
+}
+
+.kebab-btn {
+  background: none;
+  border: none;
+  padding: 0 4px;
+  margin: 0;
+  color: #00e5ff;
+  opacity: 0.5;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.kebab-btn:hover {
+  opacity: 1;
+  background-color: rgba(0, 229, 255, 0.1);
+}
+
+/* Message row that holds bubble + arrow */
+.message-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Reply arrow button beside message box */
+.reply-floating-btn {
+  background: none;
+  border: none;
+  color: #00e5ff;
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 0 0 5px #00e5ff;
+}
+
+.message-wrapper:hover .reply-floating-btn {
+  opacity: 1;
+}
+
+.reply-preview {
+  background-color: rgba(0, 229, 255, 0.1);
+  border-left: 3px solid #00e5ff;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.reply-preview:hover {
+  opacity: 1;
+  background-color: rgba(0, 229, 255, 0.15);
+}
+
+.reply-preview .reply-author {
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.reply-preview .reply-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#contextMenu {
+  position: fixed;
+  z-index: 1000;
+  background-color: #0a0a1a;
+  border: 2px solid #00e5ff;
+  box-shadow: 0 0 10px #00e5ff;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0;
+  min-width: 150px;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.95);
+  transform-origin: top right;
+  transition: opacity 0.1s ease-out, visibility 0s linear 0.1s,
+    transform 0.1s ease-out;
+}
+
+#contextMenu.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  transition-delay: 0s;
+}
+
+#contextMenu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#contextMenu li {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#contextMenu li:hover {
+  background-color: #00e5ff;
+  color: #0a0a1a;
+  text-shadow: none;
+}
+
+#contextMenu li.separator {
+  height: 1px;
+  background-color: #00e5ff;
+  opacity: 0.3;
+  margin: 0.25rem 0;
+  padding: 0;
+}
+
+#selectionBar {
+  background-color: rgba(0, 50, 100, 0.9);
+  border-top: 2px solid #00e5ff;
+  padding: 0.5rem 1rem;
+}
+
+.modal-base {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-out, visibility 0s linear 0.2s;
+}
+
+.modal-base.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.modal-content {
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.modal-base.is-open .modal-content {
+  transform: scale(1);
+  opacity: 1;
+}
+
+@keyframes messagePopIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+.animate-pop-in {
+  animation: messagePopIn 0.2s ease-out;
+}
