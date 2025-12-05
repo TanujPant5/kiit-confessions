@@ -32,9 +32,8 @@ const firebaseConfig = {
 };
 
 // *** ADMIN CONFIGURATION ***
-// Add admin UIDs here as strings separated by commas
 const ADMIN_UIDS = [
-    "MzOOK3VSrQdCab9P9NoD4Ll8Fur2",
+    "REPLACE_WITH_REAL_UID_1",
     "REPLACE_WITH_REAL_UID_2"
 ]; 
 
@@ -150,7 +149,7 @@ async function initFirebase() {
 
     const userCredential = await signInAnonymously(auth);
     currentUserId = userCredential.user.uid;
-    console.log("Your UID:", currentUserId); // Log UID for easy Admin setup
+    console.log("Your UID:", currentUserId); 
 
     listenForUserProfiles();
     await loadUserProfile();
@@ -231,21 +230,27 @@ async function loadUserProfile() {
     currentUsername === "Anonymous" ? "" : currentUsername;
 }
 
-// *** OBSIDIAN PROFILE STYLE ***
+// *** COMPULSORY USERNAME CHECK ***
 async function handleProfileSave() {
   if (!db || !currentUserId) return;
+  
   modalSaveButton.textContent = "SAVING...";
   modalSaveButton.disabled = true;
-  const newUsername = modalUsernameInput.value.trim() || "Anonymous";
-  let newProfilePhotoURL = null;
-  if (newUsername && newUsername !== "Anonymous") {
-    const firstLetter = newUsername.charAt(0).toUpperCase();
-    // Black background, White text
-    newProfilePhotoURL = `https://placehold.co/32x32/000000/ffffff?text=${firstLetter}`;
-  } else {
-    // White background, Black text
-    newProfilePhotoURL = `https://placehold.co/32x32/ffffff/000000?text=?`;
+  
+  // FIX: Force user to enter something valid
+  const inputVal = modalUsernameInput.value.trim();
+  
+  if (!inputVal || inputVal.toLowerCase() === "anonymous") {
+      alert("Please enter a valid username to continue.");
+      modalSaveButton.textContent = "SAVE";
+      modalSaveButton.disabled = false;
+      return; 
   }
+
+  const newUsername = inputVal;
+  const firstLetter = newUsername.charAt(0).toUpperCase();
+  // Obsidian B&W Style
+  const newProfilePhotoURL = `https://placehold.co/32x32/000000/ffffff?text=${firstLetter}`;
 
   try {
     const userDocRef = doc(db, "users", currentUserId);
@@ -320,7 +325,6 @@ function showConfirmModal(text, isMine, docId) {
   const isAdmin = ADMIN_UIDS.includes(currentUserId);
 
   if (isMine || isAdmin) {
-    // 1. "For Me" (White Outline)
     const btnForMe = document.createElement('button');
     btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold text-sm border border-white text-white hover:bg-white hover:text-black transition";
     btnForMe.textContent = "FOR ME";
@@ -331,7 +335,6 @@ function showConfirmModal(text, isMine, docId) {
         });
     };
 
-    // 2. "Everyone/Nuke" (Solid Red)
     const btnEveryone = document.createElement('button');
     btnEveryone.className = "flex-1 px-4 py-2 rounded-lg font-bold text-sm bg-red-600 text-white hover:bg-red-500 transition border border-red-600";
     btnEveryone.textContent = isAdmin && !isMine ? "NUKE (ADMIN)" : "EVERYONE";
@@ -344,7 +347,6 @@ function showConfirmModal(text, isMine, docId) {
     confirmModalActionContainer.appendChild(btnEveryone);
 
   } else {
-    // "Delete" (Solid Red)
     const btnForMe = document.createElement('button');
     btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold text-sm bg-red-600 text-white hover:bg-red-500 transition";
     btnForMe.textContent = "DELETE";
@@ -382,7 +384,6 @@ async function toggleReaction(docId, collectionName, reactionType, hasReacted) {
 function showDropdownMenu(event, data) {
   event.stopPropagation();
   
-  // TOGGLE FIX
   if (contextMenu.classList.contains("is-open") && 
       currentContextMenuData && 
       currentContextMenuData.id === data.id) {
@@ -880,6 +881,10 @@ function renderFeed(docs, type, snapshot) {
   if (hasNewMessages) {
       if (lastMessageIsMine || wasAtBottom) {
           scrollToBottom();
+      } else {
+          // Increment unread and show arrow
+          unreadMessages++;
+          updateScrollButton();
       }
   } else {
       feedContainer.scrollTop = prevScrollTop;
@@ -908,8 +913,17 @@ setInterval(() => {
 
 scrollToBottomBtn.addEventListener("click", scrollToBottom);
 
+// *** COMPULSORY USERNAME CHECK ON SEND ***
 async function postConfession(e) {
   e.preventDefault();
+  
+  // CHECK: If username is "Anonymous", block post
+  if (currentUsername === "Anonymous") {
+      alert("Please set a username before posting!");
+      openProfileModal();
+      return;
+  }
+
   const text = confessionInput.value.trim();
   if (text && db) {
     await addDoc(confessionsCollection, {
@@ -927,6 +941,14 @@ async function postConfession(e) {
 
 async function postChatMessage(e) {
   e.preventDefault();
+
+  // CHECK: If username is "Anonymous", block post
+  if (currentUsername === "Anonymous") {
+      alert("Please set a username before chatting!");
+      openProfileModal();
+      return;
+  }
+
   const text = chatInput.value.trim();
   if (text && db) {
     await addDoc(chatCollection, {
