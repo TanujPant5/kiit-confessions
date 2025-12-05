@@ -424,3 +424,29 @@ button:hover {
 .animate-pop-in {
   animation: messagePopIn 0.2s ease-out;
 }
+
+/* DATE SEPARATOR PILL */
+.date-separator {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0 12px 0; /* Space around the separator */
+  width: 100%;
+  opacity: 0.9;
+}
+
+.date-separator span {
+  background-color: rgba(0, 30, 60, 0.8); /* Dark background like WhatsApp/Telegram */
+  color: #00e5ff;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  text-shadow: 0 0 5px rgba(0, 229, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Adjust timestamp inside bubble to be just the time */
+.timestamp {
+  margin-top: 2px;
+}
