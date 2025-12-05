@@ -78,8 +78,13 @@ button:hover {
   padding: 0.5rem 0.75rem;
   position: relative;
   transition: background-color 0.2s;
-  /* Ensure space for hanging chips if needed */
-  margin-bottom: 8px;
+  /* CHANGED: Reduced to 1px for tight grouping */
+  margin-bottom: 1px;
+}
+
+/* NEW: Logic to add space if reactions are hanging off the bottom */
+.message-bubble.has-reactions {
+  margin-bottom: 20px !important;
 }
 
 .my-message {
@@ -99,7 +104,7 @@ button:hover {
   color: #00e5ff;
   opacity: 0.6;
   text-shadow: none;
-  margin-top: 4px;
+  margin-top: 2px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -444,9 +449,4 @@ button:hover {
   border: 1px solid rgba(0, 229, 255, 0.3);
   text-shadow: 0 0 5px rgba(0, 229, 255, 0.3);
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-/* Adjust timestamp inside bubble to be just the time */
-.timestamp {
-  margin-top: 2px;
 }

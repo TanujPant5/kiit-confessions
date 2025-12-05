@@ -651,9 +651,10 @@ function renderFeed(docs, type) {
     row.className = "message-wrapper";
 
     const bubble = document.createElement("div");
+    // CHANGED: Using mt-6 for separation and mt-0.5 for grouping
     bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${
       isMine ? "my-message" : ""
-    } ${isConsecutive ? "mt-0.5" : "mt-2"}`;
+    } ${isConsecutive ? "mt-0.5" : "mt-6"}`;
 
     bubble.dataset.id = docInstance.id;
     bubble.dataset.text = text;
@@ -826,6 +827,8 @@ function renderFeed(docs, type) {
 
     if (hasChips) {
       bubble.appendChild(chipsContainer);
+      // NEW: Ensure chips don't overlap by adding bottom margin
+      bubble.classList.add("has-reactions");
     }
 
     if (isMine) {
