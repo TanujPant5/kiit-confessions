@@ -643,7 +643,7 @@ function formatMessageTime(date) {
 }
 
 
-// *** RENDER FEED (Layout Updated) ***
+// *** RENDER FEED (Layout Updated: Time Inside Bubble) ***
 function renderFeed(docs, type, snapshot) {
   // Capture current scroll state
   const prevScrollTop = feedContainer.scrollTop;
@@ -702,7 +702,7 @@ function renderFeed(docs, type, snapshot) {
       isMine ? "justify-end" : "justify-start"
     }`;
 
-    // Flex row for Bubble + Time + Actions
+    // Flex row for Bubble + Actions
     const row = document.createElement("div");
     row.className = "message-wrapper"; 
 
@@ -774,25 +774,39 @@ function renderFeed(docs, type, snapshot) {
     textElement.textContent = text;
     bubble.appendChild(textElement);
 
-    // INNER FOOTER (Kebab Menu)
+    // INNER FOOTER (Kebab Menu + Time)
     const footerDiv = document.createElement("div");
-    footerDiv.className = `bubble-footer ${isMine ? "justify-end" : "justify-start"}`; // Kebab Alignment Logic
-
+    footerDiv.className = "bubble-footer";
+    
+    // Create Kebab
     const kebabBtn = document.createElement("button");
     kebabBtn.className = "kebab-btn";
     kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>`;
     kebabBtn.addEventListener("click", (e) => {
       showDropdownMenu(e, bubble.dataset);
     });
-    footerDiv.appendChild(kebabBtn);
-    bubble.appendChild(footerDiv);
 
-    // OUTER TIMESTAMP (Layout Position)
+    // Create Time
     const timeElement = document.createElement("span");
-    timeElement.className = "outer-timestamp";
+    timeElement.className = "inner-timestamp";
     timeElement.dataset.ts = rawMillis;
     timeElement.textContent = timeString;
     if (data.edited) timeElement.textContent += " (edited)";
+
+    // APPEND logic based on Side (Inside Bubble)
+    if (isMine) {
+        // Mine: Bubble on Right. 
+        // Logic: Time (Outer/Left), Kebab (Inner/Right)
+        footerDiv.appendChild(timeElement);
+        footerDiv.appendChild(kebabBtn);
+    } else {
+        // Others: Bubble on Left.
+        // Logic: Kebab (Inner/Left), Time (Outer/Right)
+        footerDiv.appendChild(kebabBtn);
+        footerDiv.appendChild(timeElement);
+    }
+
+    bubble.appendChild(footerDiv);
 
     // SIDE BUTTONS (Reply/Heart)
     const replyBtn = document.createElement("button");
@@ -876,19 +890,17 @@ function renderFeed(docs, type, snapshot) {
       bubble.classList.add("has-reactions");
     }
 
-    // FINAL ASSEMBLY (The Order Matters!)
+    // FINAL ASSEMBLY
     if (isMine) {
-      // MINE: [Time] [React] [Reply] [Bubble]
-      row.appendChild(timeElement);
+      // MINE: [React] [Reply] [Bubble]
       row.appendChild(reactBtn);
       row.appendChild(replyBtn);
       row.appendChild(bubble);
     } else {
-      // OTHERS: [Bubble] [Reply] [React] [Time]
+      // OTHERS: [Bubble] [Reply] [React]
       row.appendChild(bubble);
       row.appendChild(replyBtn);
       row.appendChild(reactBtn);
-      row.appendChild(timeElement);
     }
 
     alignWrapper.appendChild(row);
@@ -934,7 +946,7 @@ document.addEventListener("click", (e) => {
 
 // Update timestamps every minute
 setInterval(() => {
-  const timestampElements = document.querySelectorAll('.outer-timestamp');
+  const timestampElements = document.querySelectorAll('.inner-timestamp');
   timestampElements.forEach(el => {
     const ts = parseInt(el.dataset.ts);
     if (ts > 0) {

@@ -81,6 +81,7 @@ button:hover {
   margin-bottom: 1px;
   display: flex;
   flex-direction: column;
+  min-width: 100px; /* Ensure enough space for footer */
 }
 
 /* Logic to add space if reactions are hanging off the bottom */
@@ -99,26 +100,26 @@ button:hover {
   border-color: #00e5ff !important;
 }
 
-/* FOOTER INSIDE BUBBLE (Kebab) */
+/* FOOTER INSIDE BUBBLE (Kebab & Time) */
 .bubble-footer {
   display: flex;
   align-items: center;
-  margin-top: 4px;
+  justify-content: space-between; /* Push Time and Kebab to opposite sides */
+  margin-top: 6px;
+  width: 100%;
+  gap: 8px;
 }
 
-/* TIME OUTSIDE BUBBLE */
-.outer-timestamp {
-  font-size: 0.65rem;
+.inner-timestamp {
+  font-size: 0.6rem;
   color: #00e5ff;
   opacity: 0.6;
   text-shadow: none;
   white-space: nowrap;
-  margin: 0 8px 4px 8px; /* Margin to separate from bubble */
-  flex-shrink: 0;
 }
 
 .edited-marker {
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   opacity: 0.5;
   margin-right: 4px;
   font-style: italic;
