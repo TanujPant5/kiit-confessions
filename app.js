@@ -109,6 +109,7 @@ let replyToMessage = null;
 // Scroll State
 let unreadMessages = 0;
 let userIsAtBottom = true;
+let bottomObserver = null; // New Observer
 
 // The allowed reactions
 const REACTION_TYPES = {
@@ -134,11 +135,56 @@ async function initFirebase() {
     chatCollection = collection(db, "chat");
     typingStatusCollection = collection(db, "typingStatus");
 
+    // Initialize Intersection Observer
+    initScrollObserver();
+
     showPage(currentPage);
   } catch (error) {
     console.error("Error initializing Firebase:", error);
-    loading.textContent =
-      "Error: Could not connect to the grid. Refresh page.";
+    loading.textContent = "Error: Could not connect to the grid. Refresh page.";
+  }
+}
+
+// *** NEW: INTERSECTION OBSERVER LOGIC ***
+function initScrollObserver() {
+  const options = {
+    root: feedContainer,
+    rootMargin: "100px", // Detect bottom even if slightly above
+    threshold: 0.1
+  };
+
+  bottomObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      // If the invisible anchor is visible, we are at the bottom
+      userIsAtBottom = entry.isIntersecting;
+      
+      if (userIsAtBottom) {
+        // Reset counters immediately
+        unreadMessages = 0;
+        updateScrollButton();
+      } else {
+        updateScrollButton();
+      }
+    });
+  }, options);
+}
+
+function updateScrollButton() {
+  if (userIsAtBottom) {
+    scrollToBottomBtn.classList.add("hidden");
+    scrollToBottomBtn.style.display = ""; // Clear inline style
+    newMsgCount.classList.add("hidden");
+    unreadMessages = 0;
+  } else {
+    scrollToBottomBtn.classList.remove("hidden");
+    scrollToBottomBtn.style.display = "flex";
+    
+    if (unreadMessages > 0) {
+      newMsgCount.classList.remove("hidden");
+      newMsgCount.textContent = unreadMessages > 99 ? "99+" : unreadMessages;
+    } else {
+      newMsgCount.classList.add("hidden");
+    }
   }
 }
 
@@ -405,59 +451,6 @@ async function handleMultiDelete() {
     confirmModalText.textContent =
       "Are you sure you want to permanently delete this message?";
   });
-}
-
-// *** SCROLL LOGIC FIXED ***
-function handleScroll() {
-  const threshold = 100; 
-  const currentPos = feedContainer.scrollTop + feedContainer.clientHeight;
-  const totalHeight = feedContainer.scrollHeight;
-
-  // Check if at bottom
-  userIsAtBottom = (totalHeight - currentPos) < threshold;
-
-  if (userIsAtBottom) {
-    // We are at bottom: Reset everything
-    unreadMessages = 0; 
-    newMsgCount.classList.add("hidden"); 
-    scrollToBottomBtn.classList.add("hidden"); 
-    // IMPORTANT: Clear inline display style so class takes effect
-    scrollToBottomBtn.style.display = "";
-  } else {
-    // We are scrolled up: Show button
-    scrollToBottomBtn.classList.remove("hidden");
-    scrollToBottomBtn.style.display = "flex";
-
-    // Show/Hide badge based on count
-    if (unreadMessages > 0) {
-        newMsgCount.classList.remove("hidden");
-        newMsgCount.textContent = unreadMessages > 99 ? "99+" : unreadMessages;
-    } else {
-        newMsgCount.classList.add("hidden");
-    }
-  }
-}
-
-// Logic to update button when a new message arrives but we haven't scrolled yet
-function updateScrollButton() {
-  if (userIsAtBottom) {
-    // If at bottom, ensure everything is hidden
-    scrollToBottomBtn.classList.add("hidden");
-    scrollToBottomBtn.style.display = "";
-    newMsgCount.classList.add("hidden");
-    unreadMessages = 0;
-  } else {
-    // Not at bottom
-    scrollToBottomBtn.classList.remove("hidden");
-    scrollToBottomBtn.style.display = "flex";
-    
-    if (unreadMessages > 0) {
-      newMsgCount.classList.remove("hidden");
-      newMsgCount.textContent = unreadMessages > 99 ? "99+" : unreadMessages;
-    } else {
-      newMsgCount.classList.add("hidden");
-    }
-  }
 }
 
 function scrollToBottom() {
@@ -898,7 +891,21 @@ function renderFeed(docs, type, snapshot) {
     feedContainer.appendChild(alignWrapper);
   });
 
-  // *** SCROLL LOGIC ***
+  // *** SCROLL ANCHOR LOGIC ***
+  // Add an invisible anchor at the end of the feed
+  const scrollAnchor = document.createElement("div");
+  scrollAnchor.id = "scrollAnchor";
+  scrollAnchor.style.height = "1px";
+  scrollAnchor.style.width = "100%";
+  feedContainer.appendChild(scrollAnchor);
+
+  // Observe the anchor
+  if (bottomObserver) {
+    bottomObserver.disconnect();
+    bottomObserver.observe(scrollAnchor);
+  }
+
+  // Handle Initial Position
   const lastDoc = docs[docs.length - 1];
   const lastMessageIsMine = lastDoc && lastDoc.data().userId === currentUserId;
 
@@ -936,8 +943,6 @@ setInterval(() => {
   });
 }, 60000);
 
-// SCROLL LISTENERS
-feedContainer.addEventListener("scroll", handleScroll);
 scrollToBottomBtn.addEventListener("click", scrollToBottom);
 
 async function postConfession(e) {
