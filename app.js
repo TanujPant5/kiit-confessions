@@ -645,7 +645,6 @@ function formatMessageTime(date) {
 
 // *** RENDER FEED ***
 function renderFeed(docs, type, snapshot) {
-  // Capture current scroll state
   const prevScrollTop = feedContainer.scrollTop;
   const wasAtBottom = userIsAtBottom;
 
@@ -696,7 +695,7 @@ function renderFeed(docs, type, snapshot) {
     const isConsecutive = docUserId && docUserId === lastUserId;
     lastUserId = docUserId;
 
-    // Structure Wrapper (Left or Right)
+    // Structure Wrapper
     const alignWrapper = document.createElement("div");
     alignWrapper.className = `flex w-full ${
       isMine ? "justify-end" : "justify-start"
@@ -721,6 +720,16 @@ function renderFeed(docs, type, snapshot) {
     if (isSelectionMode && selectedMessages.has(docInstance.id)) {
       bubble.classList.add("selected-message");
     }
+
+    // KEBAB BUTTON (ABSOLUTE POSITIONED)
+    // We add it directly to bubble. CSS handles positioning.
+    const kebabBtn = document.createElement("button");
+    kebabBtn.className = "kebab-btn";
+    kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>`;
+    kebabBtn.addEventListener("click", (e) => {
+      showDropdownMenu(e, bubble.dataset);
+    });
+    bubble.appendChild(kebabBtn);
 
     // HEADER (Username - Only for Others)
     if (!isConsecutive && !isMine) {
@@ -768,23 +777,17 @@ function renderFeed(docs, type, snapshot) {
       bubble.appendChild(replyPreview);
     }
 
-    // TEXT (With alignment enforcement)
+    // TEXT (Alignment Forced)
     const textElement = document.createElement("p");
     textElement.className = `${isMine ? "text-right" : "text-left"}`;
     textElement.textContent = text;
     bubble.appendChild(textElement);
 
-    // INNER FOOTER (Kebab Menu + Time)
+    // INNER FOOTER (Just Time now)
     const footerDiv = document.createElement("div");
     footerDiv.className = "bubble-footer";
-    
-    // Create Kebab
-    const kebabBtn = document.createElement("button");
-    kebabBtn.className = "kebab-btn";
-    kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>`;
-    kebabBtn.addEventListener("click", (e) => {
-      showDropdownMenu(e, bubble.dataset);
-    });
+    // Justify content: Left for received, Right for sent
+    footerDiv.style.justifyContent = isMine ? "flex-end" : "flex-start";
 
     // Create Time
     const timeElement = document.createElement("span");
@@ -793,19 +796,7 @@ function renderFeed(docs, type, snapshot) {
     timeElement.textContent = timeString;
     if (data.edited) timeElement.textContent += " (edited)";
 
-    // APPEND logic based on Side (Inside Bubble)
-    if (isMine) {
-        // Mine: Bubble on Right. 
-        // Logic: Time (Outer/Left), Kebab (Inner/Right)
-        footerDiv.appendChild(timeElement);
-        footerDiv.appendChild(kebabBtn);
-    } else {
-        // Others: Bubble on Left.
-        // Logic: Kebab (Inner/Left), Time (Outer/Right)
-        footerDiv.appendChild(kebabBtn);
-        footerDiv.appendChild(timeElement);
-    }
-
+    footerDiv.appendChild(timeElement);
     bubble.appendChild(footerDiv);
 
     // SIDE BUTTONS (Reply/Heart)

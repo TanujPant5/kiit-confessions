@@ -76,12 +76,12 @@ button:hover {
   word-wrap: break-word;
   white-space: pre-wrap;
   padding: 0.5rem 0.75rem;
-  position: relative;
+  position: relative; /* Essential for absolute positioning of kebab */
   transition: background-color 0.2s;
   margin-bottom: 1px;
   display: flex;
   flex-direction: column;
-  min-width: 120px; /* Ensure enough space for footer */
+  min-width: 120px;
 }
 
 .message-bubble.has-reactions {
@@ -99,31 +99,67 @@ button:hover {
   border-color: #00e5ff !important;
 }
 
-/* FOOTER INSIDE BUBBLE */
+/* FOOTER INSIDE BUBBLE (Just Time now) */
 .bubble-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   margin-top: 4px;
   width: 100%;
-  height: 14px;
+  height: 12px;
 }
 
-/* TIMESTAMP STYLING 
-   - Opacity: 0.4 (Slightly visible)
-*/
+/* TIMESTAMP STYLING */
 .inner-timestamp {
   font-size: 0.5rem; 
   color: #6b7280; 
-  opacity: 0.4; /* CHANGED: Slightly visible by default */
+  opacity: 0.4; 
   text-shadow: none;
   white-space: nowrap;
   transition: opacity 0.3s ease;
 }
 
-/* Fully visible on hover */
 .message-bubble:hover .inner-timestamp {
   opacity: 1;
+}
+
+/* KEBAB BUTTON - ABSOLUTE POSITIONED */
+.kebab-btn {
+  position: absolute;
+  top: -2px; /* Slight offset from top edge */
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  color: #00e5ff;
+  opacity: 0; /* Hidden by default */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Hovering the bubble reveals the kebab */
+.message-bubble:hover .kebab-btn {
+  opacity: 0.5;
+}
+
+.kebab-btn:hover {
+  opacity: 1 !important;
+  background-color: rgba(0, 229, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* Position for Sent Messages (My Message) -> Top Left Corner */
+.my-message .kebab-btn {
+  left: -20px;
+}
+
+/* Position for Received Messages (Others) -> Top Right Corner */
+.message-bubble:not(.my-message) .kebab-btn {
+  right: -20px;
 }
 
 .edited-marker {
@@ -353,22 +389,6 @@ button:hover {
   cursor: pointer;
   padding: 0.25rem 0.5rem;
   opacity: 0.7;
-}
-
-.kebab-btn {
-  background: none;
-  border: none;
-  padding: 0 4px;
-  margin: 0;
-  color: #00e5ff;
-  opacity: 0.3; /* Faint by default */
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.kebab-btn:hover {
-  opacity: 1;
-  background-color: rgba(0, 229, 255, 0.1);
 }
 
 .reply-preview {
