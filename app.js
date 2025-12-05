@@ -643,7 +643,7 @@ function formatMessageTime(date) {
 }
 
 
-// *** RENDER FEED (Layout Updated: Time Inside Bubble) ***
+// *** RENDER FEED ***
 function renderFeed(docs, type, snapshot) {
   // Capture current scroll state
   const prevScrollTop = feedContainer.scrollTop;
@@ -768,7 +768,7 @@ function renderFeed(docs, type, snapshot) {
       bubble.appendChild(replyPreview);
     }
 
-    // TEXT
+    // TEXT (With alignment enforcement)
     const textElement = document.createElement("p");
     textElement.className = `${isMine ? "text-right" : "text-left"}`;
     textElement.textContent = text;
