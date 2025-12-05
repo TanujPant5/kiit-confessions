@@ -104,6 +104,14 @@ let currentContextMenuData = null;
 
 let replyToMessage = null;
 
+// The allowed reactions
+const REACTION_TYPES = {
+  thumbsup: "👍",
+  laugh: "😂",
+  surprised: "😮",
+  heart: "❤️",
+};
+
 async function initFirebase() {
   try {
     const app = initializeApp(firebaseConfig);
@@ -267,6 +275,7 @@ async function handleDelete() {
   }
 }
 
+// Updated to handle multiple reaction types
 async function toggleReaction(
   docId,
   collectionName,
@@ -277,6 +286,7 @@ async function toggleReaction(
 
   try {
     const docRef = doc(db, collectionName, docId);
+    // reactionType e.g. "heart", "thumbsup"
     const reactionField = `reactions.${reactionType}`;
 
     if (hasReacted) {
@@ -292,34 +302,12 @@ async function toggleReaction(
     console.error("Error toggling reaction:", error);
     if (error.code === "permission-denied") {
       alert(
-        "Permission denied: Firebase security rules need to be updated to allow reactions."
+        "Permission denied: Firebase rules update required for reactions."
       );
     } else {
       alert(`Error adding reaction: ${error.message}`);
     }
   }
-}
-
-function getReactionTooltip(userIds) {
-  if (userIds.length === 0) return "";
-  if (userIds.length === 1) {
-    const userId = userIds[0];
-    if (userId === currentUserId) return "You reacted";
-    const username = userProfiles[userId]?.username || "Someone";
-    return `${username} reacted`;
-  }
-  if (userIds.length === 2) {
-    const names = userIds.map((id) => {
-      if (id === currentUserId) return "You";
-      return userProfiles[id]?.username || "Someone";
-    });
-    return `${names[0]} and ${names[1]} reacted`;
-  }
-  const hasCurrentUser = userIds.includes(currentUserId);
-  if (hasCurrentUser) {
-    return `You and ${userIds.length - 1} others reacted`;
-  }
-  return `${userIds.length} people reacted`;
 }
 
 function showDropdownMenu(event, data) {
@@ -578,6 +566,7 @@ function formatTimestamp(firebaseTimestamp) {
   });
 }
 
+// *** NEW RENDER FEED FUNCTION ***
 function renderFeed(docs, type) {
   feedContainer.innerHTML = "";
   if (docs.length === 0) {
@@ -636,6 +625,7 @@ function renderFeed(docs, type) {
       bubble.classList.add("selected-message");
     }
 
+    // HEADER
     if (!isConsecutive) {
       const headerElement = document.createElement("div");
       headerElement.className = `flex items-center gap-1.5 mb-1 ${
@@ -654,6 +644,7 @@ function renderFeed(docs, type) {
       bubble.appendChild(headerElement);
     }
 
+    // REPLY PREVIEW
     if (data.replyTo) {
       const replyPreview = document.createElement("div");
       replyPreview.className = "reply-preview";
@@ -689,11 +680,13 @@ function renderFeed(docs, type) {
       bubble.appendChild(replyPreview);
     }
 
+    // TEXT
     const textElement = document.createElement("p");
     textElement.className = `${isMine ? "text-right" : "text-left"}`;
     textElement.textContent = text;
     bubble.appendChild(textElement);
 
+    // TIMESTAMP + KEBAB
     const timeElement = document.createElement("div");
     timeElement.className = "timestamp text-right";
 
@@ -717,42 +710,74 @@ function renderFeed(docs, type) {
       showDropdownMenu(e, bubble.dataset);
     });
     timeElement.appendChild(kebabBtn);
-
     bubble.appendChild(timeElement);
 
-    // WhatsApp-style reaction pill
-    const reactionContainer = document.createElement("div");
-    reactionContainer.className = "reaction-container";
-
-    const reactions = data.reactions || {};
-    const heartReactions = reactions.heart || [];
-    const hasReacted = heartReactions.includes(currentUserId);
-
-    const heartBtn = document.createElement("button");
-
-    if (heartReactions.length > 0) {
-      heartBtn.className = "reaction-btn";
-      if (hasReacted) {
-        heartBtn.classList.add("reacted");
+    // *** REACTIONS LOGIC ***
+    const reactionBar = document.createElement("div");
+    reactionBar.className = "reaction-bar";
+    
+    // 1. Render existing reaction counts
+    const docReactions = data.reactions || {};
+    
+    Object.keys(REACTION_TYPES).forEach(rtype => {
+      const userIds = docReactions[rtype] || [];
+      if (userIds.length > 0) {
+        const pill = document.createElement("div");
+        pill.className = "reaction-count-pill";
+        const hasReacted = userIds.includes(currentUserId);
+        if (hasReacted) pill.classList.add("user-reacted");
+        
+        pill.innerHTML = `${REACTION_TYPES[rtype]} <span>${userIds.length}</span>`;
+        pill.onclick = (e) => {
+          e.stopPropagation();
+          toggleReaction(docInstance.id, type, rtype, hasReacted);
+        };
+        reactionBar.appendChild(pill);
       }
-      heartBtn.innerHTML = `❤️ <span>${heartReactions.length}</span>`;
-      heartBtn.title = getReactionTooltip(heartReactions);
-    } else {
-      heartBtn.className = "add-reaction-btn";
-      heartBtn.innerHTML = "❤️";
-      heartBtn.title = "React with heart";
-      reactionContainer.classList.add("empty");
-    }
-
-    heartBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleReaction(docInstance.id, type, "heart", hasReacted);
     });
 
-    reactionContainer.appendChild(heartBtn);
-    bubble.appendChild(reactionContainer);
+    // 2. Add Button (+)
+    const addBtn = document.createElement("div");
+    addBtn.className = "add-reaction-trigger";
+    addBtn.innerHTML = "+"; // Can use an icon here
+    addBtn.title = "Add Reaction";
+    
+    // 3. Popup Picker
+    const picker = document.createElement("div");
+    picker.className = "reaction-picker hidden";
+    
+    Object.entries(REACTION_TYPES).forEach(([rtype, emoji]) => {
+      const opt = document.createElement("span");
+      opt.className = "reaction-option";
+      opt.textContent = emoji;
+      opt.onclick = (e) => {
+        e.stopPropagation();
+        const userIds = docReactions[rtype] || [];
+        const hasReacted = userIds.includes(currentUserId);
+        toggleReaction(docInstance.id, type, rtype, hasReacted);
+        picker.classList.add("hidden");
+      };
+      picker.appendChild(opt);
+    });
 
-    // Reply arrow: left for my messages, right for others
+    addBtn.onclick = (e) => {
+      e.stopPropagation();
+      // Close other pickers
+      document.querySelectorAll(".reaction-picker").forEach(p => {
+        if(p !== picker) p.classList.add("hidden");
+      });
+      picker.classList.toggle("hidden");
+    };
+
+    // Close picker when clicking elsewhere is handled by document listener below
+    
+    // Combine
+    reactionBar.appendChild(addBtn);
+    reactionBar.appendChild(picker);
+    bubble.appendChild(reactionBar);
+
+
+    // REPLY BUTTON
     const replyBtn = document.createElement("button");
     replyBtn.className = "reply-floating-btn";
     replyBtn.innerHTML = "↩";
@@ -764,11 +789,9 @@ function renderFeed(docs, type) {
     });
 
     if (isMine) {
-      // my messages: [↩][bubble]
       row.appendChild(replyBtn);
       row.appendChild(bubble);
     } else {
-      // others: [bubble][↩]
       row.appendChild(bubble);
       row.appendChild(replyBtn);
     }
@@ -777,13 +800,12 @@ function renderFeed(docs, type) {
     feedContainer.appendChild(alignWrapper);
   });
 
+  // Animation for new messages
   const bubbles = feedContainer.querySelectorAll(".message-bubble");
   const lastBubble = bubbles[bubbles.length - 1];
-
   if (lastBubble && !lastBubble.hasAttribute("data-animated")) {
     const now = Date.now();
     const messageTime = parseInt(lastBubble.dataset.timestamp, 10);
-
     if (now - messageTime < 3000) {
       lastBubble.classList.add("animate-pop-in");
     }
@@ -795,6 +817,15 @@ function renderFeed(docs, type) {
   }
 }
 
+// Global click to close pickers
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".reaction-bar")) {
+    document.querySelectorAll(".reaction-picker").forEach(el => el.classList.add("hidden"));
+  }
+});
+
+// ... (Rest of existing code: postConfession, postChatMessage, listeners, etc.) ...
+// Ensure you keep the rest of your event listeners here as in previous version
 async function postConfession(e) {
   e.preventDefault();
   const text = confessionInput.value.trim();

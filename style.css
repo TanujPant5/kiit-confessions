@@ -31,7 +31,8 @@ body {
 }
 
 textarea,
-button {
+button,
+input[type="text"] {
   font-family: "Inter", sans-serif;
   background-color: rgba(0, 229, 255, 0.05);
   border: 1px solid #00e5ff;
@@ -40,12 +41,14 @@ button {
   transition: all 0.3s ease;
 }
 
-textarea::placeholder {
+textarea::placeholder,
+input[type="text"]::placeholder {
   color: #00e5ff;
   opacity: 0.5;
 }
 
-textarea:focus {
+textarea:focus,
+input[type="text"]:focus {
   outline: none;
   background-color: rgba(0, 229, 255, 0.1);
   box-shadow: 0 0 10px #00e5ff;
@@ -58,42 +61,25 @@ button:hover {
   box-shadow: 0 0 15px #00e5ff;
 }
 
-input[type="text"] {
-  font-family: "Inter", sans-serif;
-  background-color: rgba(0, 229, 255, 0.05);
-  border: 1px solid #00e5ff;
-  color: #00e5ff;
-  text-shadow: 0 0 5px #00e5ff;
-  transition: all 0.3s ease;
-}
-
-input[type="text"]::placeholder {
-  color: #00e5ff;
-  opacity: 0.5;
-}
-
-input[type="text"]:focus {
-  outline: none;
-  background-color: rgba(0, 229, 255, 0.1);
-  box-shadow: 0 0 10px #00e5ff;
-}
-
 #feedContainer {
   background-color: rgba(0, 0, 0, 0.3);
   overflow-y: auto;
   scroll-behavior: smooth;
+  padding-bottom: 20px;
 }
 
+/* MESSAGE BUBBLE */
 .message-bubble {
   background-color: rgba(30, 30, 50, 0.7);
   border: 1px solid #007a8a;
   text-shadow: 0 0 3px #00e5ff;
   word-wrap: break-word;
   white-space: pre-wrap;
-  padding: 0.5rem 0.75rem;
-  padding-bottom: 1.4rem; /* room for reaction pill */
+  padding: 0.75rem 1rem;
+  /* Add extra bottom margin for the overlapping reaction pill */
+  margin-bottom: 12px !important; 
+  position: relative;
   transition: background-color 0.2s;
-  position: relative; /* for edge reactions */
 }
 
 .my-message {
@@ -107,83 +93,115 @@ input[type="text"]:focus {
   border-color: #00e5ff !important;
 }
 
+/* HEADER & TIMESTAMP */
 .timestamp {
   font-size: 0.65rem;
   color: #00e5ff;
   opacity: 0.6;
   text-shadow: none;
-  margin-top: 2px;
+  margin-top: 4px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 4px;
 }
 
-/* WhatsApp-style reaction pill at edge of message */
-.reaction-container {
+.chat-pfp {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #00e5ff;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* REACTIONS - FLOATING PILL STYLE */
+.reaction-bar {
   position: absolute;
-  bottom: 4px;
-  right: 32px;
-  display: inline-flex;
+  bottom: -12px;
+  right: 10px;
+  display: flex;
   align-items: center;
-  gap: 2px;
-  background-color: rgba(0, 0, 0, 0.7);
+  gap: 4px;
+  background-color: #0a0a1a;
+  border: 1px solid #00e5ff;
   border-radius: 9999px;
-  padding: 1px 4px;
-  font-size: 0.65rem;
+  padding: 2px 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+  z-index: 10;
+  height: 24px;
 }
 
-/* When there are no reactions, hide until hover */
-.reaction-container.empty {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease-out;
-}
-
-.message-bubble:hover .reaction-container.empty {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.reaction-btn,
-.add-reaction-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  border-radius: 9999px;
+.reaction-count-pill {
+  font-size: 0.75rem;
+  padding: 0 4px;
+  border-radius: 4px;
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 2px;
-  font-size: 0.7rem;
-  opacity: 0.9;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  transition: all 0.2s;
 }
 
-.reaction-btn {
-  color: #ff5f87;
+.reaction-count-pill.user-reacted {
+  background: rgba(0, 229, 255, 0.3);
+  border-color: #00e5ff;
 }
 
-.add-reaction-btn {
-  color: #ccccff;
+.reaction-count-pill:hover {
+  background: rgba(0, 229, 255, 0.2);
 }
 
-.reaction-btn:hover,
-.add-reaction-btn:hover {
-  opacity: 1;
-  transform: translateY(-0.5px);
-}
-
-.reaction-btn span {
+.add-reaction-trigger {
+  font-size: 1rem;
   line-height: 1;
+  color: #00e5ff;
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.edited-marker {
-  font-size: 0.6rem;
-  opacity: 0.5;
-  margin-right: 4px;
+.add-reaction-trigger:hover {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
+/* POPUP PICKER */
+.reaction-picker {
+  position: absolute;
+  bottom: 100%; 
+  right: 0;
+  margin-bottom: 4px;
+  background-color: #0a0a1a;
+  border: 1px solid #00e5ff;
+  border-radius: 20px;
+  padding: 4px 8px;
+  display: flex;
+  gap: 8px;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+  animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 20;
+}
+
+.reaction-option {
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+  padding: 2px;
+}
+
+.reaction-option:hover {
+  transform: scale(1.3);
+}
+
+.hidden { display: none !important; }
+
+/* MISC UI ELEMENTS */
 .nav-item {
   cursor: pointer;
   padding: 8px 16px;
@@ -197,15 +215,6 @@ input[type="text"]:focus {
   opacity: 1;
   text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff;
   border-bottom-color: #00e5ff;
-}
-
-.chat-pfp {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid #00e5ff;
-  object-fit: cover;
-  flex-shrink: 0;
 }
 
 #typingIndicator {
@@ -256,10 +265,6 @@ input[type="text"]:focus {
   opacity: 0.7;
 }
 
-#replyBar button:hover {
-  opacity: 1;
-}
-
 .kebab-btn {
   background: none;
   border: none;
@@ -276,27 +281,26 @@ input[type="text"]:focus {
   background-color: rgba(0, 229, 255, 0.1);
 }
 
-/* Message row that holds bubble + arrow */
 .message-wrapper {
   display: flex;
-  align-items: center;
+  align-items: flex-end; /* Align to bottom so reactions don't shift layout */
   gap: 0.25rem;
 }
 
-/* Reply arrow button beside message box */
 .reply-floating-btn {
   background: none;
   border: none;
   color: #00e5ff;
   opacity: 0.6;
   cursor: pointer;
-  padding: 2px 4px;
+  padding: 4px;
   border-radius: 9999px;
-  font-size: 0.9rem;
+  font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
   text-shadow: 0 0 5px #00e5ff;
+  margin-bottom: 12px; /* Match the bubble margin */
 }
 
 .message-wrapper:hover .reply-floating-btn {
@@ -319,17 +323,10 @@ input[type="text"]:focus {
   background-color: rgba(0, 229, 255, 0.15);
 }
 
-.reply-preview .reply-author {
-  font-weight: bold;
-  margin-bottom: 0.25rem;
-}
+.reply-preview .reply-author { font-weight: bold; margin-bottom: 0.25rem; }
+.reply-preview .reply-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.reply-preview .reply-text {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
+/* CONTEXT MENU & MODALS */
 #contextMenu {
   position: fixed;
   z-index: 1000;
@@ -339,13 +336,11 @@ input[type="text"]:focus {
   border-radius: 0.5rem;
   padding: 0.5rem 0;
   min-width: 150px;
-
   opacity: 0;
   visibility: hidden;
   transform: scale(0.95);
   transform-origin: top right;
-  transition: opacity 0.1s ease-out, visibility 0s linear 0.1s,
-    transform 0.1s ease-out;
+  transition: opacity 0.1s ease-out, visibility 0s linear 0.1s, transform 0.1s ease-out;
 }
 
 #contextMenu.is-open {
@@ -355,31 +350,10 @@ input[type="text"]:focus {
   transition-delay: 0s;
 }
 
-#contextMenu ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-#contextMenu li {
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-#contextMenu li:hover {
-  background-color: #00e5ff;
-  color: #0a0a1a;
-  text-shadow: none;
-}
-
-#contextMenu li.separator {
-  height: 1px;
-  background-color: #00e5ff;
-  opacity: 0.3;
-  margin: 0.25rem 0;
-  padding: 0;
-}
+#contextMenu ul { list-style: none; margin: 0; padding: 0; }
+#contextMenu li { padding: 0.5rem 1rem; cursor: pointer; transition: all 0.2s ease; }
+#contextMenu li:hover { background-color: #00e5ff; color: #0a0a1a; text-shadow: none; }
+#contextMenu li.separator { height: 1px; background-color: #00e5ff; opacity: 0.3; margin: 0.25rem 0; padding: 0; }
 
 #selectionBar {
   background-color: rgba(0, 50, 100, 0.9);
@@ -395,41 +369,24 @@ input[type="text"]:focus {
   align-items: center;
   justify-content: center;
   padding: 1rem;
-
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.2s ease-out, visibility 0s linear 0.2s;
+  z-index: 50;
 }
 
-.modal-base.is-open {
-  opacity: 1;
-  visibility: visible;
-  transition-delay: 0s;
-}
-
-.modal-content {
-  transform: scale(0.95);
-  opacity: 0;
-  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
-}
-
-.modal-base.is-open .modal-content {
-  transform: scale(1);
-  opacity: 1;
-}
+.modal-base.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
+.modal-content { transform: scale(0.95); opacity: 0; transition: transform 0.2s ease-out, opacity 0.2s ease-out; }
+.modal-base.is-open .modal-content { transform: scale(1); opacity: 1; }
 
 @keyframes messagePopIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0px);
-  }
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0px); }
 }
 
-.animate-pop-in {
-  animation: messagePopIn 0.2s ease-out;
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
 }
+
+.animate-pop-in { animation: messagePopIn 0.2s ease-out; }
