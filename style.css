@@ -15,11 +15,9 @@ body {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-main);
-  /* Removed text-shadow for a clean, matte look */
 }
 
 .glow {
-  /* Removed neon glow for Obsidian theme */
   text-shadow: none;
 }
 
@@ -63,7 +61,7 @@ input[type="text"]:focus {
   outline: none;
   background-color: var(--highlight);
   border-color: var(--text-muted);
-  box-shadow: none; /* Flat design */
+  box-shadow: none;
 }
 
 button:hover {
@@ -86,7 +84,7 @@ button:hover {
   border: 1px solid var(--border-color);
   word-wrap: break-word;
   white-space: pre-wrap;
-  padding: 0.75rem 1rem; /* Slightly more padding */
+  padding: 0.75rem 1rem;
   position: relative;
   transition: background-color 0.2s;
   margin-bottom: 2px;
@@ -96,10 +94,9 @@ button:hover {
   z-index: 10;
   cursor: default;
   color: var(--text-main);
-  border-radius: 12px; /* Smoother corners */
+  border-radius: 12px;
 }
 
-/* Cursor pointer when in selection mode */
 body.selection-mode .message-bubble {
   cursor: pointer;
   border-style: dashed;
@@ -110,7 +107,7 @@ body.selection-mode .message-bubble {
 }
 
 .my-message {
-  background-color: #262626; /* Distinct dark gray for sent */
+  background-color: #262626;
   border: 1px solid var(--border-color);
   align-self: flex-end;
 }
@@ -143,7 +140,7 @@ body.selection-mode .message-bubble {
   color: var(--text-main);
 }
 
-/* KEBAB BUTTON */
+/* KEBAB BUTTON - FIXED VISIBILITY */
 .kebab-btn {
   position: absolute;
   top: -6px;
@@ -154,7 +151,10 @@ body.selection-mode .message-bubble {
   background: var(--bg-color);
   border: 1px solid var(--border-color);
   color: var(--text-muted);
-  opacity: 0.0; /* Hidden until hover for cleaner look */
+  
+  /* FIX: Set to 0.5 so it is always visible */
+  opacity: 0.5; 
+  
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -168,6 +168,7 @@ body.selection-mode .message-bubble {
 }
 
 .kebab-btn:hover {
+  opacity: 1 !important;
   background-color: var(--text-main);
   color: var(--bg-color);
   border-color: var(--text-main);
@@ -189,12 +190,11 @@ body.selection-mode .message-bubble {
   font-style: italic;
 }
 
-/* PROFILE PHOTO - UPDATED STYLE */
+/* PROFILE PHOTO */
 .chat-pfp {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  /* Thin white border, grayscale until hover */
   border: 1px solid rgba(255, 255, 255, 0.2);
   object-fit: cover;
   flex-shrink: 0;
@@ -202,13 +202,12 @@ body.selection-mode .message-bubble {
   filter: grayscale(100%); 
 }
 
-/* Add color on hover */
 .message-bubble:hover .chat-pfp {
     filter: grayscale(0%);
     border-color: var(--text-main);
 }
 
-/* ADMIN BADGE - UPDATED STYLE */
+/* ADMIN BADGE */
 .admin-badge {
   background-color: var(--text-main);
   color: var(--bg-color);
@@ -543,7 +542,7 @@ body.selection-mode .message-bubble {
 .modal-base {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.85); /* Darker overlay */
+  background-color: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
@@ -626,7 +625,7 @@ body.selection-mode .message-bubble {
   height: 45px !important;
   min-height: 45px;
   padding: 10px 16px;
-  border-radius: 8px; /* Slightly squared for modern look */
+  border-radius: 8px;
   overflow: hidden;
   background-color: var(--surface);
 }
