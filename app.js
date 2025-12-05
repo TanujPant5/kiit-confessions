@@ -567,16 +567,18 @@ function getRelativeTime(date) {
   const diff = now - date; // milliseconds
   const seconds = Math.floor(diff / 1000);
   const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
 
+  // Less than 60 seconds
   if (seconds < 60) return "Just now";
-  if (minutes < 60) return `${minutes} mins ago`;
-  if (hours < 24) return `${hours} hours ago`;
-  if (days === 1) return "Yesterday";
-  if (days < 7) return `${days} days ago`;
-  
-  return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  // Less than 5 minutes
+  if (minutes < 5) return `${minutes} mins ago`;
+
+  // Older than 5 minutes: Show standard date/time
+  return date.toLocaleString([], {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
 }
 
 function renderFeed(docs, type) {
