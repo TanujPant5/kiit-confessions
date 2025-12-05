@@ -52,9 +52,7 @@ const modalUsernameInput = document.getElementById("modalUsernameInput");
 
 const editModal = document.getElementById("editModal");
 const modalEditTextArea = document.getElementById("modalEditTextArea");
-const editModalCancelButton = document.getElementById(
-  "editModalCancelButton"
-);
+const editModalCancelButton = document.getElementById("editModalCancelButton");
 const editModalSaveButton = document.getElementById("editModalSaveButton");
 
 const confirmModal = document.getElementById("confirmModal");
@@ -555,32 +553,42 @@ async function updateTypingStatus(isTyping) {
   }
 }
 
-// *** UPDATED TIME FORMATTING LOGIC ***
-function formatTimestamp(firebaseTimestamp) {
-  if (!firebaseTimestamp) return "...";
-  const date = firebaseTimestamp.toDate();
-  return getRelativeTime(date);
+// *** HELPER: Format Date for Headers (Today, Yesterday, Date) ***
+function getDateHeader(date) {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) return "Today";
+  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+  
+  // Return format like "28/11/2025" or "Nov 28, 2025"
+  return date.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-function getRelativeTime(date) {
+// *** HELPER: Format Time inside Bubbles ***
+function formatMessageTime(date) {
   const now = new Date();
   const diff = now - date; // milliseconds
   const seconds = Math.floor(diff / 1000);
   const minutes = Math.floor(seconds / 60);
 
-  // Less than 60 seconds
-  if (seconds < 60) return "Just now";
+  // Less than 5 minutes: Relative
+  if (minutes < 5) {
+     if (seconds < 60) return "Just now";
+     return `${minutes} mins ago`;
+  }
 
-  // Less than 5 minutes
-  if (minutes < 5) return `${minutes} mins ago`;
-
-  // Older than 5 minutes: Show standard date/time
-  return date.toLocaleString([], {
-    dateStyle: "short",
-    timeStyle: "short",
+  // Older than 5 minutes: Clock Time (HH:MM)
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false // Set to true if you prefer 2:30 PM
   });
 }
 
+
+// *** RENDER FEED WITH DATE SEPARATORS ***
 function renderFeed(docs, type) {
   feedContainer.innerHTML = "";
   if (docs.length === 0) {
@@ -593,14 +601,30 @@ function renderFeed(docs, type) {
   }
 
   let lastUserId = null;
+  let lastDateString = null; // Track separate days
 
   docs.forEach((docInstance) => {
     const data = docInstance.data();
     const text = data.text || "...";
     
-    // Initial formatted time
-    const timeString = formatTimestamp(data.timestamp);
+    // Process Dates
+    let messageDateObj = new Date();
+    if (data.timestamp) messageDateObj = data.timestamp.toDate();
+    const messageDateStr = messageDateObj.toDateString(); // Unique string per day (e.g. "Fri Dec 05 2025")
+
+    // 1. Insert Date Separator if Day Changed
+    if (lastDateString !== messageDateStr) {
+        const sepDiv = document.createElement('div');
+        sepDiv.className = 'date-separator';
+        sepDiv.innerHTML = `<span>${getDateHeader(messageDateObj)}</span>`;
+        feedContainer.appendChild(sepDiv);
+        lastDateString = messageDateStr;
+        lastUserId = null; // Reset user grouping on new day (optional, but looks cleaner)
+    }
+
+    // 2. Format Bubble Time
     const rawMillis = data.timestamp ? data.timestamp.toMillis() : 0;
+    const timeString = formatMessageTime(messageDateObj); // "14:30" or "Just now"
     
     const docUserId = data.userId;
 
@@ -641,7 +665,7 @@ function renderFeed(docs, type) {
       bubble.classList.add("selected-message");
     }
 
-    // HEADER
+    // HEADER (Username)
     if (!isConsecutive) {
       const headerElement = document.createElement("div");
       headerElement.className = `flex items-center gap-1.5 mb-1 ${
@@ -826,13 +850,13 @@ document.addEventListener("click", (e) => {
     }
 });
 
-// Update timestamps every minute
+// Update timestamps every minute (checks logic for "Just now" vs "HH:MM")
 setInterval(() => {
   const timestampElements = document.querySelectorAll('.live-timestamp');
   timestampElements.forEach(el => {
     const ts = parseInt(el.dataset.ts);
     if (ts > 0) {
-      el.textContent = getRelativeTime(new Date(ts));
+      el.textContent = formatMessageTime(new Date(ts));
     }
   });
 }, 60000); // 60 seconds
