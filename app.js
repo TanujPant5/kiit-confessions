@@ -31,9 +31,13 @@ const firebaseConfig = {
   measurementId: "G-2JRL8TMMV7",
 };
 
-// *** ADMIN CONFIGURATION ***
-// PASTE YOUR SPECIFIC UID HERE inside the quotes
-const ADMIN_UID = "MzOOK3VSrQdCab9P9NoD4Ll8Fur2"; 
+// *** ADMIN CONFIGURATION (MULTIPLE) ***
+// Add as many UIDs as you want inside the brackets, separated by commas
+// Example: ["uid_123", "uid_456", "uid_789"]
+const ADMIN_UIDS = [
+    "MzOOK3VSrQdCab9P9NoD4Ll8Fur2",
+    "RRBLARtAkfhL9d47sLCC5KV7Lbg2" 
+]; 
 
 // DOM elements
 const feedContainer = document.getElementById("feedContainer");
@@ -145,7 +149,7 @@ async function initFirebase() {
 
     const userCredential = await signInAnonymously(auth);
     currentUserId = userCredential.user.uid;
-    console.log("Your UID:", currentUserId); // Prints your UID to console for easy copying
+    console.log("Your UID:", currentUserId); 
 
     listenForUserProfiles();
     await loadUserProfile();
@@ -304,14 +308,14 @@ async function saveEdit() {
   }
 }
 
-// *** MODIFIED CONFIRM MODAL (ADMIN POWER) ***
+// *** MODIFIED CONFIRM MODAL (MULTI-ADMIN POWER) ***
 function showConfirmModal(text, isMine, docId) {
   confirmModalText.textContent = text;
   confirmModalActionContainer.innerHTML = '';
 
-  const isAdmin = currentUserId === ADMIN_UID;
+  // Check if current user is in the ADMIN_UIDS list
+  const isAdmin = ADMIN_UIDS.includes(currentUserId);
 
-  // Show "Delete for Everyone" if it's MY message OR if I am ADMIN
   if (isMine || isAdmin) {
     const btnForMe = document.createElement('button');
     btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold border border-[#00e5ff] text-[#00e5ff] hover:bg-[#00e5ff] hover:text-[#0a0a1a]";
@@ -335,7 +339,6 @@ function showConfirmModal(text, isMine, docId) {
     confirmModalActionContainer.appendChild(btnEveryone);
 
   } else {
-    // Normal user deleting someone else's message (Local only)
     const btnForMe = document.createElement('button');
     btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold bg-red-800 border border-red-500 hover:bg-red-600 text-white";
     btnForMe.textContent = "DELETE";
@@ -461,11 +464,15 @@ async function handleMultiDelete() {
   const count = selectedMessages.size;
   if (count === 0) return;
   const batch = writeBatch(db);
+  
+  // Check if current user is admin
+  const isAdmin = ADMIN_UIDS.includes(currentUserId);
+
   selectedMessages.forEach((docId) => {
     const docRef = doc(db, currentPage, docId);
     
-    // ADMIN POWER: If I am admin, multi-delete destroys them for everyone
-    if (currentUserId === ADMIN_UID) {
+    // ADMIN POWER: If I am ANY of the admins, delete for everyone
+    if (isAdmin) {
        batch.delete(docRef);
     } else {
        batch.update(docRef, { hiddenFor: arrayUnion(currentUserId) });
@@ -682,7 +689,6 @@ function renderFeed(docs, type, snapshot) {
     // HEADER
     if (!isConsecutive) {
       const headerElement = document.createElement("div");
-      // FIX: justify-end for My Messages to push Profile/Name to the Right
       headerElement.className = `flex items-center gap-1.5 mb-1 ${isMine ? "justify-end" : "justify-start"}`;
       
       const imgElement = document.createElement("img");
@@ -694,11 +700,10 @@ function renderFeed(docs, type, snapshot) {
       usernameElement.textContent = username;
       
       // ADMIN BADGE
-      if (docUserId === ADMIN_UID) {
+      if (ADMIN_UIDS.includes(docUserId)) {
           const badge = document.createElement("span");
           badge.className = "admin-badge";
           badge.textContent = "ADMIN";
-          // If mine, badge goes before username (since text-right), else after
           if(isMine) {
              badge.style.marginRight = "6px";
              usernameElement.prepend(badge); 
