@@ -66,8 +66,7 @@ button:hover {
   overflow-y: auto;
   scroll-behavior: smooth;
   padding-bottom: 20px;
-  /* FIX FOR SCROLL JUMPING */
-  overflow-anchor: none; 
+  overflow-anchor: none;
 }
 
 /* MESSAGE BUBBLE */
@@ -85,6 +84,12 @@ button:hover {
   flex-direction: column;
   min-width: 120px;
   z-index: 10;
+  cursor: default; /* Default cursor */
+}
+
+/* Cursor pointer when in selection mode */
+body.selection-mode .message-bubble {
+  cursor: pointer;
 }
 
 .message-bubble.has-reactions {
@@ -98,8 +103,9 @@ button:hover {
 }
 
 .selected-message {
-  background-color: rgba(0, 229, 255, 0.2) !important;
-  border-color: #00e5ff !important;
+  background-color: rgba(0, 229, 255, 0.3) !important;
+  border: 2px solid #00e5ff !important;
+  box-shadow: 0 0 15px #00e5ff;
 }
 
 /* FOOTER INSIDE BUBBLE */
@@ -178,7 +184,7 @@ button:hover {
 .message-wrapper {
   display: flex;
   align-items: flex-end;
-  gap: 6px; /* Increased gap to prevent misclicks */
+  gap: 6px;
 }
 
 .side-action-btn {
@@ -198,7 +204,7 @@ button:hover {
   margin-bottom: 4px;
   flex-shrink: 0;
   position: relative; 
-  z-index: 30; /* Ensure clickable */
+  z-index: 30; 
 }
 
 .message-wrapper:hover .side-action-btn {
@@ -255,7 +261,7 @@ button:hover {
   gap: 12px;
   box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
   animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  z-index: 1000; /* Max Z-index */
+  z-index: 1000;
 }
 
 .reaction-option {
@@ -542,4 +548,17 @@ button:hover {
   border: 1px solid rgba(0, 229, 255, 0.3);
   text-shadow: 0 0 5px rgba(0, 229, 255, 0.3);
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* --- FIX: SMALLER INPUT BOX --- */
+#chatForm, #confessionForm {
+  padding: 8px; /* Tighter padding */
+}
+
+#chatInput, #confessionInput {
+  height: 45px !important;
+  min-height: 45px;
+  padding: 10px;
+  border-radius: 25px; /* Pill shape looks better for single line */
+  overflow: hidden;
 }

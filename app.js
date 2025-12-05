@@ -409,6 +409,7 @@ function handleMessageClick(bubble) {
 
 function enterSelectionMode() {
   isSelectionMode = true;
+  document.body.classList.add("selection-mode"); // For CSS cursor
   selectionBar.classList.remove("hidden");
   chatForm.classList.add("hidden");
   confessionForm.classList.add("hidden");
@@ -423,6 +424,7 @@ function enterSelectionMode() {
 
 function exitSelectionMode() {
   isSelectionMode = false;
+  document.body.classList.remove("selection-mode");
   selectionBar.classList.add("hidden");
   selectedMessages.clear();
   if (currentPage === "chat") {
@@ -583,10 +585,8 @@ function formatMessageTime(date) {
 
 // *** RENDER FEED ***
 function renderFeed(docs, type, snapshot) {
-  // Capture current scroll BEFORE clearing content
   const prevScrollTop = feedContainer.scrollTop;
   const wasAtBottom = userIsAtBottom;
-  
   feedContainer.innerHTML = "";
   
   if (docs.length === 0) {
@@ -648,13 +648,23 @@ function renderFeed(docs, type, snapshot) {
 
     if (isSelectionMode && selectedMessages.has(docInstance.id)) bubble.classList.add("selected-message");
 
+    // *** FIX FOR SELECTION ***
+    // Add click listener to the entire bubble for selection mode
+    bubble.addEventListener('click', (e) => {
+        if (isSelectionMode) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleMessageClick(bubble);
+        }
+    });
+
     const kebabBtn = document.createElement("button");
     kebabBtn.className = "kebab-btn";
     kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>`;
     kebabBtn.addEventListener("click", (e) => showDropdownMenu(e, bubble.dataset));
     bubble.appendChild(kebabBtn);
 
-    // HEADER: Show for ALL messages if not consecutive
+    // HEADER
     if (!isConsecutive) {
       const headerElement = document.createElement("div");
       headerElement.className = "flex items-center gap-1.5 mb-1";
@@ -783,7 +793,6 @@ function renderFeed(docs, type, snapshot) {
       row.appendChild(replyBtn);
       row.appendChild(bubble);
     } else {
-      // Fix for point 4: Order ensures react btn is accessible
       row.appendChild(bubble);
       row.appendChild(replyBtn);
       row.appendChild(reactBtn);
@@ -807,19 +816,13 @@ function renderFeed(docs, type, snapshot) {
   const lastDoc = docs[docs.length - 1];
   const lastMessageIsMine = lastDoc && lastDoc.data().userId === currentUserId;
 
-  // SCROLL FIX: If no new messages added (only modified), keep position
   const hasNewMessages = snapshot && snapshot.docChanges().some(change => change.type === 'added');
   
   if (hasNewMessages) {
-      // Only scroll to bottom if new message arrived AND (user was at bottom OR user sent it)
       if (lastMessageIsMine || wasAtBottom) {
           scrollToBottom();
-      } else {
-          // If user was scrolled up, warn them (newMsgCount) but don't move
-          // Logic is handled by updateScrollButton(), just need to NOT move scroll
       }
   } else {
-      // If only modifications (reactions), Force restore previous scroll position
       feedContainer.scrollTop = prevScrollTop;
   }
 }
