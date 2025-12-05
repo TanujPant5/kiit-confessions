@@ -112,13 +112,13 @@ let unreadMessages = 0;
 let userIsAtBottom = true;
 let bottomObserver = null; 
 
-// *** UPDATED REACTIONS ***
+// REACTIONS
 const REACTION_TYPES = {
   thumbsup: "👍",
   laugh: "😂",
   surprised: "😮",
   heart: "❤️",
-  skull: "💀" // Added Skull
+  skull: "💀"
 };
 
 function createActionContainer() {
@@ -409,7 +409,7 @@ function handleMessageClick(bubble) {
 
 function enterSelectionMode() {
   isSelectionMode = true;
-  document.body.classList.add("selection-mode"); // For CSS cursor
+  document.body.classList.add("selection-mode");
   selectionBar.classList.remove("hidden");
   chatForm.classList.add("hidden");
   confessionForm.classList.add("hidden");
@@ -587,6 +587,7 @@ function formatMessageTime(date) {
 function renderFeed(docs, type, snapshot) {
   const prevScrollTop = feedContainer.scrollTop;
   const wasAtBottom = userIsAtBottom;
+  
   feedContainer.innerHTML = "";
   
   if (docs.length === 0) {
@@ -604,7 +605,6 @@ function renderFeed(docs, type, snapshot) {
   docs.forEach((docInstance) => {
     const data = docInstance.data();
     
-    // FILTER: Hide if user deleted it locally
     if (data.hiddenFor && data.hiddenFor.includes(currentUserId)) return;
 
     const text = data.text || "...";
@@ -648,8 +648,7 @@ function renderFeed(docs, type, snapshot) {
 
     if (isSelectionMode && selectedMessages.has(docInstance.id)) bubble.classList.add("selected-message");
 
-    // *** FIX FOR SELECTION ***
-    // Add click listener to the entire bubble for selection mode
+    // Click to select
     bubble.addEventListener('click', (e) => {
         if (isSelectionMode) {
             e.preventDefault();
@@ -667,13 +666,17 @@ function renderFeed(docs, type, snapshot) {
     // HEADER
     if (!isConsecutive) {
       const headerElement = document.createElement("div");
-      headerElement.className = "flex items-center gap-1.5 mb-1";
+      // FIX: justify-end for My Messages to push Profile/Name to the Right
+      headerElement.className = `flex items-center gap-1.5 mb-1 ${isMine ? "justify-end" : "justify-start"}`;
+      
       const imgElement = document.createElement("img");
       imgElement.src = photoURL;
       imgElement.className = `chat-pfp ${isMine ? "order-2" : "order-1"}`;
+      
       const usernameElement = document.createElement("div");
       usernameElement.className = `font-bold text-sm opacity-70 ${isMine ? "order-1 text-right" : "order-2 text-left"}`;
       usernameElement.textContent = username;
+      
       headerElement.appendChild(imgElement);
       headerElement.appendChild(usernameElement);
       bubble.appendChild(headerElement);
