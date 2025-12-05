@@ -31,12 +31,11 @@ const firebaseConfig = {
   measurementId: "G-2JRL8TMMV7",
 };
 
-// *** ADMIN CONFIGURATION (MULTIPLE) ***
-// Add as many UIDs as you want inside the brackets, separated by commas
-// Example: ["uid_123", "uid_456", "uid_789"]
+// *** ADMIN CONFIGURATION ***
+// Add admin UIDs here as strings separated by commas
 const ADMIN_UIDS = [
-    "MzOOK3VSrQdCab9P9NoD4Ll8Fur2",
-    "RRBLARtAkfhL9d47sLCC5KV7Lbg2" 
+    "REPLACE_WITH_REAL_UID_1",
+    "REPLACE_WITH_REAL_UID_2"
 ]; 
 
 // DOM elements
@@ -71,6 +70,7 @@ const editModalSaveButton = document.getElementById("editModalSaveButton");
 const confirmModal = document.getElementById("confirmModal");
 const confirmModalText = document.getElementById("confirmModalText");
 const confirmModalNoButton = document.getElementById("confirmModalNoButton");
+// Dynamic container for buttons
 const confirmModalActionContainer = document.getElementById("confirmModalActionContainer") || createActionContainer();
 
 const contextMenu = document.getElementById("contextMenu");
@@ -120,7 +120,7 @@ let unreadMessages = 0;
 let userIsAtBottom = true;
 let bottomObserver = null; 
 
-// REACTIONS
+// REACTIONS (Includes Skull)
 const REACTION_TYPES = {
   thumbsup: "👍",
   laugh: "😂",
@@ -129,6 +129,7 @@ const REACTION_TYPES = {
   skull: "💀"
 };
 
+// Helper: Create container for delete buttons if missing
 function createActionContainer() {
     const existingYesBtn = document.getElementById("confirmModalYesButton");
     if(existingYesBtn && existingYesBtn.parentNode) {
@@ -149,7 +150,7 @@ async function initFirebase() {
 
     const userCredential = await signInAnonymously(auth);
     currentUserId = userCredential.user.uid;
-    console.log("Your UID:", currentUserId); 
+    console.log("Your UID:", currentUserId); // Log UID for easy Admin setup
 
     listenForUserProfiles();
     await loadUserProfile();
@@ -301,24 +302,26 @@ async function saveEdit() {
       closeEditModal();
     } catch (error) {
       console.error("Error updating document:", error);
-      alert("Error: Could not save edit. 5-minute window may have passed.");
+      alert("Error: Could not save edit. The 5-minute edit window may have expired.");
     }
     editModalSaveButton.textContent = "SAVE";
     editModalSaveButton.disabled = false;
   }
 }
 
-// *** MODIFIED CONFIRM MODAL (MULTI-ADMIN POWER) ***
+// *** CONFIRM MODAL (DRACULA THEME + ADMIN LOGIC) ***
 function showConfirmModal(text, isMine, docId) {
   confirmModalText.textContent = text;
   confirmModalActionContainer.innerHTML = '';
 
-  // Check if current user is in the ADMIN_UIDS list
   const isAdmin = ADMIN_UIDS.includes(currentUserId);
 
+  // If message is mine OR user is Admin, show "Delete for Everyone" option
   if (isMine || isAdmin) {
+    // 1. Button: Delete for Me
     const btnForMe = document.createElement('button');
-    btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold border border-[#00e5ff] text-[#00e5ff] hover:bg-[#00e5ff] hover:text-[#0a0a1a]";
+    // Styled with Dracula border color (#bd93f9)
+    btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold border border-[#bd93f9] text-[#bd93f9] hover:bg-[#bd93f9] hover:text-[#282a36] transition";
     btnForMe.textContent = "FOR ME";
     btnForMe.onclick = async () => {
         closeConfirmModal();
@@ -327,9 +330,12 @@ function showConfirmModal(text, isMine, docId) {
         });
     };
 
+    // 2. Button: Delete for Everyone (Nuke)
     const btnEveryone = document.createElement('button');
-    btnEveryone.className = "flex-1 px-4 py-2 rounded-lg font-bold bg-red-800 border border-red-500 hover:bg-red-600 text-white";
-    btnEveryone.textContent = isAdmin && !isMine ? "NUKE (ADMIN)" : "EVERYONE";
+    // Styled with Dracula Red (#ff5555)
+    btnEveryone.className = "flex-1 px-4 py-2 rounded-lg font-bold bg-[#ff5555] border border-[#ff5555] hover:bg-[#ffb86c] hover:text-[#282a36] hover:border-[#ffb86c] text-white transition";
+    // If admin is deleting someone else's message, show NUKE
+    btnEveryone.textContent = (isAdmin && !isMine) ? "NUKE (ADMIN)" : "EVERYONE";
     btnEveryone.onclick = async () => {
         closeConfirmModal();
         await deleteDoc(doc(db, currentPage, docId));
@@ -339,8 +345,9 @@ function showConfirmModal(text, isMine, docId) {
     confirmModalActionContainer.appendChild(btnEveryone);
 
   } else {
+    // Normal user deleting someone else's message (Local hide only)
     const btnForMe = document.createElement('button');
-    btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold bg-red-800 border border-red-500 hover:bg-red-600 text-white";
+    btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold bg-[#ff5555] border border-[#ff5555] hover:bg-[#ffb86c] hover:text-[#282a36] hover:border-[#ffb86c] text-white transition";
     btnForMe.textContent = "DELETE";
     btnForMe.onclick = async () => {
         closeConfirmModal();
@@ -375,6 +382,8 @@ async function toggleReaction(docId, collectionName, reactionType, hasReacted) {
 
 function showDropdownMenu(event, data) {
   event.stopPropagation();
+  
+  // TOGGLE FIX: If menu is already open for this message, close it
   if (contextMenu.classList.contains("is-open") && 
       currentContextMenuData && 
       currentContextMenuData.id === data.id) {
@@ -385,11 +394,11 @@ function showDropdownMenu(event, data) {
   currentContextMenuData = data;
   const now = Date.now();
   const messageTime = parseInt(currentContextMenuData.timestamp, 10);
-  const isEditable = now - messageTime < 300000;
+  const isEditable = now - messageTime < 300000; // 5 mins
   const isMine = currentContextMenuData.isMine === "true";
 
   menuEdit.style.display = isEditable && isMine ? "block" : "none";
-  menuDelete.style.display = "block"; 
+  menuDelete.style.display = "block"; // Delete is always available
 
   const rect = event.currentTarget.getBoundingClientRect();
   contextMenu.style.top = `${rect.bottom + 2}px`;
@@ -426,6 +435,8 @@ function enterSelectionMode() {
   selectionBar.classList.remove("hidden");
   chatForm.classList.add("hidden");
   confessionForm.classList.add("hidden");
+  
+  // Auto-select the message that triggered the mode
   if (currentContextMenuData) {
     const docId = currentContextMenuData.id;
     selectedMessages.add(docId);
@@ -465,19 +476,20 @@ async function handleMultiDelete() {
   if (count === 0) return;
   const batch = writeBatch(db);
   
-  // Check if current user is admin
+  // Check Admin Status
   const isAdmin = ADMIN_UIDS.includes(currentUserId);
 
   selectedMessages.forEach((docId) => {
     const docRef = doc(db, currentPage, docId);
-    
-    // ADMIN POWER: If I am ANY of the admins, delete for everyone
     if (isAdmin) {
+       // Admins delete for everyone
        batch.delete(docRef);
     } else {
+       // Users hide locally
        batch.update(docRef, { hiddenFor: arrayUnion(currentUserId) });
     }
   });
+  
   await batch.commit();
   exitSelectionMode();
 }
@@ -562,14 +574,22 @@ function listenForTyping() {
     snapshot.docs.forEach((docSnap) => {
       const data = docSnap.data();
       const userId = docSnap.id;
-      if (data.isTyping && userId !== currentUserId && now - data.timestamp < 5000) {
+      if (
+        data.isTyping &&
+        userId !== currentUserId &&
+        now - data.timestamp < 5000
+      ) {
         const username = userProfiles[userId]?.username || "Someone";
         typingUsers.push(username);
       }
     });
-    if (typingUsers.length === 0) typingIndicator.innerHTML = "&nbsp;";
-    else if (typingUsers.length === 1) typingIndicator.textContent = `${typingUsers[0]} is typing...`;
-    else typingIndicator.textContent = "Several users are typing...";
+    if (typingUsers.length === 0) {
+      typingIndicator.innerHTML = "&nbsp;";
+    } else if (typingUsers.length === 1) {
+      typingIndicator.textContent = `${typingUsers[0]} is typing...`;
+    } else {
+      typingIndicator.textContent = "Several users are typing...";
+    }
   });
 }
 
@@ -628,6 +648,7 @@ function renderFeed(docs, type, snapshot) {
   docs.forEach((docInstance) => {
     const data = docInstance.data();
     
+    // FILTER: Hide if user deleted it locally
     if (data.hiddenFor && data.hiddenFor.includes(currentUserId)) return;
 
     const text = data.text || "...";
@@ -671,7 +692,7 @@ function renderFeed(docs, type, snapshot) {
 
     if (isSelectionMode && selectedMessages.has(docInstance.id)) bubble.classList.add("selected-message");
 
-    // Click to select
+    // Click to select logic
     bubble.addEventListener('click', (e) => {
         if (isSelectionMode) {
             e.preventDefault();
@@ -689,6 +710,7 @@ function renderFeed(docs, type, snapshot) {
     // HEADER
     if (!isConsecutive) {
       const headerElement = document.createElement("div");
+      // ALIGNMENT FIX: justify-end for My Messages to push Profile/Name to the Right
       headerElement.className = `flex items-center gap-1.5 mb-1 ${isMine ? "justify-end" : "justify-start"}`;
       
       const imgElement = document.createElement("img");
@@ -855,6 +877,7 @@ function renderFeed(docs, type, snapshot) {
   const lastDoc = docs[docs.length - 1];
   const lastMessageIsMine = lastDoc && lastDoc.data().userId === currentUserId;
 
+  // SCROLL FIX: If no new messages added (only modified), keep position
   const hasNewMessages = snapshot && snapshot.docChanges().some(change => change.type === 'added');
   
   if (hasNewMessages) {

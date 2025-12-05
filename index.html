@@ -14,11 +14,11 @@
     <link rel="stylesheet" href="style.css" />
   </head>
 
-  <body class="flex flex-col bg-[#0a0a1a]" style="height: 100dvh">
+  <body class="flex flex-col bg-[#282a36]" style="height: 100dvh">
     <header
-      class="flex justify-between items-center p-2 sm:p-4 border-b-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20 gap-2 sm:gap-4"
+      class="flex justify-between items-center p-2 sm:p-4 border-b-2 border-[#bd93f9] shadow-lg shadow-[#bd93f9]/20 gap-2 sm:gap-4"
     >
-      <h1 class="text-xl sm:text-3xl font-bold glow">KONVO</h1>
+      <h1 class="text-xl sm:text-3xl font-bold text-[#bd93f9] glow">KONVO</h1>
 
       <div class="flex items-center gap-2 sm:gap-4">
         <nav class="flex text-base sm:text-lg gap-2 sm:gap-4">
@@ -27,7 +27,7 @@
         </nav>
         <button
           id="profileButton"
-          class="p-2 rounded-full hover:bg-gray-700 transition"
+          class="p-2 rounded-full hover:bg-[#44475a] transition text-[#f8f8f2]"
           title="Edit Profile"
         >
           <svg
@@ -53,7 +53,7 @@
         id="feedContainer"
         class="flex-1 flex flex-col p-2 sm:p-4 gap-2 overflow-y-auto"
       >
-        <div id="loading" class="text-center p-4">CONNECTING TO GRID...</div>
+        <div id="loading" class="text-center p-4 text-[#6272a4]">CONNECTING TO GRID...</div>
       </div>
 
       <button id="scrollToBottomBtn" class="hidden">
@@ -63,11 +63,11 @@
         </svg>
       </button>
 
-      <div id="selectionBar" class="hidden flex justify-between items-center bg-[#0a0a1a] border-t border-[#00e5ff] p-2">
-        <span id="selectionCount" class="text-lg">0 selected</span>
+      <div id="selectionBar" class="hidden flex justify-between items-center bg-[#282a36] border-t border-[#8be9fd] p-2">
+        <span id="selectionCount" class="text-lg text-[#8be9fd]">0 selected</span>
         <div class="flex gap-4">
-          <button id="selectionCancel" class="font-bold">CANCEL</button>
-          <button id="selectionDelete" class="font-bold text-red-400">
+          <button id="selectionCancel" class="font-bold text-[#f8f8f2]">CANCEL</button>
+          <button id="selectionDelete" class="font-bold text-[#ff5555]">
             DELETE
           </button>
         </div>
@@ -85,19 +85,19 @@
 
       <form
         id="confessionForm"
-        class="hidden gap-3 p-2 sm:p-4 border-t-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20"
+        class="hidden gap-3 p-2 sm:p-4 border-t-2 border-[#bd93f9] shadow-lg shadow-[#bd93f9]/20"
       >
         <textarea
           id="confessionInput"
-          rows="2"
-          class="flex-1 p-3 rounded-lg resize-none focus:outline-none"
+          rows="1"
+          class="flex-1 p-3 rounded-2xl resize-none focus:outline-none"
           placeholder="TYPE YOUR CONFESSION..."
           required
         ></textarea>
         <button
           id="confessionButton"
           type="submit"
-          class="px-6 py-2 rounded-lg font-bold"
+          class="px-6 py-2 rounded-lg font-bold text-[#282a36] bg-[#bd93f9] hover:bg-[#ff79c6] transition"
         >
           CONFESS
         </button>
@@ -105,19 +105,19 @@
 
       <form
         id="chatForm"
-        class="flex gap-3 p-2 sm:p-4 border-t-2 border-[#00e5ff] shadow-lg shadow-[#00e5ff]/20"
+        class="flex gap-3 p-2 sm:p-4 border-t-2 border-[#bd93f9] shadow-lg shadow-[#bd93f9]/20"
       >
         <textarea
           id="chatInput"
-          rows="2"
-          class="flex-1 p-3 rounded-lg resize-none focus:outline-none"
+          rows="1"
+          class="flex-1 p-3 rounded-2xl resize-none focus:outline-none"
           placeholder="TYPE YOUR MESSAGE..."
           required
         ></textarea>
         <button
           id="chatButton"
           type="submit"
-          class="px-6 py-2 rounded-lg font-bold"
+          class="px-6 py-2 rounded-lg font-bold text-[#282a36] bg-[#bd93f9] hover:bg-[#ff79c6] transition"
         >
           SEND
         </button>
@@ -126,30 +126,30 @@
 
     <div id="profileModal" class="modal-base">
       <div
-        class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4"
+        class="modal-content bg-[#282a36] p-6 rounded-lg border border-[#bd93f9] w-full max-w-sm flex flex-col gap-4 shadow-[0_0_20px_rgba(189,147,249,0.3)]"
       >
-        <h2 class="text-2xl font-bold glow">EDIT PROFILE</h2>
+        <h2 class="text-2xl font-bold text-[#bd93f9]">EDIT PROFILE</h2>
         <div class="flex flex-col gap-2">
-          <label for="modalUsernameInput" class="text-sm opacity-70"
+          <label for="modalUsernameInput" class="text-sm opacity-70 text-[#f8f8f2]"
             >Username</label
           >
           <input
             type="text"
             id="modalUsernameInput"
             placeholder="SET YOUR USERNAME..."
-            class="w-full p-3 rounded-lg focus:outline-none"
+            class="w-full p-3 rounded-lg focus:outline-none bg-[#44475a] text-[#f8f8f2] border border-[#6272a4]"
           />
         </div>
         <div class="flex gap-4 mt-4">
           <button
             id="modalCloseButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold"
+            class="flex-1 px-6 py-2 rounded-lg font-bold bg-[#44475a] text-[#f8f8f2] hover:bg-[#6272a4]"
           >
             CANCEL
           </button>
           <button
             id="modalSaveButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold"
+            class="flex-1 px-6 py-2 rounded-lg font-bold bg-[#bd93f9] text-[#282a36] hover:bg-[#ff79c6]"
           >
             SAVE
           </button>
@@ -159,24 +159,24 @@
 
     <div id="editModal" class="modal-base">
       <div
-        class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4"
+        class="modal-content bg-[#282a36] p-6 rounded-lg border border-[#bd93f9] w-full max-w-sm flex flex-col gap-4 shadow-[0_0_20px_rgba(189,147,249,0.3)]"
       >
-        <h2 class="text-2xl font-bold glow">EDIT MESSAGE</h2>
+        <h2 class="text-2xl font-bold text-[#bd93f9]">EDIT MESSAGE</h2>
         <textarea
           id="modalEditTextArea"
           rows="4"
-          class="w-full p-3 rounded-lg resize-none focus:outline-none"
+          class="w-full p-3 rounded-lg resize-none focus:outline-none bg-[#44475a] text-[#f8f8f2] border border-[#6272a4]"
         ></textarea>
         <div class="flex gap-4 mt-4">
           <button
             id="editModalCancelButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold"
+            class="flex-1 px-6 py-2 rounded-lg font-bold bg-[#44475a] text-[#f8f8f2] hover:bg-[#6272a4]"
           >
             CANCEL
           </button>
           <button
             id="editModalSaveButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold"
+            class="flex-1 px-6 py-2 rounded-lg font-bold bg-[#bd93f9] text-[#282a36] hover:bg-[#ff79c6]"
           >
             SAVE
           </button>
@@ -186,24 +186,24 @@
 
     <div id="confirmModal" class="modal-base">
       <div
-        class="modal-content bg-[#0a0a1a] p-6 rounded-lg neon-border w-full max-w-sm flex flex-col gap-4"
+        class="modal-content bg-[#282a36] p-6 rounded-lg border border-[#ff5555] w-full max-w-sm flex flex-col gap-4 shadow-[0_0_20px_rgba(255,85,85,0.3)]"
       >
-        <h2 class="text-xl font-bold glow">DELETE MESSAGE</h2>
-        <p id="confirmModalText" class="text-base opacity-90">
-          Are you sure you want to permanently delete this message?
+        <h2 class="text-xl font-bold text-[#ff5555]">CONFIRM</h2>
+        <p id="confirmModalText" class="text-base opacity-90 text-[#f8f8f2]">
+          Are you sure?
         </p>
         <div class="flex gap-4 mt-4">
           <button
             id="confirmModalNoButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold"
+            class="flex-1 px-6 py-2 rounded-lg font-bold bg-[#44475a] text-[#f8f8f2] hover:bg-[#6272a4]"
           >
             CANCEL
           </button>
           <button
             id="confirmModalYesButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold bg-red-800 border-red-500 hover:bg-red-600"
+            class="hidden"
           >
-            DELETE
+            YES
           </button>
         </div>
       </div>
