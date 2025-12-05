@@ -76,7 +76,7 @@ button:hover {
   word-wrap: break-word;
   white-space: pre-wrap;
   padding: 0.5rem 0.75rem;
-  position: relative; /* Essential for absolute positioning of kebab */
+  position: relative;
   transition: background-color 0.2s;
   margin-bottom: 1px;
   display: flex;
@@ -99,7 +99,7 @@ button:hover {
   border-color: #00e5ff !important;
 }
 
-/* FOOTER INSIDE BUBBLE (Just Time now) */
+/* FOOTER INSIDE BUBBLE */
 .bubble-footer {
   display: flex;
   align-items: center;
@@ -122,10 +122,10 @@ button:hover {
   opacity: 1;
 }
 
-/* KEBAB BUTTON - ABSOLUTE POSITIONED */
+/* KEBAB BUTTON - ALWAYS VISIBLE */
 .kebab-btn {
   position: absolute;
-  top: -2px; /* Slight offset from top edge */
+  top: -2px;
   width: 16px;
   height: 16px;
   padding: 0;
@@ -133,17 +133,15 @@ button:hover {
   background: none;
   border: none;
   color: #00e5ff;
-  opacity: 0; /* Hidden by default */
+  
+  /* UPDATED: Always visible at 50% opacity */
+  opacity: 0.5; 
+  
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-/* Hovering the bubble reveals the kebab */
-.message-bubble:hover .kebab-btn {
-  opacity: 0.5;
 }
 
 .kebab-btn:hover {

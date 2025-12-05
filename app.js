@@ -343,9 +343,18 @@ async function toggleReaction(
   }
 }
 
-// *** CONTEXT MENU POSITION FIX ***
+// *** CONTEXT MENU POSITION & TOGGLE FIX ***
 function showDropdownMenu(event, data) {
   event.stopPropagation();
+
+  // TOGGLE FIX: If menu is already open for THIS message, close it.
+  if (contextMenu.classList.contains("is-open") && 
+      currentContextMenuData && 
+      currentContextMenuData.id === data.id) {
+    hideDropdownMenu();
+    return;
+  }
+
   currentContextMenuData = data;
 
   const now = Date.now();
@@ -365,7 +374,6 @@ function showDropdownMenu(event, data) {
     contextMenu.style.left = `${rect.right - menuWidth}px`;
   } else {
     // If OTHERS message (Left side), align menu left
-    // This PREVENTS it from going off-screen to the left
     contextMenu.style.left = `${rect.left}px`;
   }
 
@@ -722,7 +730,6 @@ function renderFeed(docs, type, snapshot) {
     }
 
     // KEBAB BUTTON (ABSOLUTE POSITIONED)
-    // We add it directly to bubble. CSS handles positioning.
     const kebabBtn = document.createElement("button");
     kebabBtn.className = "kebab-btn";
     kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>`;
