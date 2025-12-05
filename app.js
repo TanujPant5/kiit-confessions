@@ -120,7 +120,7 @@ let unreadMessages = 0;
 let userIsAtBottom = true;
 let bottomObserver = null; 
 
-// REACTIONS (Includes Skull)
+// REACTIONS
 const REACTION_TYPES = {
   thumbsup: "👍",
   laugh: "😂",
@@ -231,6 +231,7 @@ async function loadUserProfile() {
     currentUsername === "Anonymous" ? "" : currentUsername;
 }
 
+// *** OBSIDIAN PROFILE STYLE ***
 async function handleProfileSave() {
   if (!db || !currentUserId) return;
   modalSaveButton.textContent = "SAVING...";
@@ -239,9 +240,11 @@ async function handleProfileSave() {
   let newProfilePhotoURL = null;
   if (newUsername && newUsername !== "Anonymous") {
     const firstLetter = newUsername.charAt(0).toUpperCase();
-    newProfilePhotoURL = `https://placehold.co/32x32/0a0a1a/00e5ff?text=${firstLetter}`;
+    // Black background, White text
+    newProfilePhotoURL = `https://placehold.co/32x32/000000/ffffff?text=${firstLetter}`;
   } else {
-    newProfilePhotoURL = `https://placehold.co/32x32/00e5ff/0a0a1a?text=?`;
+    // White background, Black text
+    newProfilePhotoURL = `https://placehold.co/32x32/ffffff/000000?text=?`;
   }
 
   try {
@@ -309,19 +312,17 @@ async function saveEdit() {
   }
 }
 
-// *** CONFIRM MODAL (DRACULA THEME + ADMIN LOGIC) ***
+// *** CONFIRM MODAL (OBSIDIAN THEME + ADMIN LOGIC) ***
 function showConfirmModal(text, isMine, docId) {
   confirmModalText.textContent = text;
   confirmModalActionContainer.innerHTML = '';
 
   const isAdmin = ADMIN_UIDS.includes(currentUserId);
 
-  // If message is mine OR user is Admin, show "Delete for Everyone" option
   if (isMine || isAdmin) {
-    // 1. Button: Delete for Me
+    // 1. "For Me" (White Outline)
     const btnForMe = document.createElement('button');
-    // Styled with Dracula border color (#bd93f9)
-    btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold border border-[#bd93f9] text-[#bd93f9] hover:bg-[#bd93f9] hover:text-[#282a36] transition";
+    btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold text-sm border border-white text-white hover:bg-white hover:text-black transition";
     btnForMe.textContent = "FOR ME";
     btnForMe.onclick = async () => {
         closeConfirmModal();
@@ -330,12 +331,10 @@ function showConfirmModal(text, isMine, docId) {
         });
     };
 
-    // 2. Button: Delete for Everyone (Nuke)
+    // 2. "Everyone/Nuke" (Solid Red)
     const btnEveryone = document.createElement('button');
-    // Styled with Dracula Red (#ff5555)
-    btnEveryone.className = "flex-1 px-4 py-2 rounded-lg font-bold bg-[#ff5555] border border-[#ff5555] hover:bg-[#ffb86c] hover:text-[#282a36] hover:border-[#ffb86c] text-white transition";
-    // If admin is deleting someone else's message, show NUKE
-    btnEveryone.textContent = (isAdmin && !isMine) ? "NUKE (ADMIN)" : "EVERYONE";
+    btnEveryone.className = "flex-1 px-4 py-2 rounded-lg font-bold text-sm bg-red-600 text-white hover:bg-red-500 transition border border-red-600";
+    btnEveryone.textContent = isAdmin && !isMine ? "NUKE (ADMIN)" : "EVERYONE";
     btnEveryone.onclick = async () => {
         closeConfirmModal();
         await deleteDoc(doc(db, currentPage, docId));
@@ -345,9 +344,9 @@ function showConfirmModal(text, isMine, docId) {
     confirmModalActionContainer.appendChild(btnEveryone);
 
   } else {
-    // Normal user deleting someone else's message (Local hide only)
+    // "Delete" (Solid Red)
     const btnForMe = document.createElement('button');
-    btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold bg-[#ff5555] border border-[#ff5555] hover:bg-[#ffb86c] hover:text-[#282a36] hover:border-[#ffb86c] text-white transition";
+    btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold text-sm bg-red-600 text-white hover:bg-red-500 transition";
     btnForMe.textContent = "DELETE";
     btnForMe.onclick = async () => {
         closeConfirmModal();
@@ -383,7 +382,7 @@ async function toggleReaction(docId, collectionName, reactionType, hasReacted) {
 function showDropdownMenu(event, data) {
   event.stopPropagation();
   
-  // TOGGLE FIX: If menu is already open for this message, close it
+  // TOGGLE FIX
   if (contextMenu.classList.contains("is-open") && 
       currentContextMenuData && 
       currentContextMenuData.id === data.id) {
@@ -394,11 +393,11 @@ function showDropdownMenu(event, data) {
   currentContextMenuData = data;
   const now = Date.now();
   const messageTime = parseInt(currentContextMenuData.timestamp, 10);
-  const isEditable = now - messageTime < 300000; // 5 mins
+  const isEditable = now - messageTime < 300000;
   const isMine = currentContextMenuData.isMine === "true";
 
   menuEdit.style.display = isEditable && isMine ? "block" : "none";
-  menuDelete.style.display = "block"; // Delete is always available
+  menuDelete.style.display = "block"; 
 
   const rect = event.currentTarget.getBoundingClientRect();
   contextMenu.style.top = `${rect.bottom + 2}px`;
@@ -436,7 +435,6 @@ function enterSelectionMode() {
   chatForm.classList.add("hidden");
   confessionForm.classList.add("hidden");
   
-  // Auto-select the message that triggered the mode
   if (currentContextMenuData) {
     const docId = currentContextMenuData.id;
     selectedMessages.add(docId);
@@ -476,16 +474,13 @@ async function handleMultiDelete() {
   if (count === 0) return;
   const batch = writeBatch(db);
   
-  // Check Admin Status
   const isAdmin = ADMIN_UIDS.includes(currentUserId);
 
   selectedMessages.forEach((docId) => {
     const docRef = doc(db, currentPage, docId);
     if (isAdmin) {
-       // Admins delete for everyone
        batch.delete(docRef);
     } else {
-       // Users hide locally
        batch.update(docRef, { hiddenFor: arrayUnion(currentUserId) });
     }
   });
@@ -670,7 +665,9 @@ function renderFeed(docs, type, snapshot) {
     const docUserId = data.userId;
     const profile = userProfiles[docUserId] || {};
     const username = profile.username || "Anonymous";
-    const photoURL = profile.profilePhotoURL || `https://placehold.co/32x32/00e5ff/0a0a1a?text=${username.charAt(0).toUpperCase() || "?"}`;
+    
+    // OBSIDIAN: Default to B&W placeholder if no photo
+    const photoURL = profile.profilePhotoURL || `https://placehold.co/32x32/000000/ffffff?text=${username.charAt(0).toUpperCase() || "?"}`;
 
     const isMine = currentUserId && docUserId === currentUserId;
     const isConsecutive = docUserId && docUserId === lastUserId;
@@ -710,7 +707,7 @@ function renderFeed(docs, type, snapshot) {
     // HEADER
     if (!isConsecutive) {
       const headerElement = document.createElement("div");
-      // ALIGNMENT FIX: justify-end for My Messages to push Profile/Name to the Right
+      // ALIGNMENT: Right for me, Left for others
       headerElement.className = `flex items-center gap-1.5 mb-1 ${isMine ? "justify-end" : "justify-start"}`;
       
       const imgElement = document.createElement("img");
@@ -756,7 +753,7 @@ function renderFeed(docs, type, snapshot) {
         const originalBubble = document.querySelector(`.message-bubble[data-id="${data.replyTo.messageId}"]`);
         if (originalBubble) {
           originalBubble.scrollIntoView({ behavior: "smooth", block: "center" });
-          originalBubble.style.backgroundColor = "rgba(0, 229, 255, 0.3)";
+          originalBubble.style.backgroundColor = "rgba(255, 255, 255, 0.1)"; // Obsidian Highlight
           setTimeout(() => { originalBubble.style.backgroundColor = ""; }, 1000);
         }
       });

@@ -3,35 +3,35 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Konvo // Anonymous Chat</title>
+    <title>Konvo // Obsidian</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
   </head>
 
-  <body class="flex flex-col bg-[#282a36]" style="height: 100dvh">
+  <body class="flex flex-col bg-[#0a0a0a]" style="height: 100dvh">
     <header
-      class="flex justify-between items-center p-2 sm:p-4 border-b-2 border-[#bd93f9] shadow-lg shadow-[#bd93f9]/20 gap-2 sm:gap-4"
+      class="flex justify-between items-center p-2 sm:p-4 border-b border-[#333333] bg-[#0a0a0a] gap-2 sm:gap-4 z-10"
     >
-      <h1 class="text-xl sm:text-3xl font-bold text-[#bd93f9] glow">KONVO</h1>
+      <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">KONVO</h1>
 
       <div class="flex items-center gap-2 sm:gap-4">
-        <nav class="flex text-base sm:text-lg gap-2 sm:gap-4">
+        <nav class="flex text-sm sm:text-base gap-4 font-medium">
           <div id="navConfessions" class="nav-item">CONFESSIONS</div>
           <div id="navChat" class="nav-item active">CHAT</div>
         </nav>
         <button
           id="profileButton"
-          class="p-2 rounded-full hover:bg-[#44475a] transition text-[#f8f8f2]"
+          class="p-2 rounded-full hover:bg-[#262626] transition text-[#ededed]"
           title="Edit Profile"
         >
           <svg
-            class="w-6 h-6"
+            class="w-5 h-5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -53,21 +53,21 @@
         id="feedContainer"
         class="flex-1 flex flex-col p-2 sm:p-4 gap-2 overflow-y-auto"
       >
-        <div id="loading" class="text-center p-4 text-[#6272a4]">CONNECTING TO GRID...</div>
+        <div id="loading" class="text-center p-4 text-[#888888] text-sm">CONNECTING...</div>
       </div>
 
       <button id="scrollToBottomBtn" class="hidden">
         <span id="newMsgCount" class="hidden">0</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
         </svg>
       </button>
 
-      <div id="selectionBar" class="hidden flex justify-between items-center bg-[#282a36] border-t border-[#8be9fd] p-2">
-        <span id="selectionCount" class="text-lg text-[#8be9fd]">0 selected</span>
+      <div id="selectionBar" class="hidden flex justify-between items-center bg-[#1c1c1c] border-t border-[#333] p-3">
+        <span id="selectionCount" class="text-base text-white font-medium">0 selected</span>
         <div class="flex gap-4">
-          <button id="selectionCancel" class="font-bold text-[#f8f8f2]">CANCEL</button>
-          <button id="selectionDelete" class="font-bold text-[#ff5555]">
+          <button id="selectionCancel" class="text-sm font-medium text-[#888888] hover:text-white">CANCEL</button>
+          <button id="selectionDelete" class="text-sm font-bold text-red-500 hover:text-red-400">
             DELETE
           </button>
         </div>
@@ -81,43 +81,43 @@
         <button id="cancelReply" title="Cancel reply">✕</button>
       </div>
 
-      <div id="typingIndicator" class="px-4 h-6 text-sm opacity-70">&nbsp;</div>
+      <div id="typingIndicator" class="px-4 h-6 text-xs text-[#888]">&nbsp;</div>
 
       <form
         id="confessionForm"
-        class="hidden gap-3 p-2 sm:p-4 border-t-2 border-[#bd93f9] shadow-lg shadow-[#bd93f9]/20"
+        class="hidden gap-3 border-t border-[#333]"
       >
         <textarea
           id="confessionInput"
           rows="1"
-          class="flex-1 p-3 rounded-2xl resize-none focus:outline-none"
-          placeholder="TYPE YOUR CONFESSION..."
+          class="flex-1 resize-none focus:outline-none text-sm"
+          placeholder="Type your confession..."
           required
         ></textarea>
         <button
           id="confessionButton"
           type="submit"
-          class="px-6 py-2 rounded-lg font-bold text-[#282a36] bg-[#bd93f9] hover:bg-[#ff79c6] transition"
+          class="px-5 py-2 rounded-lg font-bold text-sm bg-white text-black hover:bg-[#cccccc] transition"
         >
-          CONFESS
+          POST
         </button>
       </form>
 
       <form
         id="chatForm"
-        class="flex gap-3 p-2 sm:p-4 border-t-2 border-[#bd93f9] shadow-lg shadow-[#bd93f9]/20"
+        class="flex gap-3 border-t border-[#333]"
       >
         <textarea
           id="chatInput"
           rows="1"
-          class="flex-1 p-3 rounded-2xl resize-none focus:outline-none"
-          placeholder="TYPE YOUR MESSAGE..."
+          class="flex-1 resize-none focus:outline-none text-sm"
+          placeholder="Type a message..."
           required
         ></textarea>
         <button
           id="chatButton"
           type="submit"
-          class="px-6 py-2 rounded-lg font-bold text-[#282a36] bg-[#bd93f9] hover:bg-[#ff79c6] transition"
+          class="px-5 py-2 rounded-lg font-bold text-sm bg-white text-black hover:bg-[#cccccc] transition"
         >
           SEND
         </button>
@@ -126,32 +126,32 @@
 
     <div id="profileModal" class="modal-base">
       <div
-        class="modal-content bg-[#282a36] p-6 rounded-lg border border-[#bd93f9] w-full max-w-sm flex flex-col gap-4 shadow-[0_0_20px_rgba(189,147,249,0.3)]"
+        class="modal-content bg-[#1c1c1c] p-6 rounded-xl border border-[#333] w-full max-w-sm flex flex-col gap-4 shadow-2xl"
       >
-        <h2 class="text-2xl font-bold text-[#bd93f9]">EDIT PROFILE</h2>
+        <h2 class="text-xl font-bold text-white">Edit Profile</h2>
         <div class="flex flex-col gap-2">
-          <label for="modalUsernameInput" class="text-sm opacity-70 text-[#f8f8f2]"
-            >Username</label
+          <label for="modalUsernameInput" class="text-xs font-medium text-[#888]"
+            >USERNAME</label
           >
           <input
             type="text"
             id="modalUsernameInput"
-            placeholder="SET YOUR USERNAME..."
-            class="w-full p-3 rounded-lg focus:outline-none bg-[#44475a] text-[#f8f8f2] border border-[#6272a4]"
+            placeholder="Enter username"
+            class="w-full p-3 rounded-lg focus:outline-none bg-[#0a0a0a] text-white border border-[#333] text-sm"
           />
         </div>
-        <div class="flex gap-4 mt-4">
+        <div class="flex gap-3 mt-4">
           <button
             id="modalCloseButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold bg-[#44475a] text-[#f8f8f2] hover:bg-[#6272a4]"
+            class="flex-1 px-4 py-2 rounded-lg font-medium text-sm bg-transparent border border-[#333] text-[#888] hover:text-white hover:border-white transition"
           >
-            CANCEL
+            Cancel
           </button>
           <button
             id="modalSaveButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold bg-[#bd93f9] text-[#282a36] hover:bg-[#ff79c6]"
+            class="flex-1 px-4 py-2 rounded-lg font-bold text-sm bg-white text-black hover:bg-[#ddd] transition"
           >
-            SAVE
+            Save
           </button>
         </div>
       </div>
@@ -159,26 +159,26 @@
 
     <div id="editModal" class="modal-base">
       <div
-        class="modal-content bg-[#282a36] p-6 rounded-lg border border-[#bd93f9] w-full max-w-sm flex flex-col gap-4 shadow-[0_0_20px_rgba(189,147,249,0.3)]"
+        class="modal-content bg-[#1c1c1c] p-6 rounded-xl border border-[#333] w-full max-w-sm flex flex-col gap-4 shadow-2xl"
       >
-        <h2 class="text-2xl font-bold text-[#bd93f9]">EDIT MESSAGE</h2>
+        <h2 class="text-xl font-bold text-white">Edit Message</h2>
         <textarea
           id="modalEditTextArea"
           rows="4"
-          class="w-full p-3 rounded-lg resize-none focus:outline-none bg-[#44475a] text-[#f8f8f2] border border-[#6272a4]"
+          class="w-full p-3 rounded-lg resize-none focus:outline-none bg-[#0a0a0a] text-white border border-[#333] text-sm"
         ></textarea>
-        <div class="flex gap-4 mt-4">
+        <div class="flex gap-3 mt-4">
           <button
             id="editModalCancelButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold bg-[#44475a] text-[#f8f8f2] hover:bg-[#6272a4]"
+            class="flex-1 px-4 py-2 rounded-lg font-medium text-sm bg-transparent border border-[#333] text-[#888] hover:text-white hover:border-white transition"
           >
-            CANCEL
+            Cancel
           </button>
           <button
             id="editModalSaveButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold bg-[#bd93f9] text-[#282a36] hover:bg-[#ff79c6]"
+            class="flex-1 px-4 py-2 rounded-lg font-bold text-sm bg-white text-black hover:bg-[#ddd] transition"
           >
-            SAVE
+            Save
           </button>
         </div>
       </div>
@@ -186,24 +186,24 @@
 
     <div id="confirmModal" class="modal-base">
       <div
-        class="modal-content bg-[#282a36] p-6 rounded-lg border border-[#ff5555] w-full max-w-sm flex flex-col gap-4 shadow-[0_0_20px_rgba(255,85,85,0.3)]"
+        class="modal-content bg-[#1c1c1c] p-6 rounded-xl border border-[#333] w-full max-w-sm flex flex-col gap-4 shadow-2xl"
       >
-        <h2 class="text-xl font-bold text-[#ff5555]">CONFIRM</h2>
-        <p id="confirmModalText" class="text-base opacity-90 text-[#f8f8f2]">
+        <h2 class="text-lg font-bold text-white">Confirm</h2>
+        <p id="confirmModalText" class="text-sm text-[#888]">
           Are you sure?
         </p>
-        <div class="flex gap-4 mt-4">
+        <div class="flex gap-3 mt-4">
           <button
             id="confirmModalNoButton"
-            class="flex-1 px-6 py-2 rounded-lg font-bold bg-[#44475a] text-[#f8f8f2] hover:bg-[#6272a4]"
+            class="flex-1 px-4 py-2 rounded-lg font-medium text-sm bg-transparent border border-[#333] text-[#888] hover:text-white hover:border-white transition"
           >
-            CANCEL
+            Cancel
           </button>
           <button
             id="confirmModalYesButton"
             class="hidden"
           >
-            YES
+            Yes
           </button>
         </div>
       </div>
@@ -211,8 +211,8 @@
 
     <div id="contextMenu" class="">
       <ul>
-        <li id="menuEdit">Edit</li>
-        <li id="menuDelete">Delete</li>
+        <li id="menuEdit">Edit Message</li>
+        <li id="menuDelete" class="text-red-500 hover:text-red-400">Delete Message</li>
         <li class="separator"></li>
         <li id="menuSelect">Select</li>
       </ul>
