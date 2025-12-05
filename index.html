@@ -18,8 +18,9 @@
     <header
       class="flex justify-between items-center p-2 sm:p-4 border-b border-[#333333] bg-[#0a0a0a] gap-2 sm:gap-4 z-10"
     >
-      <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">KONVO</h1>
-
+      <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">
+        KONVO
+      </h1>
       <div class="flex items-center gap-2 sm:gap-4">
         <nav class="flex text-sm sm:text-base gap-4 font-medium">
           <div id="navConfessions" class="nav-item">CONFESSIONS</div>
@@ -53,21 +54,46 @@
         id="feedContainer"
         class="flex-1 flex flex-col p-2 sm:p-4 gap-2 overflow-y-auto"
       >
-        <div id="loading" class="text-center p-4 text-[#888888] text-sm">CONNECTING...</div>
+        <div id="loading" class="text-center p-4 text-[#888888] text-sm">
+          CONNECTING...
+        </div>
       </div>
 
       <button id="scrollToBottomBtn" class="hidden">
         <span id="newMsgCount" class="hidden">0</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
         </svg>
       </button>
 
-      <div id="selectionBar" class="hidden flex justify-between items-center bg-[#1c1c1c] border-t border-[#333] p-3">
-        <span id="selectionCount" class="text-base text-white font-medium">0 selected</span>
+      <div
+        id="selectionBar"
+        class="hidden flex justify-between items-center bg-[#1c1c1c] border-t border-[#333] p-3"
+      >
+        <span id="selectionCount" class="text-base text-white font-medium"
+          >0 selected</span
+        >
         <div class="flex gap-4">
-          <button id="selectionCancel" class="text-sm font-medium text-[#888888] hover:text-white">CANCEL</button>
-          <button id="selectionDelete" class="text-sm font-bold text-red-500 hover:text-red-400">
+          <button
+            id="selectionCancel"
+            class="text-sm font-medium text-[#888888] hover:text-white"
+          >
+            CANCEL
+          </button>
+          <button
+            id="selectionDelete"
+            class="text-sm font-bold text-red-500 hover:text-red-400"
+          >
             DELETE
           </button>
         </div>
@@ -81,12 +107,11 @@
         <button id="cancelReply" title="Cancel reply">✕</button>
       </div>
 
-      <div id="typingIndicator" class="px-4 h-6 text-xs text-[#888]">&nbsp;</div>
+      <div id="typingIndicator" class="px-4 h-6 text-xs text-[#888]">
+        &nbsp;
+      </div>
 
-      <form
-        id="confessionForm"
-        class="hidden gap-3 border-t border-[#333]"
-      >
+      <form id="confessionForm" class="hidden gap-3 border-t border-[#333]">
         <textarea
           id="confessionInput"
           rows="1"
@@ -103,10 +128,7 @@
         </button>
       </form>
 
-      <form
-        id="chatForm"
-        class="flex gap-3 border-t border-[#333]"
-      >
+      <form id="chatForm" class="flex gap-3 border-t border-[#333]">
         <textarea
           id="chatInput"
           rows="1"
@@ -130,7 +152,9 @@
       >
         <h2 class="text-xl font-bold text-white">Edit Profile</h2>
         <div class="flex flex-col gap-2">
-          <label for="modalUsernameInput" class="text-xs font-medium text-[#888]"
+          <label
+            for="modalUsernameInput"
+            class="text-xs font-medium text-[#888]"
             >USERNAME</label
           >
           <input
@@ -189,9 +213,7 @@
         class="modal-content bg-[#1c1c1c] p-6 rounded-xl border border-[#333] w-full max-w-sm flex flex-col gap-4 shadow-2xl"
       >
         <h2 class="text-lg font-bold text-white">Confirm</h2>
-        <p id="confirmModalText" class="text-sm text-[#888]">
-          Are you sure?
-        </p>
+        <p id="confirmModalText" class="text-sm text-[#888]">Are you sure?</p>
         <div class="flex gap-3 mt-4">
           <button
             id="confirmModalNoButton"
@@ -199,12 +221,7 @@
           >
             Cancel
           </button>
-          <button
-            id="confirmModalYesButton"
-            class="hidden"
-          >
-            Yes
-          </button>
+          <button id="confirmModalYesButton" class="hidden">Yes</button>
         </div>
       </div>
     </div>
@@ -212,7 +229,9 @@
     <div id="contextMenu" class="">
       <ul>
         <li id="menuEdit">Edit Message</li>
-        <li id="menuDelete" class="text-red-500 hover:text-red-400">Delete Message</li>
+        <li id="menuDelete" class="text-red-500 hover:text-red-400">
+          Delete Message
+        </li>
         <li class="separator"></li>
         <li id="menuSelect">Select</li>
       </ul>
