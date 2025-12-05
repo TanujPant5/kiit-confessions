@@ -109,7 +109,7 @@ let replyToMessage = null;
 // Scroll State
 let unreadMessages = 0;
 let userIsAtBottom = true;
-let bottomObserver = null; // New Observer
+let bottomObserver = null; 
 
 // The allowed reactions
 const REACTION_TYPES = {
@@ -145,7 +145,7 @@ async function initFirebase() {
   }
 }
 
-// *** NEW: INTERSECTION OBSERVER LOGIC ***
+// *** SCROLL OBSERVER LOGIC ***
 function initScrollObserver() {
   const options = {
     root: feedContainer,
@@ -155,11 +155,9 @@ function initScrollObserver() {
 
   bottomObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      // If the invisible anchor is visible, we are at the bottom
       userIsAtBottom = entry.isIntersecting;
       
       if (userIsAtBottom) {
-        // Reset counters immediately
         unreadMessages = 0;
         updateScrollButton();
       } else {
@@ -172,7 +170,7 @@ function initScrollObserver() {
 function updateScrollButton() {
   if (userIsAtBottom) {
     scrollToBottomBtn.classList.add("hidden");
-    scrollToBottomBtn.style.display = ""; // Clear inline style
+    scrollToBottomBtn.style.display = ""; 
     newMsgCount.classList.add("hidden");
     unreadMessages = 0;
   } else {
@@ -345,6 +343,7 @@ async function toggleReaction(
   }
 }
 
+// *** CONTEXT MENU POSITION FIX ***
 function showDropdownMenu(event, data) {
   event.stopPropagation();
   currentContextMenuData = data;
@@ -357,10 +356,18 @@ function showDropdownMenu(event, data) {
   menuEdit.style.display = isEditable && isMine ? "block" : "none";
   menuDelete.style.display = isMine ? "block" : "none";
 
-  const rect = event.currentTarget.getBoundingClientRect();
+  const rect = event.currentTarget.getBoundingClientRect(); // The Kebab Button Rect
   contextMenu.style.top = `${rect.bottom + 2}px`;
-  const menuWidth = contextMenu.offsetWidth || 150;
-  contextMenu.style.left = `${rect.right - menuWidth}px`;
+  
+  if (isMine) {
+    // If MY message (Right side), align menu right
+    const menuWidth = contextMenu.offsetWidth || 150;
+    contextMenu.style.left = `${rect.right - menuWidth}px`;
+  } else {
+    // If OTHERS message (Left side), align menu left
+    // This PREVENTS it from going off-screen to the left
+    contextMenu.style.left = `${rect.left}px`;
+  }
 
   contextMenu.classList.add("is-open");
 }
@@ -636,7 +643,7 @@ function formatMessageTime(date) {
 }
 
 
-// RENDER FEED
+// *** RENDER FEED (Layout Updated) ***
 function renderFeed(docs, type, snapshot) {
   // Capture current scroll state
   const prevScrollTop = feedContainer.scrollTop;
@@ -689,17 +696,18 @@ function renderFeed(docs, type, snapshot) {
     const isConsecutive = docUserId && docUserId === lastUserId;
     lastUserId = docUserId;
 
-    // Structure
+    // Structure Wrapper (Left or Right)
     const alignWrapper = document.createElement("div");
     alignWrapper.className = `flex w-full ${
       isMine ? "justify-end" : "justify-start"
     }`;
 
+    // Flex row for Bubble + Time + Actions
     const row = document.createElement("div");
-    row.className = "message-wrapper";
+    row.className = "message-wrapper"; 
 
+    // THE BUBBLE
     const bubble = document.createElement("div");
-    // GROUPING LOGIC
     bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${
       isMine ? "my-message" : ""
     } ${isConsecutive ? "mt-0.5" : "mt-6"}`;
@@ -714,19 +722,15 @@ function renderFeed(docs, type, snapshot) {
       bubble.classList.add("selected-message");
     }
 
-    // HEADER (Username)
-    if (!isConsecutive) {
+    // HEADER (Username - Only for Others)
+    if (!isConsecutive && !isMine) {
       const headerElement = document.createElement("div");
-      headerElement.className = `flex items-center gap-1.5 mb-1 ${
-        isMine ? "justify-end" : ""
-      }`;
+      headerElement.className = "flex items-center gap-1.5 mb-1";
       const imgElement = document.createElement("img");
       imgElement.src = photoURL;
-      imgElement.className = `chat-pfp ${isMine ? "order-2" : "order-1"}`;
+      imgElement.className = "chat-pfp order-1";
       const usernameElement = document.createElement("div");
-      usernameElement.className = `font-bold text-sm opacity-70 ${
-        isMine ? "order-1 text-right" : "order-2 text-left"
-      }`;
+      usernameElement.className = "font-bold text-sm opacity-70 order-2 text-left";
       usernameElement.textContent = username;
       headerElement.appendChild(imgElement);
       headerElement.appendChild(usernameElement);
@@ -770,33 +774,27 @@ function renderFeed(docs, type, snapshot) {
     textElement.textContent = text;
     bubble.appendChild(textElement);
 
-    // TIMESTAMP + KEBAB
-    const timeElement = document.createElement("div");
-    timeElement.className = "timestamp text-right";
-    if (data.edited) {
-      const editedMarker = document.createElement("span");
-      editedMarker.className = "edited-marker";
-      editedMarker.textContent = "(edited)";
-      timeElement.appendChild(editedMarker);
-    }
-    
-    const timeText = document.createElement("span");
-    timeText.className = "live-timestamp"; 
-    timeText.dataset.ts = rawMillis;
-    timeText.textContent = timeString;
-    timeElement.appendChild(timeText);
-    
+    // INNER FOOTER (Kebab Menu)
+    const footerDiv = document.createElement("div");
+    footerDiv.className = `bubble-footer ${isMine ? "justify-end" : "justify-start"}`; // Kebab Alignment Logic
+
     const kebabBtn = document.createElement("button");
     kebabBtn.className = "kebab-btn";
     kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>`;
     kebabBtn.addEventListener("click", (e) => {
       showDropdownMenu(e, bubble.dataset);
     });
-    timeElement.appendChild(kebabBtn);
-    bubble.appendChild(timeElement);
+    footerDiv.appendChild(kebabBtn);
+    bubble.appendChild(footerDiv);
 
+    // OUTER TIMESTAMP (Layout Position)
+    const timeElement = document.createElement("span");
+    timeElement.className = "outer-timestamp";
+    timeElement.dataset.ts = rawMillis;
+    timeElement.textContent = timeString;
+    if (data.edited) timeElement.textContent += " (edited)";
 
-    // SIDE BUTTONS
+    // SIDE BUTTONS (Reply/Heart)
     const replyBtn = document.createElement("button");
     replyBtn.className = "side-action-btn";
     replyBtn.innerHTML = "↩";
@@ -811,6 +809,7 @@ function renderFeed(docs, type, snapshot) {
     reactBtn.innerHTML = "♡";
     reactBtn.title = "Add Reaction";
     
+    // ... Picker Logic ...
     const picker = document.createElement("div");
     picker.className = "reaction-picker hidden";
     const docReactions = data.reactions || {};
@@ -850,7 +849,7 @@ function renderFeed(docs, type, snapshot) {
     
     feedContainer.addEventListener('scroll', () => picker.classList.add('hidden'), {once: true});
 
-    // Hanging Chips
+    // Hanging Chips (Reactions)
     const chipsContainer = document.createElement("div");
     chipsContainer.className = "reaction-chips-container";
     
@@ -877,14 +876,19 @@ function renderFeed(docs, type, snapshot) {
       bubble.classList.add("has-reactions");
     }
 
+    // FINAL ASSEMBLY (The Order Matters!)
     if (isMine) {
+      // MINE: [Time] [React] [Reply] [Bubble]
+      row.appendChild(timeElement);
       row.appendChild(reactBtn);
       row.appendChild(replyBtn);
       row.appendChild(bubble);
     } else {
+      // OTHERS: [Bubble] [Reply] [React] [Time]
       row.appendChild(bubble);
       row.appendChild(replyBtn);
       row.appendChild(reactBtn);
+      row.appendChild(timeElement);
     }
 
     alignWrapper.appendChild(row);
@@ -892,7 +896,6 @@ function renderFeed(docs, type, snapshot) {
   });
 
   // *** SCROLL ANCHOR LOGIC ***
-  // Add an invisible anchor at the end of the feed
   const scrollAnchor = document.createElement("div");
   scrollAnchor.id = "scrollAnchor";
   scrollAnchor.style.height = "1px";
@@ -914,10 +917,7 @@ function renderFeed(docs, type, snapshot) {
   } else if (wasAtBottom) {
     scrollToBottom();
   } else {
-    // Restore scroll position to prevent jumping
     feedContainer.scrollTop = prevScrollTop;
-
-    // Check if new "added" messages arrived
     if (snapshot && snapshot.docChanges().some(change => change.type === "added")) {
        unreadMessages++;
        updateScrollButton();
@@ -934,11 +934,13 @@ document.addEventListener("click", (e) => {
 
 // Update timestamps every minute
 setInterval(() => {
-  const timestampElements = document.querySelectorAll('.live-timestamp');
+  const timestampElements = document.querySelectorAll('.outer-timestamp');
   timestampElements.forEach(el => {
     const ts = parseInt(el.dataset.ts);
     if (ts > 0) {
-      el.textContent = formatMessageTime(new Date(ts));
+      let suffix = "";
+      if (el.textContent.includes("(edited)")) suffix = " (edited)";
+      el.textContent = formatMessageTime(new Date(ts)) + suffix;
     }
   });
 }, 60000);

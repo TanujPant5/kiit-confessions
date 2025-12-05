@@ -78,11 +78,12 @@ button:hover {
   padding: 0.5rem 0.75rem;
   position: relative;
   transition: background-color 0.2s;
-  /* CHANGED: Reduced to 1px for tight grouping */
   margin-bottom: 1px;
+  display: flex;
+  flex-direction: column;
 }
 
-/* NEW: Logic to add space if reactions are hanging off the bottom */
+/* Logic to add space if reactions are hanging off the bottom */
 .message-bubble.has-reactions {
   margin-bottom: 20px !important;
 }
@@ -98,17 +99,29 @@ button:hover {
   border-color: #00e5ff !important;
 }
 
-/* HEADER & TIMESTAMP */
-.timestamp {
+/* FOOTER INSIDE BUBBLE (Kebab) */
+.bubble-footer {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+}
+
+/* TIME OUTSIDE BUBBLE */
+.outer-timestamp {
   font-size: 0.65rem;
   color: #00e5ff;
   opacity: 0.6;
   text-shadow: none;
-  margin-top: 2px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 4px;
+  white-space: nowrap;
+  margin: 0 8px 4px 8px; /* Margin to separate from bubble */
+  flex-shrink: 0;
+}
+
+.edited-marker {
+  font-size: 0.6rem;
+  opacity: 0.5;
+  margin-right: 4px;
+  font-style: italic;
 }
 
 .chat-pfp {
@@ -124,26 +137,25 @@ button:hover {
 .message-wrapper {
   display: flex;
   align-items: flex-end;
-  gap: 4px; /* Tight gap for mobile */
+  gap: 2px;
 }
 
-/* Common style for side buttons */
 .side-action-btn {
   background: none;
   border: none;
   color: #00e5ff;
-  opacity: 0.5;
+  opacity: 0.3; /* Lower opacity by default */
   cursor: pointer;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
   transition: all 0.2s;
-  margin-bottom: 8px; /* Match bubble visual baseline */
-  flex-shrink: 0; /* Prevent squishing on mobile */
+  margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
 .side-action-btn:hover {
@@ -157,7 +169,7 @@ button:hover {
 .reaction-chips-container {
   position: absolute;
   bottom: -10px;
-  left: 8px; /* Default left alignment */
+  left: 8px;
   display: flex;
   gap: 4px;
   z-index: 5;
@@ -165,7 +177,7 @@ button:hover {
 
 .my-message .reaction-chips-container {
   left: auto;
-  right: 8px; /* Align right for my messages */
+  right: 8px;
 }
 
 .reaction-chip {
@@ -188,7 +200,7 @@ button:hover {
 
 /* POPUP PICKER */
 .reaction-picker {
-  position: fixed; /* Fixed to ensure it pops up on top of everything */
+  position: fixed;
   background-color: #0a0a1a;
   border: 1px solid #00e5ff;
   border-radius: 20px;
@@ -201,7 +213,7 @@ button:hover {
 }
 
 .reaction-option {
-  font-size: 1.5rem; /* Larger for mobile touch */
+  font-size: 1.5rem;
   cursor: pointer;
   transition: transform 0.2s;
   user-select: none;
@@ -218,7 +230,7 @@ button:hover {
 /* NEW: Scroll To Bottom Button */
 #scrollToBottomBtn {
   position: absolute;
-  bottom: 80px; /* Positioned above the typing area */
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
   background-color: rgba(10, 10, 26, 0.9);
@@ -486,13 +498,13 @@ button:hover {
 .date-separator {
   display: flex;
   justify-content: center;
-  margin: 24px 0 12px 0; /* Space around the separator */
+  margin: 24px 0 12px 0;
   width: 100%;
   opacity: 0.9;
 }
 
 .date-separator span {
-  background-color: rgba(0, 30, 60, 0.8); /* Dark background like WhatsApp/Telegram */
+  background-color: rgba(0, 30, 60, 0.8);
   color: #00e5ff;
   font-size: 0.75rem;
   font-weight: bold;
