@@ -34,7 +34,7 @@ const firebaseConfig = {
 // *** ADMIN CONFIGURATION ***
 const ADMIN_UIDS = [
     "WYr4sMbvSoapijfQREWV2d7zpZD2",
-    "REPLACE_WITH_REAL_UID_2"
+    "eASWpZ7o4Th1QD5ukGRJqllcTnh1"
 ]; 
 
 // DOM elements
