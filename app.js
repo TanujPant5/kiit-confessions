@@ -275,7 +275,6 @@ async function handleDelete() {
   }
 }
 
-// Updated to handle multiple reaction types
 async function toggleReaction(
   docId,
   collectionName,
@@ -286,7 +285,6 @@ async function toggleReaction(
 
   try {
     const docRef = doc(db, collectionName, docId);
-    // reactionType e.g. "heart", "thumbsup"
     const reactionField = `reactions.${reactionType}`;
 
     if (hasReacted) {
@@ -566,7 +564,7 @@ function formatTimestamp(firebaseTimestamp) {
   });
 }
 
-// *** NEW RENDER FEED FUNCTION ***
+// *** NEW RENDER FEED FUNCTION - Side Buttons ***
 function renderFeed(docs, type) {
   feedContainer.innerHTML = "";
   if (docs.length === 0) {
@@ -604,7 +602,7 @@ function renderFeed(docs, type) {
       isMine ? "justify-end" : "justify-start"
     }`;
 
-    // Inner row: bubble + reply arrow
+    // Inner row: side buttons + bubble
     const row = document.createElement("div");
     row.className = "message-wrapper";
 
@@ -648,19 +646,15 @@ function renderFeed(docs, type) {
     if (data.replyTo) {
       const replyPreview = document.createElement("div");
       replyPreview.className = "reply-preview";
-
       const replyAuthorEl = document.createElement("div");
       replyAuthorEl.className = "reply-author";
       const replyToProfile = userProfiles[data.replyTo.userId] || {};
       replyAuthorEl.textContent = replyToProfile.username || "Anonymous";
-
       const replyTextEl = document.createElement("div");
       replyTextEl.className = "reply-text";
       replyTextEl.textContent = data.replyTo.text;
-
       replyPreview.appendChild(replyAuthorEl);
       replyPreview.appendChild(replyTextEl);
-
       replyPreview.addEventListener("click", () => {
         const originalBubble = document.querySelector(
           `.message-bubble[data-id="${data.replyTo.messageId}"]`
@@ -676,7 +670,6 @@ function renderFeed(docs, type) {
           }, 1000);
         }
       });
-
       bubble.appendChild(replyPreview);
     }
 
@@ -689,63 +682,48 @@ function renderFeed(docs, type) {
     // TIMESTAMP + KEBAB
     const timeElement = document.createElement("div");
     timeElement.className = "timestamp text-right";
-
     if (data.edited) {
       const editedMarker = document.createElement("span");
       editedMarker.className = "edited-marker";
       editedMarker.textContent = "(edited)";
       timeElement.appendChild(editedMarker);
     }
-
     const timeText = document.createElement("span");
     timeText.textContent = time;
     timeElement.appendChild(timeText);
-
     const kebabBtn = document.createElement("button");
     kebabBtn.className = "kebab-btn";
-    kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-              </svg>`;
+    kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>`;
     kebabBtn.addEventListener("click", (e) => {
       showDropdownMenu(e, bubble.dataset);
     });
     timeElement.appendChild(kebabBtn);
     bubble.appendChild(timeElement);
 
-    // *** REACTIONS LOGIC ***
-    const reactionBar = document.createElement("div");
-    reactionBar.className = "reaction-bar";
-    
-    // 1. Render existing reaction counts
-    const docReactions = data.reactions || {};
-    
-    Object.keys(REACTION_TYPES).forEach(rtype => {
-      const userIds = docReactions[rtype] || [];
-      if (userIds.length > 0) {
-        const pill = document.createElement("div");
-        pill.className = "reaction-count-pill";
-        const hasReacted = userIds.includes(currentUserId);
-        if (hasReacted) pill.classList.add("user-reacted");
-        
-        pill.innerHTML = `${REACTION_TYPES[rtype]} <span>${userIds.length}</span>`;
-        pill.onclick = (e) => {
-          e.stopPropagation();
-          toggleReaction(docInstance.id, type, rtype, hasReacted);
-        };
-        reactionBar.appendChild(pill);
-      }
+
+    // *** SIDE BUTTONS CREATION ***
+
+    // 1. Reply Button
+    const replyBtn = document.createElement("button");
+    replyBtn.className = "side-action-btn";
+    replyBtn.innerHTML = "↩";
+    replyBtn.title = "Reply";
+    replyBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      startReplyMode(bubble.dataset);
     });
 
-    // 2. Add Button (+)
-    const addBtn = document.createElement("div");
-    addBtn.className = "add-reaction-trigger";
-    addBtn.innerHTML = "+"; // Can use an icon here
-    addBtn.title = "Add Reaction";
+    // 2. Reaction Trigger Button
+    const reactBtn = document.createElement("button");
+    reactBtn.className = "side-action-btn";
+    reactBtn.innerHTML = "♡"; // Or use SVG for cleaner heart
+    reactBtn.title = "Add Reaction";
     
-    // 3. Popup Picker
+    // Popup logic for reaction
     const picker = document.createElement("div");
     picker.className = "reaction-picker hidden";
-    
+    const docReactions = data.reactions || {};
+
     Object.entries(REACTION_TYPES).forEach(([rtype, emoji]) => {
       const opt = document.createElement("span");
       opt.className = "reaction-option";
@@ -760,38 +738,70 @@ function renderFeed(docs, type) {
       picker.appendChild(opt);
     });
 
-    addBtn.onclick = (e) => {
+    reactBtn.onclick = (e) => {
       e.stopPropagation();
-      // Close other pickers
-      document.querySelectorAll(".reaction-picker").forEach(p => {
-        if(p !== picker) p.classList.add("hidden");
-      });
-      picker.classList.toggle("hidden");
+      // Hide others
+      document.querySelectorAll(".reaction-picker").forEach(p => p.classList.add("hidden"));
+      
+      // Position logic: near the button
+      const rect = reactBtn.getBoundingClientRect();
+      // On mobile, center it or put it above
+      if (window.innerWidth < 640) {
+        picker.style.bottom = "auto";
+        picker.style.top = `${rect.top - 60}px`;
+        picker.style.left = "50%";
+        picker.style.transform = "translateX(-50%)";
+      } else {
+        picker.style.bottom = "auto";
+        picker.style.top = `${rect.top - 60}px`;
+        picker.style.left = `${rect.left}px`;
+        picker.style.transform = "none";
+      }
+      picker.classList.remove("hidden");
+      document.body.appendChild(picker); // Move to body to avoid clipping
     };
-
-    // Close picker when clicking elsewhere is handled by document listener below
     
-    // Combine
-    reactionBar.appendChild(addBtn);
-    reactionBar.appendChild(picker);
-    bubble.appendChild(reactionBar);
+    // Cleanup picker on scroll
+    feedContainer.addEventListener('scroll', () => picker.classList.add('hidden'), {once: true});
 
 
-    // REPLY BUTTON
-    const replyBtn = document.createElement("button");
-    replyBtn.className = "reply-floating-btn";
-    replyBtn.innerHTML = "↩";
-    replyBtn.title = "Reply";
-
-    replyBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      startReplyMode(bubble.dataset);
+    // *** HANGING CHIPS (Existing Reactions) ***
+    const chipsContainer = document.createElement("div");
+    chipsContainer.className = "reaction-chips-container";
+    
+    let hasChips = false;
+    Object.keys(REACTION_TYPES).forEach(rtype => {
+      const userIds = docReactions[rtype] || [];
+      if (userIds.length > 0) {
+        hasChips = true;
+        const chip = document.createElement("div");
+        chip.className = "reaction-chip";
+        const hasReacted = userIds.includes(currentUserId);
+        if (hasReacted) chip.classList.add("user-reacted");
+        chip.innerHTML = `${REACTION_TYPES[rtype]} ${userIds.length}`;
+        chip.onclick = (e) => {
+          e.stopPropagation();
+          toggleReaction(docInstance.id, type, rtype, hasReacted);
+        };
+        chipsContainer.appendChild(chip);
+      }
     });
 
+    if (hasChips) {
+      bubble.appendChild(chipsContainer);
+    }
+
+
+    // *** APPEND ORDER IN WRAPPER ***
+    // My Message: [Reply] [Bubble] [Reaction]
+    // Others:     [Reaction] [Bubble] [Reply]
+    
     if (isMine) {
       row.appendChild(replyBtn);
       row.appendChild(bubble);
+      row.appendChild(reactBtn);
     } else {
+      row.appendChild(reactBtn);
       row.appendChild(bubble);
       row.appendChild(replyBtn);
     }
@@ -800,32 +810,22 @@ function renderFeed(docs, type) {
     feedContainer.appendChild(alignWrapper);
   });
 
-  // Animation for new messages
-  const bubbles = feedContainer.querySelectorAll(".message-bubble");
-  const lastBubble = bubbles[bubbles.length - 1];
-  if (lastBubble && !lastBubble.hasAttribute("data-animated")) {
-    const now = Date.now();
-    const messageTime = parseInt(lastBubble.dataset.timestamp, 10);
-    if (now - messageTime < 3000) {
-      lastBubble.classList.add("animate-pop-in");
+  // Remove pickers on global click
+  document.addEventListener("click", (e) => {
+    if(!e.target.closest(".side-action-btn") && !e.target.closest(".reaction-picker")) {
+       document.querySelectorAll(".reaction-picker").forEach(p => p.classList.add("hidden"));
     }
-    lastBubble.setAttribute("data-animated", "true");
-  }
-
-  if (!isSelectionMode) {
-    feedContainer.scrollTop = feedContainer.scrollHeight;
-  }
+  }, { once: true }); // Re-attach in next render? No, this is global.
 }
 
-// Global click to close pickers
+// Global listener specifically for picker closing
 document.addEventListener("click", (e) => {
-  if (!e.target.closest(".reaction-bar")) {
-    document.querySelectorAll(".reaction-picker").forEach(el => el.classList.add("hidden"));
-  }
+    if(!e.target.closest(".side-action-btn") && !e.target.closest(".reaction-picker")) {
+       document.querySelectorAll(".reaction-picker").forEach(p => p.classList.add("hidden"));
+    }
 });
 
 // ... (Rest of existing code: postConfession, postChatMessage, listeners, etc.) ...
-// Ensure you keep the rest of your event listeners here as in previous version
 async function postConfession(e) {
   e.preventDefault();
   const text = confessionInput.value.trim();
