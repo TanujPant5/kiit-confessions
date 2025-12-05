@@ -33,7 +33,7 @@ const firebaseConfig = {
 
 // *** ADMIN CONFIGURATION ***
 const ADMIN_UIDS = [
-    "WYr4sMbvSoapijfQREWV2d7zpZD2",
+    "REPLACE_WITH_REAL_UID_1",
     "REPLACE_WITH_REAL_UID_2"
 ]; 
 
@@ -69,7 +69,6 @@ const editModalSaveButton = document.getElementById("editModalSaveButton");
 const confirmModal = document.getElementById("confirmModal");
 const confirmModalText = document.getElementById("confirmModalText");
 const confirmModalNoButton = document.getElementById("confirmModalNoButton");
-// Dynamic container for buttons
 const confirmModalActionContainer = document.getElementById("confirmModalActionContainer") || createActionContainer();
 
 const contextMenu = document.getElementById("contextMenu");
@@ -128,7 +127,28 @@ const REACTION_TYPES = {
   skull: "💀"
 };
 
-// Helper: Create container for delete buttons if missing
+// *** NEW: USER COLORS PALETTE (Obsidian Friendly) ***
+const USER_COLORS = [
+  "#ff79c6", // Pink
+  "#8be9fd", // Cyan
+  "#50fa7b", // Green
+  "#bd93f9", // Purple
+  "#ffb86c", // Orange
+  "#f1fa8c", // Yellow
+  "#ff5555", // Red
+  "#00e5ff", // Bright Blue
+];
+
+// Helper: Generate a consistent color from a User ID
+function getUserColor(userId) {
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) {
+    hash = userId.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash % USER_COLORS.length);
+  return USER_COLORS[index];
+}
+
 function createActionContainer() {
     const existingYesBtn = document.getElementById("confirmModalYesButton");
     if(existingYesBtn && existingYesBtn.parentNode) {
@@ -230,14 +250,12 @@ async function loadUserProfile() {
     currentUsername === "Anonymous" ? "" : currentUsername;
 }
 
-// *** COMPULSORY USERNAME CHECK ***
 async function handleProfileSave() {
   if (!db || !currentUserId) return;
   
   modalSaveButton.textContent = "SAVING...";
   modalSaveButton.disabled = true;
   
-  // FIX: Force user to enter something valid
   const inputVal = modalUsernameInput.value.trim();
   
   if (!inputVal || inputVal.toLowerCase() === "anonymous") {
@@ -249,7 +267,6 @@ async function handleProfileSave() {
 
   const newUsername = inputVal;
   const firstLetter = newUsername.charAt(0).toUpperCase();
-  // Obsidian B&W Style
   const newProfilePhotoURL = `https://placehold.co/32x32/000000/ffffff?text=${firstLetter}`;
 
   try {
@@ -317,7 +334,6 @@ async function saveEdit() {
   }
 }
 
-// *** CONFIRM MODAL (OBSIDIAN THEME + ADMIN LOGIC) ***
 function showConfirmModal(text, isMine, docId) {
   confirmModalText.textContent = text;
   confirmModalActionContainer.innerHTML = '';
@@ -622,7 +638,7 @@ function formatMessageTime(date) {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
-// *** RENDER FEED ***
+// *** RENDER FEED (WITH USER COLORS) ***
 function renderFeed(docs, type, snapshot) {
   const prevScrollTop = feedContainer.scrollTop;
   const wasAtBottom = userIsAtBottom;
@@ -666,13 +682,14 @@ function renderFeed(docs, type, snapshot) {
     const docUserId = data.userId;
     const profile = userProfiles[docUserId] || {};
     const username = profile.username || "Anonymous";
-    
-    // OBSIDIAN: Default to B&W placeholder if no photo
     const photoURL = profile.profilePhotoURL || `https://placehold.co/32x32/000000/ffffff?text=${username.charAt(0).toUpperCase() || "?"}`;
 
     const isMine = currentUserId && docUserId === currentUserId;
     const isConsecutive = docUserId && docUserId === lastUserId;
     lastUserId = docUserId;
+
+    // *** USER COLOR LOGIC ***
+    const userColor = getUserColor(docUserId);
 
     const alignWrapper = document.createElement("div");
     alignWrapper.className = `flex w-full ${isMine ? "justify-end" : "justify-start"}`;
@@ -688,9 +705,15 @@ function renderFeed(docs, type, snapshot) {
     bubble.dataset.userId = docUserId;
     bubble.dataset.timestamp = rawMillis;
 
+    // Apply Color to Received Messages
+    if (!isMine) {
+        bubble.style.borderLeft = `3px solid ${userColor}`;
+        // Optional: Very faint background tint
+        bubble.style.background = `linear-gradient(90deg, ${userColor}10, transparent)`;
+    }
+
     if (isSelectionMode && selectedMessages.has(docInstance.id)) bubble.classList.add("selected-message");
 
-    // Click to select logic
     bubble.addEventListener('click', (e) => {
         if (isSelectionMode) {
             e.preventDefault();
@@ -708,17 +731,18 @@ function renderFeed(docs, type, snapshot) {
     // HEADER
     if (!isConsecutive) {
       const headerElement = document.createElement("div");
-      // ALIGNMENT: Right for me, Left for others
       headerElement.className = `flex items-center gap-1.5 mb-1 ${isMine ? "justify-end" : "justify-start"}`;
       
       const imgElement = document.createElement("img");
       imgElement.src = photoURL;
       imgElement.className = `chat-pfp ${isMine ? "order-2" : "order-1"}`;
-      
+      if (!isMine) imgElement.style.borderColor = userColor; // Color the PFP border
+
       const usernameElement = document.createElement("div");
-      usernameElement.className = `font-bold text-sm opacity-70 ${isMine ? "order-1 text-right" : "order-2 text-left"}`;
+      usernameElement.className = `font-bold text-sm opacity-90 ${isMine ? "order-1 text-right" : "order-2 text-left"}`;
       usernameElement.textContent = username;
-      
+      if (!isMine) usernameElement.style.color = userColor; // Color the Username
+
       // ADMIN BADGE
       if (ADMIN_UIDS.includes(docUserId)) {
           const badge = document.createElement("span");
@@ -745,6 +769,13 @@ function renderFeed(docs, type, snapshot) {
       replyAuthorEl.className = "reply-author";
       const replyToProfile = userProfiles[data.replyTo.userId] || {};
       replyAuthorEl.textContent = replyToProfile.username || "Anonymous";
+      
+      // Color Reply Username too
+      if (!isMine) {
+          replyPreview.style.borderLeftColor = userColor;
+          replyAuthorEl.style.color = userColor;
+      }
+
       const replyTextEl = document.createElement("div");
       replyTextEl.className = "reply-text";
       replyTextEl.textContent = data.replyTo.text;
@@ -875,14 +906,12 @@ function renderFeed(docs, type, snapshot) {
   const lastDoc = docs[docs.length - 1];
   const lastMessageIsMine = lastDoc && lastDoc.data().userId === currentUserId;
 
-  // SCROLL FIX: If no new messages added (only modified), keep position
   const hasNewMessages = snapshot && snapshot.docChanges().some(change => change.type === 'added');
   
   if (hasNewMessages) {
       if (lastMessageIsMine || wasAtBottom) {
           scrollToBottom();
       } else {
-          // Increment unread and show arrow
           unreadMessages++;
           updateScrollButton();
       }
@@ -913,11 +942,10 @@ setInterval(() => {
 
 scrollToBottomBtn.addEventListener("click", scrollToBottom);
 
-// *** COMPULSORY USERNAME CHECK ON SEND ***
+// *** COMPULSORY USERNAME CHECK ***
 async function postConfession(e) {
   e.preventDefault();
   
-  // CHECK: If username is "Anonymous", block post
   if (currentUsername === "Anonymous") {
       alert("Please set a username before posting!");
       openProfileModal();
@@ -942,7 +970,6 @@ async function postConfession(e) {
 async function postChatMessage(e) {
   e.preventDefault();
 
-  // CHECK: If username is "Anonymous", block post
   if (currentUsername === "Anonymous") {
       alert("Please set a username before chatting!");
       openProfileModal();
