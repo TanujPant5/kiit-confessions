@@ -793,29 +793,23 @@ function renderFeed(docs, type) {
 
 
     // *** APPEND ORDER IN WRAPPER ***
-    // My Message: [Reply] [Bubble] [Reaction]
-    // Others:     [Reaction] [Bubble] [Reply]
+    // This symmetrical order keeps buttons in the center, away from screen edges.
     
     if (isMine) {
+      // My Messages (Right Aligned): Buttons on LEFT
+      row.appendChild(reactBtn);
       row.appendChild(replyBtn);
       row.appendChild(bubble);
-      row.appendChild(reactBtn);
     } else {
-      row.appendChild(reactBtn);
+      // Other Messages (Left Aligned): Buttons on RIGHT
       row.appendChild(bubble);
       row.appendChild(replyBtn);
+      row.appendChild(reactBtn);
     }
 
     alignWrapper.appendChild(row);
     feedContainer.appendChild(alignWrapper);
   });
-
-  // Remove pickers on global click
-  document.addEventListener("click", (e) => {
-    if(!e.target.closest(".side-action-btn") && !e.target.closest(".reaction-picker")) {
-       document.querySelectorAll(".reaction-picker").forEach(p => p.classList.add("hidden"));
-    }
-  }, { once: true }); // Re-attach in next render? No, this is global.
 }
 
 // Global listener specifically for picker closing
