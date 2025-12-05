@@ -33,7 +33,7 @@ const firebaseConfig = {
 
 // *** ADMIN CONFIGURATION ***
 const ADMIN_UIDS = [
-    "WYr4sMbvSoapijfQREWV2d7zpZD2",
+    "REPLACE_WITH_REAL_UID_1",
     "REPLACE_WITH_REAL_UID_2"
 ]; 
 
@@ -127,7 +127,7 @@ const REACTION_TYPES = {
   skull: "💀"
 };
 
-// *** NEW: USER COLORS PALETTE (Obsidian Friendly) ***
+// *** EXPANDED COLOR PALETTE (Neon/Pastel for Dark Mode) ***
 const USER_COLORS = [
   "#ff79c6", // Pink
   "#8be9fd", // Cyan
@@ -137,6 +137,15 @@ const USER_COLORS = [
   "#f1fa8c", // Yellow
   "#ff5555", // Red
   "#00e5ff", // Bright Blue
+  "#fab1a0", // Peach
+  "#a29bfe", // Lavender
+  "#55efc4", // Mint
+  "#fdcb6e", // Mustard
+  "#e17055", // Burnt Orange
+  "#d63031", // Deep Red
+  "#e84393", // Hot Pink
+  "#0984e3", // Electron Blue
+  "#00b894"  // Jungle Green
 ];
 
 // Helper: Generate a consistent color from a User ID
@@ -250,21 +259,18 @@ async function loadUserProfile() {
     currentUsername === "Anonymous" ? "" : currentUsername;
 }
 
+// *** OBSIDIAN PROFILE STYLE ***
 async function handleProfileSave() {
   if (!db || !currentUserId) return;
-  
   modalSaveButton.textContent = "SAVING...";
   modalSaveButton.disabled = true;
-  
   const inputVal = modalUsernameInput.value.trim();
-  
   if (!inputVal || inputVal.toLowerCase() === "anonymous") {
       alert("Please enter a valid username to continue.");
       modalSaveButton.textContent = "SAVE";
       modalSaveButton.disabled = false;
       return; 
   }
-
   const newUsername = inputVal;
   const firstLetter = newUsername.charAt(0).toUpperCase();
   const newProfilePhotoURL = `https://placehold.co/32x32/000000/ffffff?text=${firstLetter}`;
@@ -334,6 +340,7 @@ async function saveEdit() {
   }
 }
 
+// *** CONFIRM MODAL (OBSIDIAN THEME + ADMIN LOGIC) ***
 function showConfirmModal(text, isMine, docId) {
   confirmModalText.textContent = text;
   confirmModalActionContainer.innerHTML = '';
@@ -410,11 +417,15 @@ function showDropdownMenu(event, data) {
   currentContextMenuData = data;
   const now = Date.now();
   const messageTime = parseInt(currentContextMenuData.timestamp, 10);
-  const isEditable = now - messageTime < 300000;
+  
+  // FIX: Increased Edit Window
+  const isRecent = isNaN(messageTime) ? true : (now - messageTime < 900000);
+  
   const isMine = currentContextMenuData.isMine === "true";
+  const isAdmin = ADMIN_UIDS.includes(currentUserId);
 
-  menuEdit.style.display = isEditable && isMine ? "block" : "none";
-  menuDelete.style.display = "block"; 
+  menuEdit.style.display = isRecent && isMine ? "block" : "none";
+  menuDelete.style.display = "block";
 
   const rect = event.currentTarget.getBoundingClientRect();
   contextMenu.style.top = `${rect.bottom + 2}px`;
@@ -660,12 +671,18 @@ function renderFeed(docs, type, snapshot) {
   docs.forEach((docInstance) => {
     const data = docInstance.data();
     
-    // FILTER: Hide if user deleted it locally
     if (data.hiddenFor && data.hiddenFor.includes(currentUserId)) return;
 
     const text = data.text || "...";
     let messageDateObj = new Date();
-    if (data.timestamp) messageDateObj = data.timestamp.toDate();
+    
+    // FIX: Handle Latency Timestamp (null check)
+    if (data.timestamp) {
+        messageDateObj = data.timestamp.toDate();
+    } else {
+        messageDateObj = new Date();
+    }
+    
     const messageDateStr = messageDateObj.toDateString(); 
 
     if (lastDateString !== messageDateStr) {
@@ -677,11 +694,13 @@ function renderFeed(docs, type, snapshot) {
         lastUserId = null; 
     }
 
-    const rawMillis = data.timestamp ? data.timestamp.toMillis() : 0;
+    const rawMillis = data.timestamp ? data.timestamp.toMillis() : Date.now();
     const timeString = formatMessageTime(messageDateObj);
     const docUserId = data.userId;
     const profile = userProfiles[docUserId] || {};
     const username = profile.username || "Anonymous";
+    
+    // OBSIDIAN: Default to B&W placeholder if no photo
     const photoURL = profile.profilePhotoURL || `https://placehold.co/32x32/000000/ffffff?text=${username.charAt(0).toUpperCase() || "?"}`;
 
     const isMine = currentUserId && docUserId === currentUserId;
@@ -705,10 +724,8 @@ function renderFeed(docs, type, snapshot) {
     bubble.dataset.userId = docUserId;
     bubble.dataset.timestamp = rawMillis;
 
-    // Apply Color to Received Messages
     if (!isMine) {
         bubble.style.borderLeft = `3px solid ${userColor}`;
-        // Optional: Very faint background tint
         bubble.style.background = `linear-gradient(90deg, ${userColor}10, transparent)`;
     }
 
@@ -736,12 +753,12 @@ function renderFeed(docs, type, snapshot) {
       const imgElement = document.createElement("img");
       imgElement.src = photoURL;
       imgElement.className = `chat-pfp ${isMine ? "order-2" : "order-1"}`;
-      if (!isMine) imgElement.style.borderColor = userColor; // Color the PFP border
+      if (!isMine) imgElement.style.borderColor = userColor;
 
       const usernameElement = document.createElement("div");
       usernameElement.className = `font-bold text-sm opacity-90 ${isMine ? "order-1 text-right" : "order-2 text-left"}`;
       usernameElement.textContent = username;
-      if (!isMine) usernameElement.style.color = userColor; // Color the Username
+      if (!isMine) usernameElement.style.color = userColor;
 
       // ADMIN BADGE
       if (ADMIN_UIDS.includes(docUserId)) {
@@ -770,7 +787,6 @@ function renderFeed(docs, type, snapshot) {
       const replyToProfile = userProfiles[data.replyTo.userId] || {};
       replyAuthorEl.textContent = replyToProfile.username || "Anonymous";
       
-      // Color Reply Username too
       if (!isMine) {
           replyPreview.style.borderLeftColor = userColor;
           replyAuthorEl.style.color = userColor;
@@ -906,6 +922,7 @@ function renderFeed(docs, type, snapshot) {
   const lastDoc = docs[docs.length - 1];
   const lastMessageIsMine = lastDoc && lastDoc.data().userId === currentUserId;
 
+  // SCROLL FIX
   const hasNewMessages = snapshot && snapshot.docChanges().some(change => change.type === 'added');
   
   if (hasNewMessages) {
