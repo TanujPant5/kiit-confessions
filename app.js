@@ -555,16 +555,30 @@ async function updateTypingStatus(isTyping) {
   }
 }
 
+// *** UPDATED TIME FORMATTING LOGIC ***
 function formatTimestamp(firebaseTimestamp) {
   if (!firebaseTimestamp) return "...";
   const date = firebaseTimestamp.toDate();
-  return date.toLocaleString([], {
-    dateStyle: "short",
-    timeStyle: "short",
-  });
+  return getRelativeTime(date);
 }
 
-// *** NEW RENDER FEED FUNCTION - Side Buttons ***
+function getRelativeTime(date) {
+  const now = new Date();
+  const diff = now - date; // milliseconds
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (seconds < 60) return "Just now";
+  if (minutes < 60) return `${minutes} mins ago`;
+  if (hours < 24) return `${hours} hours ago`;
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  
+  return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
 function renderFeed(docs, type) {
   feedContainer.innerHTML = "";
   if (docs.length === 0) {
@@ -581,7 +595,11 @@ function renderFeed(docs, type) {
   docs.forEach((docInstance) => {
     const data = docInstance.data();
     const text = data.text || "...";
-    const time = formatTimestamp(data.timestamp);
+    
+    // Initial formatted time
+    const timeString = formatTimestamp(data.timestamp);
+    const rawMillis = data.timestamp ? data.timestamp.toMillis() : 0;
+    
     const docUserId = data.userId;
 
     const profile = userProfiles[docUserId] || {};
@@ -615,9 +633,7 @@ function renderFeed(docs, type) {
     bubble.dataset.text = text;
     bubble.dataset.isMine = isMine;
     bubble.dataset.userId = docUserId;
-    bubble.dataset.timestamp = data.timestamp
-      ? data.timestamp.toMillis()
-      : 0;
+    bubble.dataset.timestamp = rawMillis;
 
     if (isSelectionMode && selectedMessages.has(docInstance.id)) {
       bubble.classList.add("selected-message");
@@ -688,9 +704,14 @@ function renderFeed(docs, type) {
       editedMarker.textContent = "(edited)";
       timeElement.appendChild(editedMarker);
     }
+    
+    // Time text span (with special class for live updates)
     const timeText = document.createElement("span");
-    timeText.textContent = time;
+    timeText.className = "live-timestamp"; 
+    timeText.dataset.ts = rawMillis; // Store raw time for updates
+    timeText.textContent = timeString;
     timeElement.appendChild(timeText);
+    
     const kebabBtn = document.createElement("button");
     kebabBtn.className = "kebab-btn";
     kebabBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>`;
@@ -702,8 +723,6 @@ function renderFeed(docs, type) {
 
 
     // *** SIDE BUTTONS CREATION ***
-
-    // 1. Reply Button
     const replyBtn = document.createElement("button");
     replyBtn.className = "side-action-btn";
     replyBtn.innerHTML = "↩";
@@ -713,13 +732,11 @@ function renderFeed(docs, type) {
       startReplyMode(bubble.dataset);
     });
 
-    // 2. Reaction Trigger Button
     const reactBtn = document.createElement("button");
     reactBtn.className = "side-action-btn";
-    reactBtn.innerHTML = "♡"; // Or use SVG for cleaner heart
+    reactBtn.innerHTML = "♡";
     reactBtn.title = "Add Reaction";
     
-    // Popup logic for reaction
     const picker = document.createElement("div");
     picker.className = "reaction-picker hidden";
     const docReactions = data.reactions || {};
@@ -740,12 +757,8 @@ function renderFeed(docs, type) {
 
     reactBtn.onclick = (e) => {
       e.stopPropagation();
-      // Hide others
       document.querySelectorAll(".reaction-picker").forEach(p => p.classList.add("hidden"));
-      
-      // Position logic: near the button
       const rect = reactBtn.getBoundingClientRect();
-      // On mobile, center it or put it above
       if (window.innerWidth < 640) {
         picker.style.bottom = "auto";
         picker.style.top = `${rect.top - 60}px`;
@@ -758,14 +771,12 @@ function renderFeed(docs, type) {
         picker.style.transform = "none";
       }
       picker.classList.remove("hidden");
-      document.body.appendChild(picker); // Move to body to avoid clipping
+      document.body.appendChild(picker);
     };
     
-    // Cleanup picker on scroll
     feedContainer.addEventListener('scroll', () => picker.classList.add('hidden'), {once: true});
 
-
-    // *** HANGING CHIPS (Existing Reactions) ***
+    // Hanging Chips
     const chipsContainer = document.createElement("div");
     chipsContainer.className = "reaction-chips-container";
     
@@ -791,17 +802,11 @@ function renderFeed(docs, type) {
       bubble.appendChild(chipsContainer);
     }
 
-
-    // *** APPEND ORDER IN WRAPPER ***
-    // This symmetrical order keeps buttons in the center, away from screen edges.
-    
     if (isMine) {
-      // My Messages (Right Aligned): Buttons on LEFT
       row.appendChild(reactBtn);
       row.appendChild(replyBtn);
       row.appendChild(bubble);
     } else {
-      // Other Messages (Left Aligned): Buttons on RIGHT
       row.appendChild(bubble);
       row.appendChild(replyBtn);
       row.appendChild(reactBtn);
@@ -818,6 +823,17 @@ document.addEventListener("click", (e) => {
        document.querySelectorAll(".reaction-picker").forEach(p => p.classList.add("hidden"));
     }
 });
+
+// Update timestamps every minute
+setInterval(() => {
+  const timestampElements = document.querySelectorAll('.live-timestamp');
+  timestampElements.forEach(el => {
+    const ts = parseInt(el.dataset.ts);
+    if (ts > 0) {
+      el.textContent = getRelativeTime(new Date(ts));
+    }
+  });
+}, 60000); // 60 seconds
 
 // ... (Rest of existing code: postConfession, postChatMessage, listeners, etc.) ...
 async function postConfession(e) {
