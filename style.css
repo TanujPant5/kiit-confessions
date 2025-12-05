@@ -81,10 +81,9 @@ button:hover {
   margin-bottom: 1px;
   display: flex;
   flex-direction: column;
-  min-width: 100px; /* Ensure enough space for footer */
+  min-width: 120px; /* Ensure enough space for footer */
 }
 
-/* Logic to add space if reactions are hanging off the bottom */
 .message-bubble.has-reactions {
   margin-bottom: 20px !important;
 }
@@ -100,26 +99,37 @@ button:hover {
   border-color: #00e5ff !important;
 }
 
-/* FOOTER INSIDE BUBBLE (Kebab & Time) */
+/* FOOTER INSIDE BUBBLE */
 .bubble-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Push Time and Kebab to opposite sides */
-  margin-top: 6px;
+  justify-content: space-between;
+  margin-top: 4px;
   width: 100%;
-  gap: 8px;
+  height: 14px; /* Fixed height to keep layout stable even when hidden */
 }
 
+/* TIMESTAMP STYLING 
+   - Font size: 0.5rem (Extremely small)
+   - Color: #6b7280 (Dull Gray)
+   - Opacity: 0 (Invisible by default)
+*/
 .inner-timestamp {
-  font-size: 0.6rem;
-  color: #00e5ff;
-  opacity: 0.6;
+  font-size: 0.5rem; 
+  color: #6b7280; 
+  opacity: 0; 
   text-shadow: none;
   white-space: nowrap;
+  transition: opacity 0.3s ease; /* Smooth fade in */
+}
+
+/* Show timestamp on hover */
+.message-bubble:hover .inner-timestamp {
+  opacity: 1;
 }
 
 .edited-marker {
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   opacity: 0.5;
   margin-right: 4px;
   font-style: italic;
@@ -145,7 +155,7 @@ button:hover {
   background: none;
   border: none;
   color: #00e5ff;
-  opacity: 0.3; /* Lower opacity by default */
+  opacity: 0; /* Also hide side buttons by default for cleaner look? */
   cursor: pointer;
   width: 24px;
   height: 24px;
@@ -159,14 +169,18 @@ button:hover {
   flex-shrink: 0;
 }
 
+/* Show side actions on hover too */
+.message-wrapper:hover .side-action-btn {
+  opacity: 0.3;
+}
 .side-action-btn:hover {
-  opacity: 1;
+  opacity: 1 !important;
   background-color: rgba(0, 229, 255, 0.1);
   transform: scale(1.1);
   text-shadow: 0 0 5px #00e5ff;
 }
 
-/* REACTION CHIPS (Hanging off bottom) */
+/* REACTION CHIPS */
 .reaction-chips-container {
   position: absolute;
   bottom: -10px;
@@ -228,7 +242,7 @@ button:hover {
   display: none !important;
 }
 
-/* NEW: Scroll To Bottom Button */
+/* Scroll To Bottom Button */
 #scrollToBottomBtn {
   position: absolute;
   bottom: 80px;
@@ -350,7 +364,7 @@ button:hover {
   padding: 0 4px;
   margin: 0;
   color: #00e5ff;
-  opacity: 0.5;
+  opacity: 0.3; /* Faint by default */
   cursor: pointer;
   border-radius: 4px;
 }
@@ -495,7 +509,6 @@ button:hover {
   animation: messagePopIn 0.2s ease-out;
 }
 
-/* DATE SEPARATOR PILL */
 .date-separator {
   display: flex;
   justify-content: center;
