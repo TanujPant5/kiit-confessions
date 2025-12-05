@@ -82,6 +82,7 @@ button:hover {
   display: flex;
   flex-direction: column;
   min-width: 120px;
+  z-index: 10; /* Lower than buttons */
 }
 
 .message-bubble.has-reactions {
@@ -133,15 +134,13 @@ button:hover {
   background: none;
   border: none;
   color: #00e5ff;
-  
-  /* UPDATED: Always visible at 50% opacity */
   opacity: 0.5; 
-  
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 25; /* High z-index to be clickable */
 }
 
 .kebab-btn:hover {
@@ -150,12 +149,10 @@ button:hover {
   transform: scale(1.1);
 }
 
-/* Position for Sent Messages (My Message) -> Top Left Corner */
 .my-message .kebab-btn {
   left: -20px;
 }
 
-/* Position for Received Messages (Others) -> Top Right Corner */
 .message-bubble:not(.my-message) .kebab-btn {
   right: -20px;
 }
@@ -183,6 +180,7 @@ button:hover {
   gap: 2px;
 }
 
+/* FIX: Z-INDEX added to ensure they are clickable over bubbles */
 .side-action-btn {
   background: none;
   border: none;
@@ -199,6 +197,8 @@ button:hover {
   transition: all 0.2s;
   margin-bottom: 4px;
   flex-shrink: 0;
+  position: relative; 
+  z-index: 20; /* Ensure this is higher than bubble content */
 }
 
 .message-wrapper:hover .side-action-btn {
@@ -218,7 +218,7 @@ button:hover {
   left: 8px;
   display: flex;
   gap: 4px;
-  z-index: 5;
+  z-index: 30; /* High z-index */
 }
 
 .my-message .reaction-chips-container {

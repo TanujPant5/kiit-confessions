@@ -63,7 +63,6 @@ const editModalSaveButton = document.getElementById("editModalSaveButton");
 const confirmModal = document.getElementById("confirmModal");
 const confirmModalText = document.getElementById("confirmModalText");
 const confirmModalNoButton = document.getElementById("confirmModalNoButton");
-// We will replace the "Yes" button container dynamically to support multiple buttons
 const confirmModalActionContainer = document.getElementById("confirmModalActionContainer") || createActionContainer();
 
 const contextMenu = document.getElementById("contextMenu");
@@ -113,7 +112,6 @@ let unreadMessages = 0;
 let userIsAtBottom = true;
 let bottomObserver = null; 
 
-// The allowed reactions
 const REACTION_TYPES = {
   thumbsup: "👍",
   laugh: "😂",
@@ -121,14 +119,12 @@ const REACTION_TYPES = {
   heart: "❤️",
 };
 
-// Helper to inject a container for buttons in the modal if it doesn't exist
 function createActionContainer() {
     const existingYesBtn = document.getElementById("confirmModalYesButton");
     if(existingYesBtn && existingYesBtn.parentNode) {
         const container = document.createElement("div");
         container.id = "confirmModalActionContainer";
         container.className = "flex gap-2 flex-1";
-        // Move the original yes button inside (just as a fallback)
         existingYesBtn.parentNode.replaceChild(container, existingYesBtn);
         return container;
     }
@@ -301,15 +297,11 @@ async function saveEdit() {
   }
 }
 
-// *** UPDATED CONFIRM MODAL LOGIC (DELETE FOR ME vs EVERYONE) ***
 function showConfirmModal(text, isMine, docId) {
   confirmModalText.textContent = text;
-  
-  // Clear previous buttons
   confirmModalActionContainer.innerHTML = '';
 
   if (isMine) {
-    // Button: Delete for Me
     const btnForMe = document.createElement('button');
     btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold border border-[#00e5ff] text-[#00e5ff] hover:bg-[#00e5ff] hover:text-[#0a0a1a]";
     btnForMe.textContent = "FOR ME";
@@ -320,7 +312,6 @@ function showConfirmModal(text, isMine, docId) {
         });
     };
 
-    // Button: Delete for Everyone
     const btnEveryone = document.createElement('button');
     btnEveryone.className = "flex-1 px-4 py-2 rounded-lg font-bold bg-red-800 border border-red-500 hover:bg-red-600 text-white";
     btnEveryone.textContent = "EVERYONE";
@@ -333,7 +324,6 @@ function showConfirmModal(text, isMine, docId) {
     confirmModalActionContainer.appendChild(btnEveryone);
 
   } else {
-    // Only "Delete for Me" option for others' messages
     const btnForMe = document.createElement('button');
     btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold bg-red-800 border border-red-500 hover:bg-red-600 text-white";
     btnForMe.textContent = "DELETE";
@@ -384,7 +374,7 @@ function showDropdownMenu(event, data) {
   const isMine = currentContextMenuData.isMine === "true";
 
   menuEdit.style.display = isEditable && isMine ? "block" : "none";
-  // Always show delete (logic handles permissions later)
+  // FIX: Always allow delete (permissions handled in showConfirmModal)
   menuDelete.style.display = "block"; 
 
   const rect = event.currentTarget.getBoundingClientRect();
@@ -405,8 +395,6 @@ function hideDropdownMenu() {
 
 function handleMessageClick(bubble) {
   if (!isSelectionMode) return;
-  // Allow selecting any message for local deletion in future, 
-  // but for now let's keep it consistent
   const docId = bubble.dataset.id;
   if (selectedMessages.has(docId)) {
     selectedMessages.delete(docId);
@@ -459,7 +447,6 @@ function updateSelectionBar() {
 async function handleMultiDelete() {
   const count = selectedMessages.size;
   if (count === 0) return;
-  // Simple multi-delete for now: Just hides for current user to be safe
   const batch = writeBatch(db);
   selectedMessages.forEach((docId) => {
     const docRef = doc(db, currentPage, docId);
@@ -664,7 +651,7 @@ function renderFeed(docs, type, snapshot) {
     kebabBtn.addEventListener("click", (e) => showDropdownMenu(e, bubble.dataset));
     bubble.appendChild(kebabBtn);
 
-    // HEADER: Show for ALL messages if not consecutive (Fix for point 1)
+    // HEADER: Show for ALL messages if not consecutive
     if (!isConsecutive) {
       const headerElement = document.createElement("div");
       headerElement.className = "flex items-center gap-1.5 mb-1";
@@ -817,14 +804,12 @@ function renderFeed(docs, type, snapshot) {
   const lastDoc = docs[docs.length - 1];
   const lastMessageIsMine = lastDoc && lastDoc.data().userId === currentUserId;
 
-  if (lastMessageIsMine) scrollToBottom();
-  else if (wasAtBottom) scrollToBottom();
-  else {
-    feedContainer.scrollTop = prevScrollTop;
-    if (snapshot && snapshot.docChanges().some(change => change.type === "added")) {
-       unreadMessages++;
-       updateScrollButton();
-    }
+  // FIX: Only scroll if new message added OR was explicitly at bottom
+  const hasNewMessages = snapshot && snapshot.docChanges().some(change => change.type === 'added');
+  if (hasNewMessages && (lastMessageIsMine || wasAtBottom)) {
+      scrollToBottom();
+  } else {
+      feedContainer.scrollTop = prevScrollTop;
   }
 }
 
