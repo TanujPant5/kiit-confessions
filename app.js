@@ -31,6 +31,10 @@ const firebaseConfig = {
   measurementId: "G-2JRL8TMMV7",
 };
 
+// *** ADMIN CONFIGURATION ***
+// PASTE YOUR SPECIFIC UID HERE inside the quotes
+const ADMIN_UID = "Admin1"; 
+
 // DOM elements
 const feedContainer = document.getElementById("feedContainer");
 const loading = document.getElementById("loading");
@@ -141,6 +145,7 @@ async function initFirebase() {
 
     const userCredential = await signInAnonymously(auth);
     currentUserId = userCredential.user.uid;
+    console.log("Your UID:", currentUserId); // Prints your UID to console for easy copying
 
     listenForUserProfiles();
     await loadUserProfile();
@@ -299,11 +304,15 @@ async function saveEdit() {
   }
 }
 
+// *** MODIFIED CONFIRM MODAL (ADMIN POWER) ***
 function showConfirmModal(text, isMine, docId) {
   confirmModalText.textContent = text;
   confirmModalActionContainer.innerHTML = '';
 
-  if (isMine) {
+  const isAdmin = currentUserId === ADMIN_UID;
+
+  // Show "Delete for Everyone" if it's MY message OR if I am ADMIN
+  if (isMine || isAdmin) {
     const btnForMe = document.createElement('button');
     btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold border border-[#00e5ff] text-[#00e5ff] hover:bg-[#00e5ff] hover:text-[#0a0a1a]";
     btnForMe.textContent = "FOR ME";
@@ -316,7 +325,7 @@ function showConfirmModal(text, isMine, docId) {
 
     const btnEveryone = document.createElement('button');
     btnEveryone.className = "flex-1 px-4 py-2 rounded-lg font-bold bg-red-800 border border-red-500 hover:bg-red-600 text-white";
-    btnEveryone.textContent = "EVERYONE";
+    btnEveryone.textContent = isAdmin && !isMine ? "NUKE (ADMIN)" : "EVERYONE";
     btnEveryone.onclick = async () => {
         closeConfirmModal();
         await deleteDoc(doc(db, currentPage, docId));
@@ -326,6 +335,7 @@ function showConfirmModal(text, isMine, docId) {
     confirmModalActionContainer.appendChild(btnEveryone);
 
   } else {
+    // Normal user deleting someone else's message (Local only)
     const btnForMe = document.createElement('button');
     btnForMe.className = "flex-1 px-4 py-2 rounded-lg font-bold bg-red-800 border border-red-500 hover:bg-red-600 text-white";
     btnForMe.textContent = "DELETE";
@@ -453,7 +463,13 @@ async function handleMultiDelete() {
   const batch = writeBatch(db);
   selectedMessages.forEach((docId) => {
     const docRef = doc(db, currentPage, docId);
-    batch.update(docRef, { hiddenFor: arrayUnion(currentUserId) });
+    
+    // ADMIN POWER: If I am admin, multi-delete destroys them for everyone
+    if (currentUserId === ADMIN_UID) {
+       batch.delete(docRef);
+    } else {
+       batch.update(docRef, { hiddenFor: arrayUnion(currentUserId) });
+    }
   });
   await batch.commit();
   exitSelectionMode();
@@ -677,6 +693,21 @@ function renderFeed(docs, type, snapshot) {
       usernameElement.className = `font-bold text-sm opacity-70 ${isMine ? "order-1 text-right" : "order-2 text-left"}`;
       usernameElement.textContent = username;
       
+      // ADMIN BADGE
+      if (docUserId === ADMIN_UID) {
+          const badge = document.createElement("span");
+          badge.className = "admin-badge";
+          badge.textContent = "ADMIN";
+          // If mine, badge goes before username (since text-right), else after
+          if(isMine) {
+             badge.style.marginRight = "6px";
+             usernameElement.prepend(badge); 
+          } else {
+             badge.style.marginLeft = "6px";
+             usernameElement.appendChild(badge);
+          }
+      }
+
       headerElement.appendChild(imgElement);
       headerElement.appendChild(usernameElement);
       bubble.appendChild(headerElement);

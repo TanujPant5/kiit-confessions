@@ -562,3 +562,19 @@ body.selection-mode .message-bubble {
   border-radius: 25px; /* Pill shape looks better for single line */
   overflow: hidden;
 }
+
+/* ADMIN BADGE */
+.admin-badge {
+  background-color: rgba(255, 0, 85, 0.2);
+  color: #ff0055;
+  font-size: 0.6rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid #ff0055;
+  box-shadow: 0 0 5px #ff0055;
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin: 0 6px;
+  text-shadow: 0 0 2px #ff0055;
+  align-self: center;
+}
