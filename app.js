@@ -626,6 +626,8 @@ function formatMessageTime(date) {
 
 // RENDER FEED
 function renderFeed(docs, type, snapshot) {
+  // 1. Capture current scroll state
+  const prevScrollTop = feedContainer.scrollTop;
   const wasAtBottom = userIsAtBottom;
 
   feedContainer.innerHTML = "";
@@ -685,7 +687,7 @@ function renderFeed(docs, type, snapshot) {
     row.className = "message-wrapper";
 
     const bubble = document.createElement("div");
-    // GROUPING LOGIC: mt-0.5 for same user, mt-6 for new user
+    // GROUPING LOGIC
     bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${
       isMine ? "my-message" : ""
     } ${isConsecutive ? "mt-0.5" : "mt-6"}`;
@@ -860,7 +862,6 @@ function renderFeed(docs, type, snapshot) {
 
     if (hasChips) {
       bubble.appendChild(chipsContainer);
-      // PREVENT OVERLAP
       bubble.classList.add("has-reactions");
     }
 
@@ -883,10 +884,16 @@ function renderFeed(docs, type, snapshot) {
   const lastMessageIsMine = lastDoc && lastDoc.data().userId === currentUserId;
 
   if (lastMessageIsMine) {
+    // 1. I sent a message: force scroll
     scrollToBottom();
   } else if (wasAtBottom) {
+    // 2. I was at the bottom: force scroll
     scrollToBottom();
   } else {
+    // 3. I was scrolled up: RESTORE POSITION
+    feedContainer.scrollTop = prevScrollTop;
+
+    // Check if new "added" messages arrived to increment count
     if (snapshot && snapshot.docChanges().some(change => change.type === "added")) {
        unreadMessages++;
        updateScrollButton();

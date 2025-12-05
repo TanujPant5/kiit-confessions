@@ -78,7 +78,7 @@ button:hover {
   padding: 0.5rem 0.75rem;
   position: relative;
   transition: background-color 0.2s;
-  /* CHANGED: Small margin for grouping */
+  /* CHANGED: Reduced to 1px for tight grouping */
   margin-bottom: 1px;
 }
 
