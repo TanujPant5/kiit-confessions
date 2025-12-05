@@ -78,7 +78,7 @@ button:hover {
   padding: 0.5rem 0.75rem;
   position: relative;
   transition: background-color 0.2s;
-  /* CHANGED: Reduced to 1px for tight grouping */
+  /* CHANGED: Small margin for grouping */
   margin-bottom: 1px;
 }
 
@@ -213,6 +213,58 @@ button:hover {
 
 .hidden {
   display: none !important;
+}
+
+/* NEW: Scroll To Bottom Button */
+#scrollToBottomBtn {
+  position: absolute;
+  bottom: 80px; /* Positioned above the typing area */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(10, 10, 26, 0.9);
+  border: 1px solid #00e5ff;
+  color: #00e5ff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0 10px #00e5ff;
+  z-index: 20;
+  transition: all 0.3s ease;
+  animation: popIn 0.2s ease-out;
+}
+
+#scrollToBottomBtn:hover {
+  background-color: #00e5ff;
+  color: #0a0a1a;
+}
+
+#scrollToBottomBtn.hidden {
+  display: none;
+}
+
+#newMsgCount {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #00e5ff;
+  color: #0a0a1a;
+  font-size: 0.7rem;
+  font-weight: bold;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 5px #00e5ff;
+}
+
+#newMsgCount.hidden {
+  display: none;
 }
 
 /* MISC UI ELEMENTS */

@@ -44,6 +44,10 @@ const chatInput = document.getElementById("chatInput");
 const chatButton = document.getElementById("chatButton");
 const typingIndicator = document.getElementById("typingIndicator");
 
+// Scroll UI Elements
+const scrollToBottomBtn = document.getElementById("scrollToBottomBtn");
+const newMsgCount = document.getElementById("newMsgCount");
+
 const profileButton = document.getElementById("profileButton");
 const profileModal = document.getElementById("profileModal");
 const modalCloseButton = document.getElementById("modalCloseButton");
@@ -102,6 +106,10 @@ let currentContextMenuData = null;
 
 let replyToMessage = null;
 
+// Scroll State
+let unreadMessages = 0;
+let userIsAtBottom = true;
+
 // The allowed reactions
 const REACTION_TYPES = {
   thumbsup: "👍",
@@ -140,11 +148,6 @@ function listenForUserProfiles() {
     snapshot.docs.forEach((docSnap) => {
       userProfiles[docSnap.id] = docSnap.data();
     });
-    if (currentPage === "chat") {
-      listenForChat(true);
-    } else {
-      listenForConfessions(true);
-    }
   });
 }
 
@@ -263,9 +266,6 @@ async function handleDelete() {
       await deleteCallback();
     } catch (error) {
       console.error("DELETE FAILED:", error);
-      alert(
-        "Error: Could not delete message. Check console (F12) for details."
-      );
     }
     closeConfirmModal();
     confirmModalYesButton.textContent = "DELETE";
@@ -296,13 +296,6 @@ async function toggleReaction(
     }
   } catch (error) {
     console.error("Error toggling reaction:", error);
-    if (error.code === "permission-denied") {
-      alert(
-        "Permission denied: Firebase rules update required for reactions."
-      );
-    } else {
-      alert(`Error adding reaction: ${error.message}`);
-    }
   }
 }
 
@@ -414,6 +407,49 @@ async function handleMultiDelete() {
   });
 }
 
+// SCROLL HELPER FUNCTIONS
+function handleScroll() {
+  const threshold = 100; // px from bottom
+  const position = feedContainer.scrollTop + feedContainer.clientHeight;
+  const height = feedContainer.scrollHeight;
+
+  // Check if user is near bottom
+  userIsAtBottom = position >= height - threshold;
+
+  if (userIsAtBottom) {
+    unreadMessages = 0;
+    updateScrollButton();
+  } else {
+    scrollToBottomBtn.classList.remove("hidden");
+    scrollToBottomBtn.style.display = "flex";
+  }
+}
+
+function updateScrollButton() {
+  if (unreadMessages > 0) {
+    scrollToBottomBtn.classList.remove("hidden");
+    scrollToBottomBtn.style.display = "flex";
+    newMsgCount.classList.remove("hidden");
+    newMsgCount.textContent = unreadMessages > 99 ? "99+" : unreadMessages;
+  } else if (!userIsAtBottom) {
+    // Show button without count if just scrolled up
+    scrollToBottomBtn.classList.remove("hidden");
+    scrollToBottomBtn.style.display = "flex";
+    newMsgCount.classList.add("hidden");
+  } else {
+    // Hide button if at bottom and no new messages
+    scrollToBottomBtn.classList.add("hidden");
+  }
+}
+
+function scrollToBottom() {
+  feedContainer.scrollTop = feedContainer.scrollHeight;
+  userIsAtBottom = true;
+  unreadMessages = 0;
+  updateScrollButton();
+}
+
+
 function showPage(page) {
   currentPage = page;
 
@@ -427,6 +463,11 @@ function showPage(page) {
   unsubscribeChat();
   unsubscribeTypingStatus();
   typingIndicator.innerHTML = "&nbsp;";
+  
+  // Reset Scroll State
+  unreadMessages = 0;
+  newMsgCount.classList.add("hidden");
+  scrollToBottomBtn.classList.add("hidden");
 
   if (page === "confessions") {
     navConfessions.classList.add("active");
@@ -467,7 +508,7 @@ function listenForConfessions(isRerender = false) {
     q,
     (snapshot) => {
       lastConfessionDocs = snapshot.docs;
-      renderFeed(lastConfessionDocs, "confessions");
+      renderFeed(lastConfessionDocs, "confessions", snapshot);
     },
     (error) => {
       console.error("Error listening to confessions:", error);
@@ -490,7 +531,7 @@ function listenForChat(isRerender = false) {
     q,
     (snapshot) => {
       lastChatDocs = snapshot.docs;
-      renderFeed(lastChatDocs, "chat");
+      renderFeed(lastChatDocs, "chat", snapshot);
     },
     (error) => {
       console.error("Error listening to chat:", error);
@@ -553,7 +594,7 @@ async function updateTypingStatus(isTyping) {
   }
 }
 
-// *** HELPER: Format Date for Headers (Today, Yesterday, Date) ***
+// Helper: Format Date for Headers
 function getDateHeader(date) {
   const today = new Date();
   const yesterday = new Date(today);
@@ -561,35 +602,32 @@ function getDateHeader(date) {
 
   if (date.toDateString() === today.toDateString()) return "Today";
   if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
-  
-  // Return format like "28/11/2025" or "Nov 28, 2025"
   return date.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-// *** HELPER: Format Time inside Bubbles ***
+// Helper: Format Time inside Bubbles
 function formatMessageTime(date) {
   const now = new Date();
   const diff = now - date; // milliseconds
   const seconds = Math.floor(diff / 1000);
   const minutes = Math.floor(seconds / 60);
 
-  // Less than 5 minutes: Relative
   if (minutes < 5) {
      if (seconds < 60) return "Just now";
      return `${minutes} mins ago`;
   }
-
-  // Older than 5 minutes: Clock Time (HH:MM)
   return date.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
-    hour12: false // Set to true if you prefer 2:30 PM
+    hour12: false 
   });
 }
 
 
-// *** RENDER FEED WITH DATE SEPARATORS ***
-function renderFeed(docs, type) {
+// RENDER FEED
+function renderFeed(docs, type, snapshot) {
+  const wasAtBottom = userIsAtBottom;
+
   feedContainer.innerHTML = "";
   if (docs.length === 0) {
     const loadingEl = document.createElement("div");
@@ -601,7 +639,7 @@ function renderFeed(docs, type) {
   }
 
   let lastUserId = null;
-  let lastDateString = null; // Track separate days
+  let lastDateString = null; 
 
   docs.forEach((docInstance) => {
     const data = docInstance.data();
@@ -610,24 +648,21 @@ function renderFeed(docs, type) {
     // Process Dates
     let messageDateObj = new Date();
     if (data.timestamp) messageDateObj = data.timestamp.toDate();
-    const messageDateStr = messageDateObj.toDateString(); // Unique string per day (e.g. "Fri Dec 05 2025")
+    const messageDateStr = messageDateObj.toDateString(); 
 
-    // 1. Insert Date Separator if Day Changed
+    // Insert Date Separator
     if (lastDateString !== messageDateStr) {
         const sepDiv = document.createElement('div');
         sepDiv.className = 'date-separator';
         sepDiv.innerHTML = `<span>${getDateHeader(messageDateObj)}</span>`;
         feedContainer.appendChild(sepDiv);
         lastDateString = messageDateStr;
-        lastUserId = null; // Reset user grouping on new day (optional, but looks cleaner)
+        lastUserId = null; 
     }
 
-    // 2. Format Bubble Time
     const rawMillis = data.timestamp ? data.timestamp.toMillis() : 0;
-    const timeString = formatMessageTime(messageDateObj); // "14:30" or "Just now"
-    
+    const timeString = formatMessageTime(messageDateObj);
     const docUserId = data.userId;
-
     const profile = userProfiles[docUserId] || {};
     const username = profile.username || "Anonymous";
     const photoURL =
@@ -640,18 +675,17 @@ function renderFeed(docs, type) {
     const isConsecutive = docUserId && docUserId === lastUserId;
     lastUserId = docUserId;
 
-    // Row aligned to left/right
+    // Structure
     const alignWrapper = document.createElement("div");
     alignWrapper.className = `flex w-full ${
       isMine ? "justify-end" : "justify-start"
     }`;
 
-    // Inner row: side buttons + bubble
     const row = document.createElement("div");
     row.className = "message-wrapper";
 
     const bubble = document.createElement("div");
-    // CHANGED: Using mt-6 for separation and mt-0.5 for grouping
+    // GROUPING LOGIC: mt-0.5 for same user, mt-6 for new user
     bubble.className = `message-bubble rounded-lg max-w-xs sm:max-w-md md:max-w-lg ${
       isMine ? "my-message" : ""
     } ${isConsecutive ? "mt-0.5" : "mt-6"}`;
@@ -732,10 +766,9 @@ function renderFeed(docs, type) {
       timeElement.appendChild(editedMarker);
     }
     
-    // Time text span (with special class for live updates)
     const timeText = document.createElement("span");
     timeText.className = "live-timestamp"; 
-    timeText.dataset.ts = rawMillis; // Store raw time for updates
+    timeText.dataset.ts = rawMillis;
     timeText.textContent = timeString;
     timeElement.appendChild(timeText);
     
@@ -749,7 +782,7 @@ function renderFeed(docs, type) {
     bubble.appendChild(timeElement);
 
 
-    // *** SIDE BUTTONS CREATION ***
+    // SIDE BUTTONS
     const replyBtn = document.createElement("button");
     replyBtn.className = "side-action-btn";
     replyBtn.innerHTML = "↩";
@@ -827,7 +860,7 @@ function renderFeed(docs, type) {
 
     if (hasChips) {
       bubble.appendChild(chipsContainer);
-      // NEW: Ensure chips don't overlap by adding bottom margin
+      // PREVENT OVERLAP
       bubble.classList.add("has-reactions");
     }
 
@@ -844,16 +877,31 @@ function renderFeed(docs, type) {
     alignWrapper.appendChild(row);
     feedContainer.appendChild(alignWrapper);
   });
+
+  // *** SCROLL LOGIC ***
+  const lastDoc = docs[docs.length - 1];
+  const lastMessageIsMine = lastDoc && lastDoc.data().userId === currentUserId;
+
+  if (lastMessageIsMine) {
+    scrollToBottom();
+  } else if (wasAtBottom) {
+    scrollToBottom();
+  } else {
+    if (snapshot && snapshot.docChanges().some(change => change.type === "added")) {
+       unreadMessages++;
+       updateScrollButton();
+    }
+  }
 }
 
-// Global listener specifically for picker closing
+// Global listener for picker closing
 document.addEventListener("click", (e) => {
     if(!e.target.closest(".side-action-btn") && !e.target.closest(".reaction-picker")) {
        document.querySelectorAll(".reaction-picker").forEach(p => p.classList.add("hidden"));
     }
 });
 
-// Update timestamps every minute (checks logic for "Just now" vs "HH:MM")
+// Update timestamps every minute
 setInterval(() => {
   const timestampElements = document.querySelectorAll('.live-timestamp');
   timestampElements.forEach(el => {
@@ -862,9 +910,12 @@ setInterval(() => {
       el.textContent = formatMessageTime(new Date(ts));
     }
   });
-}, 60000); // 60 seconds
+}, 60000);
 
-// ... (Rest of existing code: postConfession, postChatMessage, listeners, etc.) ...
+// SCROLL LISTENERS
+feedContainer.addEventListener("scroll", handleScroll);
+scrollToBottomBtn.addEventListener("click", scrollToBottom);
+
 async function postConfession(e) {
   e.preventDefault();
   const text = confessionInput.value.trim();
@@ -888,6 +939,7 @@ async function postConfession(e) {
       confessionInput.value = "";
       cancelReplyMode();
       updateTypingStatus(false);
+      scrollToBottom();
     } catch (error) {
       console.error("Error adding confession: ", error);
     }
@@ -917,6 +969,7 @@ async function postChatMessage(e) {
       chatInput.value = "";
       cancelReplyMode();
       updateTypingStatus(false);
+      scrollToBottom();
     } catch (error) {
       console.error("Error adding chat message: ", error);
     }

@@ -48,7 +48,7 @@
       </div>
     </header>
 
-    <main class="flex-1 flex flex-col overflow-hidden">
+    <main class="flex-1 flex flex-col overflow-hidden relative">
       <div
         id="feedContainer"
         class="flex-1 flex flex-col p-2 sm:p-4 gap-2 overflow-y-auto"
@@ -56,7 +56,14 @@
         <div id="loading" class="text-center p-4">CONNECTING TO GRID...</div>
       </div>
 
-      <div id="selectionBar" class="hidden flex justify-between items-center">
+      <button id="scrollToBottomBtn" class="hidden">
+        <span id="newMsgCount" class="hidden">0</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
+        </svg>
+      </button>
+
+      <div id="selectionBar" class="hidden flex justify-between items-center bg-[#0a0a1a] border-t border-[#00e5ff] p-2">
         <span id="selectionCount" class="text-lg">0 selected</span>
         <div class="flex gap-4">
           <button id="selectionCancel" class="font-bold">CANCEL</button>
