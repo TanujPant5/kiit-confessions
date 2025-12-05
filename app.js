@@ -112,11 +112,13 @@ let unreadMessages = 0;
 let userIsAtBottom = true;
 let bottomObserver = null; 
 
+// *** UPDATED REACTIONS ***
 const REACTION_TYPES = {
   thumbsup: "👍",
   laugh: "😂",
   surprised: "😮",
   heart: "❤️",
+  skull: "💀" // Added Skull
 };
 
 function createActionContainer() {
