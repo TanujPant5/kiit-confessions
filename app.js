@@ -407,38 +407,56 @@ async function handleMultiDelete() {
   });
 }
 
-// SCROLL HELPER FUNCTIONS
+// *** SCROLL LOGIC FIXED ***
 function handleScroll() {
-  const threshold = 100; // px from bottom
-  const position = feedContainer.scrollTop + feedContainer.clientHeight;
-  const height = feedContainer.scrollHeight;
+  const threshold = 100; 
+  const currentPos = feedContainer.scrollTop + feedContainer.clientHeight;
+  const totalHeight = feedContainer.scrollHeight;
 
-  // Check if user is near bottom
-  userIsAtBottom = position >= height - threshold;
+  // Check if at bottom
+  userIsAtBottom = (totalHeight - currentPos) < threshold;
 
   if (userIsAtBottom) {
-    unreadMessages = 0;
-    updateScrollButton();
+    // We are at bottom: Reset everything
+    unreadMessages = 0; 
+    newMsgCount.classList.add("hidden"); 
+    scrollToBottomBtn.classList.add("hidden"); 
+    // IMPORTANT: Clear inline display style so class takes effect
+    scrollToBottomBtn.style.display = "";
   } else {
+    // We are scrolled up: Show button
     scrollToBottomBtn.classList.remove("hidden");
     scrollToBottomBtn.style.display = "flex";
+
+    // Show/Hide badge based on count
+    if (unreadMessages > 0) {
+        newMsgCount.classList.remove("hidden");
+        newMsgCount.textContent = unreadMessages > 99 ? "99+" : unreadMessages;
+    } else {
+        newMsgCount.classList.add("hidden");
+    }
   }
 }
 
+// Logic to update button when a new message arrives but we haven't scrolled yet
 function updateScrollButton() {
-  if (unreadMessages > 0) {
-    scrollToBottomBtn.classList.remove("hidden");
-    scrollToBottomBtn.style.display = "flex";
-    newMsgCount.classList.remove("hidden");
-    newMsgCount.textContent = unreadMessages > 99 ? "99+" : unreadMessages;
-  } else if (!userIsAtBottom) {
-    // Show button without count if just scrolled up
-    scrollToBottomBtn.classList.remove("hidden");
-    scrollToBottomBtn.style.display = "flex";
-    newMsgCount.classList.add("hidden");
-  } else {
-    // Hide button if at bottom and no new messages
+  if (userIsAtBottom) {
+    // If at bottom, ensure everything is hidden
     scrollToBottomBtn.classList.add("hidden");
+    scrollToBottomBtn.style.display = "";
+    newMsgCount.classList.add("hidden");
+    unreadMessages = 0;
+  } else {
+    // Not at bottom
+    scrollToBottomBtn.classList.remove("hidden");
+    scrollToBottomBtn.style.display = "flex";
+    
+    if (unreadMessages > 0) {
+      newMsgCount.classList.remove("hidden");
+      newMsgCount.textContent = unreadMessages > 99 ? "99+" : unreadMessages;
+    } else {
+      newMsgCount.classList.add("hidden");
+    }
   }
 }
 
@@ -468,6 +486,7 @@ function showPage(page) {
   unreadMessages = 0;
   newMsgCount.classList.add("hidden");
   scrollToBottomBtn.classList.add("hidden");
+  scrollToBottomBtn.style.display = "";
 
   if (page === "confessions") {
     navConfessions.classList.add("active");
@@ -626,7 +645,7 @@ function formatMessageTime(date) {
 
 // RENDER FEED
 function renderFeed(docs, type, snapshot) {
-  // 1. Capture current scroll state
+  // Capture current scroll state
   const prevScrollTop = feedContainer.scrollTop;
   const wasAtBottom = userIsAtBottom;
 
@@ -884,16 +903,14 @@ function renderFeed(docs, type, snapshot) {
   const lastMessageIsMine = lastDoc && lastDoc.data().userId === currentUserId;
 
   if (lastMessageIsMine) {
-    // 1. I sent a message: force scroll
     scrollToBottom();
   } else if (wasAtBottom) {
-    // 2. I was at the bottom: force scroll
     scrollToBottom();
   } else {
-    // 3. I was scrolled up: RESTORE POSITION
+    // Restore scroll position to prevent jumping
     feedContainer.scrollTop = prevScrollTop;
 
-    // Check if new "added" messages arrived to increment count
+    // Check if new "added" messages arrived
     if (snapshot && snapshot.docChanges().some(change => change.type === "added")) {
        unreadMessages++;
        updateScrollButton();
