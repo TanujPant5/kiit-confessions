@@ -66,6 +66,8 @@ button:hover {
   overflow-y: auto;
   scroll-behavior: smooth;
   padding-bottom: 20px;
+  /* FIX FOR SCROLL JUMPING */
+  overflow-anchor: none; 
 }
 
 /* MESSAGE BUBBLE */
@@ -82,7 +84,7 @@ button:hover {
   display: flex;
   flex-direction: column;
   min-width: 120px;
-  z-index: 10; /* Lower than buttons */
+  z-index: 10;
 }
 
 .message-bubble.has-reactions {
@@ -109,7 +111,6 @@ button:hover {
   height: 12px;
 }
 
-/* TIMESTAMP STYLING */
 .inner-timestamp {
   font-size: 0.5rem; 
   color: #6b7280; 
@@ -123,7 +124,7 @@ button:hover {
   opacity: 1;
 }
 
-/* KEBAB BUTTON - ALWAYS VISIBLE */
+/* KEBAB BUTTON */
 .kebab-btn {
   position: absolute;
   top: -2px;
@@ -140,7 +141,7 @@ button:hover {
   align-items: center;
   justify-content: center;
   transition: opacity 0.2s ease, transform 0.2s ease;
-  z-index: 25; /* High z-index to be clickable */
+  z-index: 25; 
 }
 
 .kebab-btn:hover {
@@ -173,14 +174,13 @@ button:hover {
   flex-shrink: 0;
 }
 
-/* SIDE ACTIONS (Reply & React) */
+/* SIDE ACTIONS */
 .message-wrapper {
   display: flex;
   align-items: flex-end;
-  gap: 2px;
+  gap: 6px; /* Increased gap to prevent misclicks */
 }
 
-/* FIX: Z-INDEX added to ensure they are clickable over bubbles */
 .side-action-btn {
   background: none;
   border: none;
@@ -198,11 +198,11 @@ button:hover {
   margin-bottom: 4px;
   flex-shrink: 0;
   position: relative; 
-  z-index: 20; /* Ensure this is higher than bubble content */
+  z-index: 30; /* Ensure clickable */
 }
 
 .message-wrapper:hover .side-action-btn {
-  opacity: 0.3;
+  opacity: 0.4;
 }
 .side-action-btn:hover {
   opacity: 1 !important;
@@ -218,7 +218,7 @@ button:hover {
   left: 8px;
   display: flex;
   gap: 4px;
-  z-index: 30; /* High z-index */
+  z-index: 20;
 }
 
 .my-message .reaction-chips-container {
@@ -255,7 +255,7 @@ button:hover {
   gap: 12px;
   box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
   animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  z-index: 100;
+  z-index: 1000; /* Max Z-index */
 }
 
 .reaction-option {

@@ -374,7 +374,6 @@ function showDropdownMenu(event, data) {
   const isMine = currentContextMenuData.isMine === "true";
 
   menuEdit.style.display = isEditable && isMine ? "block" : "none";
-  // FIX: Always allow delete (permissions handled in showConfirmModal)
   menuDelete.style.display = "block"; 
 
   const rect = event.currentTarget.getBoundingClientRect();
@@ -582,8 +581,10 @@ function formatMessageTime(date) {
 
 // *** RENDER FEED ***
 function renderFeed(docs, type, snapshot) {
+  // Capture current scroll BEFORE clearing content
   const prevScrollTop = feedContainer.scrollTop;
   const wasAtBottom = userIsAtBottom;
+  
   feedContainer.innerHTML = "";
   
   if (docs.length === 0) {
@@ -804,11 +805,19 @@ function renderFeed(docs, type, snapshot) {
   const lastDoc = docs[docs.length - 1];
   const lastMessageIsMine = lastDoc && lastDoc.data().userId === currentUserId;
 
-  // FIX: Only scroll if new message added OR was explicitly at bottom
+  // SCROLL FIX: If no new messages added (only modified), keep position
   const hasNewMessages = snapshot && snapshot.docChanges().some(change => change.type === 'added');
-  if (hasNewMessages && (lastMessageIsMine || wasAtBottom)) {
-      scrollToBottom();
+  
+  if (hasNewMessages) {
+      // Only scroll to bottom if new message arrived AND (user was at bottom OR user sent it)
+      if (lastMessageIsMine || wasAtBottom) {
+          scrollToBottom();
+      } else {
+          // If user was scrolled up, warn them (newMsgCount) but don't move
+          // Logic is handled by updateScrollButton(), just need to NOT move scroll
+      }
   } else {
+      // If only modifications (reactions), Force restore previous scroll position
       feedContainer.scrollTop = prevScrollTop;
   }
 }
