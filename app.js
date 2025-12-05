@@ -33,7 +33,7 @@ const firebaseConfig = {
 
 // *** ADMIN CONFIGURATION ***
 // PASTE YOUR SPECIFIC UID HERE inside the quotes
-const ADMIN_UID = "Admin1"; 
+const ADMIN_UID = "RRBLARtAkfhL9d47sLCC5KV7Lbg2"; 
 
 // DOM elements
 const feedContainer = document.getElementById("feedContainer");
