@@ -12,7 +12,7 @@
 
 /* ANIMATION VARIABLES */
 :root {
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); /* "Classy" smooth snap */
+  --ease-classy: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* Base styling */
@@ -20,12 +20,10 @@ body {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-main);
-  overflow-x: hidden; /* Prevent scrollbar jumps */
+  overflow-x: hidden; 
 }
 
-.glow {
-  text-shadow: none;
-}
+.glow { text-shadow: none; }
 
 .neon-border {
   border: 1px solid var(--border-color);
@@ -34,24 +32,12 @@ body {
 }
 
 /* SMOOTH SCROLLBAR */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-color);
-}
-::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
-  transition: background 0.3s;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-color); }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; transition: background 0.3s; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
 
-textarea,
-button,
-input[type="text"] {
+textarea, button, input[type="text"] {
   font-family: "Inter", sans-serif;
   background-color: var(--surface);
   border: 1px solid var(--border-color);
@@ -59,30 +45,23 @@ input[type="text"] {
   transition: all 0.2s ease;
 }
 
-textarea::placeholder,
-input[type="text"]::placeholder {
-  color: var(--text-muted);
-  opacity: 1;
-}
+textarea::placeholder, input[type="text"]::placeholder { color: var(--text-muted); opacity: 1; }
 
-textarea:focus,
-input[type="text"]:focus {
+textarea:focus, input[type="text"]:focus {
   outline: none;
   background-color: var(--highlight);
   border-color: var(--text-muted);
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.05); /* Subtle focus ring */
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05);
 }
 
 button:hover {
   background-color: var(--text-main);
   color: var(--bg-color);
   border-color: var(--text-main);
-  transform: translateY(-1px); /* Micro-lift */
+  transform: translateY(-1px);
 }
 
-button:active {
-  transform: translateY(0px);
-}
+button:active { transform: translateY(0px); }
 
 #feedContainer {
   background-color: transparent;
@@ -92,37 +71,33 @@ button:active {
   overflow-anchor: none;
 }
 
-/* --- ANIMATIONS START --- */
+/* --- NEW SMOOTH ANIMATIONS --- */
 
-/* 1. Cinematic Slide Up for Messages */
-@keyframes smoothSlideUp {
-  0% {
-    opacity: 0;
-    transform: translateY(15px) scale(0.98);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+@keyframes classySlideIn {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-/* 2. System "Breathing" for Loading Text */
-@keyframes systemPulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; text-shadow: 0 0 8px rgba(255,255,255,0.2); }
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
-/* 3. Pop In for Modals */
-@keyframes modalZoom {
-  0% { opacity: 0; transform: scale(0.95) translateY(10px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 #loading {
-  animation: systemPulse 2s infinite ease-in-out;
-  font-family: 'Courier New', Courier, monospace; /* Tech feel */
+  animation: fadeIn 2s infinite alternate;
+  font-family: 'Courier New', Courier, monospace;
   letter-spacing: 2px;
   font-size: 0.8rem;
+}
+
+#pinnedMessageBar {
+  animation: slideDown 0.3s var(--ease-classy);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 /* MESSAGE BUBBLE */
@@ -133,7 +108,7 @@ button:active {
   white-space: pre-wrap;
   padding: 0.75rem 1rem;
   position: relative;
-  transition: background-color 0.2s, transform 0.2s, border-color 0.2s;
+  transition: background-color 0.2s, border-color 0.2s;
   margin-bottom: 2px;
   display: flex;
   flex-direction: column;
@@ -142,14 +117,9 @@ button:active {
   cursor: default;
   color: var(--text-main);
   border-radius: 12px;
-  
-  /* APPLY ANIMATION */
-  animation: smoothSlideUp 0.4s var(--ease-out-expo) forwards;
-  /* Optimize rendering */
-  will-change: transform, opacity;
+  animation: classySlideIn 0.5s var(--ease-classy) forwards;
 }
 
-/* Subtle hover effect for bubbles */
 .message-bubble:hover {
   border-color: #444;
   background-color: #232323;
@@ -160,9 +130,7 @@ body.selection-mode .message-bubble {
   border-style: dashed;
 }
 
-.message-bubble.has-reactions {
-  margin-bottom: 24px !important;
-}
+.message-bubble.has-reactions { margin-bottom: 24px !important; }
 
 .my-message {
   background-color: #262626;
@@ -173,7 +141,6 @@ body.selection-mode .message-bubble {
 .selected-message {
   background-color: #333 !important;
   border-color: var(--text-main) !important;
-  transform: scale(1.01); /* Slight pop when selected */
 }
 
 /* FOOTER INSIDE BUBBLE */
@@ -194,12 +161,9 @@ body.selection-mode .message-bubble {
   transition: opacity 0.3s ease;
 }
 
-.message-bubble:hover .inner-timestamp {
-  opacity: 1;
-  color: var(--text-main);
-}
+.message-bubble:hover .inner-timestamp { opacity: 1; color: var(--text-main); }
 
-/* KEBAB BUTTON */
+/* KEBAB BUTTON - FIXED VISIBILITY */
 .kebab-btn {
   position: absolute;
   top: -6px;
@@ -210,18 +174,14 @@ body.selection-mode .message-bubble {
   background: var(--bg-color);
   border: 1px solid var(--border-color);
   color: var(--text-muted);
-  opacity: 0.5; 
+  opacity: 0.5; /* Always visible but subtle */
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
   z-index: 25; 
-  box-shadow: 0 2px 5px rgba(0,0,0,0.5); /* Subtle shadow for depth */
-}
-
-.message-bubble:hover .kebab-btn {
-    opacity: 1;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
 }
 
 .kebab-btn:hover {
@@ -229,16 +189,11 @@ body.selection-mode .message-bubble {
   background-color: var(--text-main);
   color: var(--bg-color);
   border-color: var(--text-main);
-  transform: scale(1.15) rotate(90deg); /* Rotate effect on hover */
+  transform: scale(1.1);
 }
 
-.my-message .kebab-btn {
-  left: -28px;
-}
-
-.message-bubble:not(.my-message) .kebab-btn {
-  right: -28px;
-}
+.my-message .kebab-btn { left: -28px; }
+.message-bubble:not(.my-message) .kebab-btn { right: -28px; }
 
 .edited-marker {
   font-size: 0.5rem;
@@ -261,8 +216,6 @@ body.selection-mode .message-bubble {
 
 .message-bubble:hover .chat-pfp {
     filter: grayscale(0%);
-    border-color: var(--text-main);
-    transform: scale(1.05); /* Slight zoom on hover */
 }
 
 /* ADMIN BADGE */
@@ -277,7 +230,7 @@ body.selection-mode .message-bubble {
   margin: 0 6px;
   align-self: center;
   text-transform: uppercase;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); /* White glow */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
 /* SIDE ACTIONS */
@@ -300,23 +253,20 @@ body.selection-mode .message-bubble {
   align-items: center;
   justify-content: center;
   font-size: 1rem;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s ease;
   margin-bottom: 4px;
   flex-shrink: 0;
   position: relative; 
   z-index: 30; 
-  transform: scale(0.8);
+  transform: scale(0.9);
 }
 
-.message-wrapper:hover .side-action-btn {
-  opacity: 0.4;
-  transform: scale(1);
-}
+.message-wrapper:hover .side-action-btn { opacity: 0.4; transform: scale(1); }
 .side-action-btn:hover {
   opacity: 1 !important;
   color: var(--text-main);
   background-color: var(--surface);
-  transform: scale(1.15) !important;
+  transform: scale(1.1) !important;
 }
 
 /* REACTION CHIPS */
@@ -329,10 +279,7 @@ body.selection-mode .message-bubble {
   z-index: 20;
 }
 
-.my-message .reaction-chips-container {
-  left: auto;
-  right: 8px;
-}
+.my-message .reaction-chips-container { left: auto; right: 8px; }
 
 .reaction-chip {
   background-color: var(--surface);
@@ -347,20 +294,11 @@ body.selection-mode .message-bubble {
   cursor: pointer;
   color: var(--text-muted);
   transition: all 0.2s;
-  animation: modalZoom 0.2s var(--ease-out-expo);
+  animation: classySlideIn 0.3s var(--ease-classy);
 }
 
-.reaction-chip:hover {
-    border-color: var(--text-main);
-    color: var(--text-main);
-    transform: translateY(-2px);
-}
-
-.reaction-chip.user-reacted {
-  background-color: var(--border-color);
-  border-color: var(--text-muted);
-  color: var(--text-main);
-}
+.reaction-chip:hover { border-color: var(--text-main); color: var(--text-main); }
+.reaction-chip.user-reacted { background-color: var(--border-color); border-color: var(--text-muted); color: var(--text-main); }
 
 /* POPUP PICKER */
 .reaction-picker {
@@ -372,29 +310,16 @@ body.selection-mode .message-bubble {
   display: flex;
   gap: 12px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
-  animation: modalZoom 0.2s var(--ease-out-expo);
+  animation: classySlideIn 0.2s var(--ease-classy);
   z-index: 1000;
   backdrop-filter: blur(10px);
 }
 
-.reaction-option {
-  font-size: 1.5rem;
-  cursor: pointer;
-  transition: transform 0.2s;
-  user-select: none;
-}
+.reaction-option { font-size: 1.5rem; cursor: pointer; transition: transform 0.2s; user-select: none; }
+.reaction-option:active { transform: scale(0.9); }
+.reaction-option:hover { transform: scale(1.2); }
 
-.reaction-option:active {
-  transform: scale(0.9);
-}
-
-.reaction-option:hover {
-  transform: scale(1.2) translateY(-2px);
-}
-
-.hidden {
-  display: none !important;
-}
+.hidden { display: none !important; }
 
 /* Scroll To Bottom Button */
 #scrollToBottomBtn {
@@ -415,18 +340,16 @@ body.selection-mode .message-bubble {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
   z-index: 20;
   transition: all 0.3s ease;
-  animation: modalZoom 0.3s var(--ease-out-expo);
+  animation: classySlideIn 0.3s var(--ease-classy);
 }
 
 #scrollToBottomBtn:hover {
   background-color: var(--text-main);
   color: var(--bg-color);
-  transform: translateX(-50%) translateY(-5px);
+  transform: translateX(-50%) translateY(-3px);
 }
 
-#scrollToBottomBtn.hidden {
-  display: none;
-}
+#scrollToBottomBtn.hidden { display: none; }
 
 #newMsgCount {
   position: absolute;
@@ -443,12 +366,9 @@ body.selection-mode .message-bubble {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  animation: systemPulse 1s infinite; /* Attention grabber */
 }
 
-#newMsgCount.hidden {
-  display: none;
-}
+#newMsgCount.hidden { display: none; }
 
 /* MISC UI ELEMENTS */
 .nav-item {
@@ -461,11 +381,7 @@ body.selection-mode .message-bubble {
   letter-spacing: 0.5px;
 }
 
-.nav-item.active,
-.nav-item:hover {
-  color: var(--text-main);
-  border-bottom-color: var(--text-main);
-}
+.nav-item.active, .nav-item:hover { color: var(--text-main); border-bottom-color: var(--text-main); }
 
 #typingIndicator {
   height: 1.5rem;
@@ -474,7 +390,7 @@ body.selection-mode .message-bubble {
   opacity: 0.8;
   transition: opacity 0.3s ease;
   font-style: italic;
-  animation: systemPulse 1.5s infinite ease-in-out;
+  animation: fadeIn 1.5s infinite alternate;
 }
 
 #replyBar {
@@ -484,23 +400,13 @@ body.selection-mode .message-bubble {
   display: none;
   justify-content: space-between;
   align-items: center;
-  animation: smoothSlideUp 0.2s var(--ease-out-expo);
+  animation: classySlideIn 0.2s var(--ease-classy);
 }
 
-#replyBar.show {
-  display: flex;
-}
+#replyBar.show { display: flex; }
 
-#replyBar .reply-info {
-  flex: 1;
-  font-size: 0.85rem;
-}
-
-#replyBar .reply-author {
-  font-weight: bold;
-  color: var(--text-main);
-}
-
+#replyBar .reply-info { flex: 1; font-size: 0.85rem; }
+#replyBar .reply-author { font-weight: bold; color: var(--text-main); }
 #replyBar .reply-text {
   opacity: 0.7;
   color: var(--text-muted);
@@ -519,9 +425,7 @@ body.selection-mode .message-bubble {
   transition: color 0.2s;
 }
 
-#replyBar button:hover {
-    color: var(--text-main);
-}
+#replyBar button:hover { color: var(--text-main); }
 
 .reply-preview {
   background-color: rgba(255, 255, 255, 0.05);
@@ -534,21 +438,9 @@ body.selection-mode .message-bubble {
   transition: background-color 0.2s;
 }
 
-.reply-preview:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.reply-preview .reply-author {
-  font-weight: bold;
-  margin-bottom: 0.25rem;
-  color: var(--text-main);
-}
-.reply-preview .reply-text {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--text-muted);
-}
+.reply-preview:hover { background-color: rgba(255, 255, 255, 0.1); }
+.reply-preview .reply-author { font-weight: bold; margin-bottom: 0.25rem; color: var(--text-main); }
+.reply-preview .reply-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-muted); }
 
 /* CONTEXT MENU & MODALS */
 #contextMenu {
@@ -562,7 +454,7 @@ body.selection-mode .message-bubble {
   min-width: 140px;
   opacity: 0;
   visibility: hidden;
-  transform: scale(0.95);
+  transform: scale(0.98);
   transform-origin: top right;
   transition: opacity 0.1s ease-out, visibility 0s linear 0.1s, transform 0.1s ease-out;
 }
@@ -574,11 +466,7 @@ body.selection-mode .message-bubble {
   transition-delay: 0s;
 }
 
-#contextMenu ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
+#contextMenu ul { list-style: none; margin: 0; padding: 0; }
 #contextMenu li {
   padding: 0.5rem 0.75rem;
   cursor: pointer;
@@ -587,41 +475,25 @@ body.selection-mode .message-bubble {
   border-radius: 4px;
   font-size: 0.85rem;
 }
-#contextMenu li:hover {
-  background-color: var(--highlight);
-  padding-left: 1rem; /* Slight shift on hover */
-}
-#contextMenu li.separator {
-  height: 1px;
-  background-color: var(--border-color);
-  margin: 4px 0;
-  padding: 0;
-}
+#contextMenu li:hover { background-color: var(--highlight); padding-left: 1rem; }
+#contextMenu li.separator { height: 1px; background-color: var(--border-color); margin: 4px 0; padding: 0; }
 
 #selectionBar {
   background-color: var(--surface);
   border-top: 1px solid var(--border-color);
   padding: 0.5rem 1rem;
-  animation: smoothSlideUp 0.2s var(--ease-out-expo);
+  animation: classySlideIn 0.2s var(--ease-classy);
 }
 
-#selectionCount {
-    color: var(--text-main);
-}
-
-#selectionCancel {
-    color: var(--text-muted);
-}
-
-#selectionDelete {
-    color: var(--danger);
-}
+#selectionCount { color: var(--text-main); }
+#selectionCancel { color: var(--text-muted); }
+#selectionDelete { color: var(--danger); }
 
 .modal-base {
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(4px); /* Classy blur */
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -632,19 +504,13 @@ body.selection-mode .message-bubble {
   z-index: 50;
 }
 
-.modal-base.is-open {
-  opacity: 1;
-  visibility: visible;
-}
+.modal-base.is-open { opacity: 1; visibility: visible; }
 .modal-content {
-  transform: scale(0.95) translateY(10px);
+  transform: translateY(15px);
   opacity: 0;
-  transition: all 0.3s var(--ease-out-expo);
+  transition: all 0.4s var(--ease-classy);
 }
-.modal-base.is-open .modal-content {
-  transform: scale(1) translateY(0);
-  opacity: 1;
-}
+.modal-base.is-open .modal-content { transform: translateY(0); opacity: 1; }
 
 .date-separator {
   display: flex;

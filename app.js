@@ -19,6 +19,8 @@ import {
   writeBatch,
   arrayUnion,
   arrayRemove,
+  where,
+  limit
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -32,6 +34,7 @@ const firebaseConfig = {
 };
 
 // *** ADMIN CONFIGURATION ***
+// Add admin UIDs here as strings separated by commas
 const ADMIN_UIDS = [
     "REPLACE_WITH_REAL_UID_1",
     "REPLACE_WITH_REAL_UID_2"
@@ -49,6 +52,11 @@ const chatForm = document.getElementById("chatForm");
 const chatInput = document.getElementById("chatInput");
 const chatButton = document.getElementById("chatButton");
 const typingIndicator = document.getElementById("typingIndicator");
+
+// PINNED MESSAGE ELEMENTS
+const pinnedMessageBar = document.getElementById("pinnedMessageBar");
+const pinnedMessageText = document.getElementById("pinnedMessageText");
+const unpinBtn = document.getElementById("unpinBtn");
 
 // Scroll UI Elements
 const scrollToBottomBtn = document.getElementById("scrollToBottomBtn");
@@ -69,9 +77,11 @@ const editModalSaveButton = document.getElementById("editModalSaveButton");
 const confirmModal = document.getElementById("confirmModal");
 const confirmModalText = document.getElementById("confirmModalText");
 const confirmModalNoButton = document.getElementById("confirmModalNoButton");
+// Dynamic container for buttons
 const confirmModalActionContainer = document.getElementById("confirmModalActionContainer") || createActionContainer();
 
 const contextMenu = document.getElementById("contextMenu");
+const menuPin = document.getElementById("menuPin");
 const menuEdit = document.getElementById("menuEdit");
 const menuDelete = document.getElementById("menuDelete");
 const menuSelect = document.getElementById("menuSelect");
@@ -98,6 +108,7 @@ let chatCollection;
 let typingStatusCollection;
 let unsubscribeConfessions = () => {};
 let unsubscribeChat = () => {};
+let unsubscribePinned = () => {}; 
 let unsubscribeUserProfiles = () => {};
 let unsubscribeTypingStatus = () => {};
 let currentPage = "chat";
@@ -110,6 +121,7 @@ let deleteCallback = null;
 let isSelectionMode = false;
 let selectedMessages = new Set();
 let currentContextMenuData = null;
+let currentPinnedDocId = null;
 
 let replyToMessage = null;
 
@@ -127,24 +139,15 @@ const REACTION_TYPES = {
   skull: "💀"
 };
 
-// *** NEW: USER COLORS PALETTE (Obsidian Friendly) ***
+// USER COLORS (Obsidian Friendly)
 const USER_COLORS = [
-  "#ff79c6", // Pink
-  "#8be9fd", // Cyan
-  "#50fa7b", // Green
-  "#bd93f9", // Purple
-  "#ffb86c", // Orange
-  "#f1fa8c", // Yellow
-  "#ff5555", // Red
-  "#00e5ff", // Bright Blue
+  "#ff79c6", "#8be9fd", "#50fa7b", "#bd93f9", 
+  "#ffb86c", "#f1fa8c", "#ff5555", "#00e5ff"
 ];
 
-// Helper: Generate a consistent color from a User ID
 function getUserColor(userId) {
   let hash = 0;
-  for (let i = 0; i < userId.length; i++) {
-    hash = userId.charCodeAt(i) + ((hash << 5) - hash);
-  }
+  for (let i = 0; i < userId.length; i++) hash = userId.charCodeAt(i) + ((hash << 5) - hash);
   const index = Math.abs(hash % USER_COLORS.length);
   return USER_COLORS[index];
 }
@@ -252,19 +255,15 @@ async function loadUserProfile() {
 
 async function handleProfileSave() {
   if (!db || !currentUserId) return;
-  
   modalSaveButton.textContent = "SAVING...";
   modalSaveButton.disabled = true;
-  
   const inputVal = modalUsernameInput.value.trim();
-  
   if (!inputVal || inputVal.toLowerCase() === "anonymous") {
       alert("Please enter a valid username to continue.");
       modalSaveButton.textContent = "SAVE";
       modalSaveButton.disabled = false;
       return; 
   }
-
   const newUsername = inputVal;
   const firstLetter = newUsername.charAt(0).toUpperCase();
   const newProfilePhotoURL = `https://placehold.co/32x32/000000/ffffff?text=${firstLetter}`;
@@ -334,6 +333,7 @@ async function saveEdit() {
   }
 }
 
+// *** CONFIRM MODAL (OBSIDIAN THEME + ADMIN LOGIC) ***
 function showConfirmModal(text, isMine, docId) {
   confirmModalText.textContent = text;
   confirmModalActionContainer.innerHTML = '';
@@ -397,6 +397,56 @@ async function toggleReaction(docId, collectionName, reactionType, hasReacted) {
   }
 }
 
+async function togglePin(docId) {
+    const docRef = doc(db, currentPage, docId);
+    const docSnap = await getDoc(docRef);
+    if(docSnap.exists()) {
+        const currentPin = docSnap.data().isPinned || false;
+        await updateDoc(docRef, { isPinned: !currentPin });
+    }
+}
+
+// *** LISTENER FOR PINNED MESSAGES ***
+function listenForPinnedMessages() {
+    unsubscribePinned(); // Clear old listener
+    const colRef = collection(db, currentPage);
+    const q = query(colRef, where("isPinned", "==", true), orderBy("timestamp", "desc"), limit(1));
+    
+    unsubscribePinned = onSnapshot(q, (snapshot) => {
+        if (!snapshot.empty) {
+            const data = snapshot.docs[0].data();
+            currentPinnedDocId = snapshot.docs[0].id;
+            pinnedMessageText.textContent = data.text;
+            pinnedMessageBar.classList.remove("hidden");
+            
+            // Allow clicking bar to scroll to message
+            pinnedMessageBar.onclick = (e) => {
+                if(e.target.closest("#unpinBtn")) return;
+                
+                const bubble = document.querySelector(`.message-bubble[data-id="${currentPinnedDocId}"]`);
+                if(bubble) {
+                    bubble.scrollIntoView({behavior: "smooth", block: "center"});
+                    bubble.style.backgroundColor = "rgba(255, 255, 255, 0.2)"; 
+                    setTimeout(() => bubble.style.backgroundColor = "", 1500);
+                } else {
+                    alert("Message is too old to scroll to, but it is pinned at top.");
+                }
+            };
+
+            // Admin Unpin Button
+            if (ADMIN_UIDS.includes(currentUserId)) {
+                unpinBtn.classList.remove("hidden");
+                unpinBtn.onclick = async () => {
+                    await updateDoc(doc(db, currentPage, currentPinnedDocId), { isPinned: false });
+                };
+            }
+        } else {
+            pinnedMessageBar.classList.add("hidden");
+            currentPinnedDocId = null;
+        }
+    });
+}
+
 function showDropdownMenu(event, data) {
   event.stopPropagation();
   
@@ -412,9 +462,17 @@ function showDropdownMenu(event, data) {
   const messageTime = parseInt(currentContextMenuData.timestamp, 10);
   const isEditable = now - messageTime < 300000;
   const isMine = currentContextMenuData.isMine === "true";
+  const isAdmin = ADMIN_UIDS.includes(currentUserId);
 
   menuEdit.style.display = isEditable && isMine ? "block" : "none";
-  menuDelete.style.display = "block"; 
+  menuDelete.style.display = "block";
+  
+  if (isAdmin) {
+      menuPin.classList.remove("hidden");
+      menuPin.textContent = (data.id === currentPinnedDocId) ? "Unpin Message" : "Pin Message";
+  } else {
+      menuPin.classList.add("hidden");
+  }
 
   const rect = event.currentTarget.getBoundingClientRect();
   contextMenu.style.top = `${rect.bottom + 2}px`;
@@ -431,6 +489,12 @@ function showDropdownMenu(event, data) {
 function hideDropdownMenu() {
   contextMenu.classList.remove("is-open");
 }
+
+// Click Handlers for Menu
+menuPin.addEventListener("click", () => {
+    if(currentContextMenuData) togglePin(currentContextMenuData.id);
+    hideDropdownMenu();
+});
 
 function handleMessageClick(bubble) {
   if (!isSelectionMode) return;
@@ -520,6 +584,7 @@ function showPage(page) {
   unsubscribeConfessions();
   unsubscribeChat();
   unsubscribeTypingStatus();
+  unsubscribePinned();
   typingIndicator.innerHTML = "&nbsp;";
   unreadMessages = 0;
   newMsgCount.classList.add("hidden");
@@ -535,6 +600,7 @@ function showPage(page) {
     chatForm.classList.remove("flex");
     typingIndicator.classList.add("hidden");
     listenForConfessions();
+    listenForPinnedMessages();
   } else {
     navChat.classList.add("active");
     navConfessions.classList.remove("active");
@@ -545,6 +611,7 @@ function showPage(page) {
     typingIndicator.classList.remove("hidden");
     listenForChat();
     listenForTyping();
+    listenForPinnedMessages();
   }
 }
 
@@ -638,7 +705,7 @@ function formatMessageTime(date) {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
-// *** RENDER FEED (WITH USER COLORS) ***
+// *** RENDER FEED ***
 function renderFeed(docs, type, snapshot) {
   const prevScrollTop = feedContainer.scrollTop;
   const wasAtBottom = userIsAtBottom;
@@ -682,6 +749,8 @@ function renderFeed(docs, type, snapshot) {
     const docUserId = data.userId;
     const profile = userProfiles[docUserId] || {};
     const username = profile.username || "Anonymous";
+    
+    // OBSIDIAN: Default to B&W placeholder if no photo
     const photoURL = profile.profilePhotoURL || `https://placehold.co/32x32/000000/ffffff?text=${username.charAt(0).toUpperCase() || "?"}`;
 
     const isMine = currentUserId && docUserId === currentUserId;
@@ -705,10 +774,8 @@ function renderFeed(docs, type, snapshot) {
     bubble.dataset.userId = docUserId;
     bubble.dataset.timestamp = rawMillis;
 
-    // Apply Color to Received Messages
     if (!isMine) {
         bubble.style.borderLeft = `3px solid ${userColor}`;
-        // Optional: Very faint background tint
         bubble.style.background = `linear-gradient(90deg, ${userColor}10, transparent)`;
     }
 
@@ -736,12 +803,12 @@ function renderFeed(docs, type, snapshot) {
       const imgElement = document.createElement("img");
       imgElement.src = photoURL;
       imgElement.className = `chat-pfp ${isMine ? "order-2" : "order-1"}`;
-      if (!isMine) imgElement.style.borderColor = userColor; // Color the PFP border
+      if (!isMine) imgElement.style.borderColor = userColor;
 
       const usernameElement = document.createElement("div");
       usernameElement.className = `font-bold text-sm opacity-90 ${isMine ? "order-1 text-right" : "order-2 text-left"}`;
       usernameElement.textContent = username;
-      if (!isMine) usernameElement.style.color = userColor; // Color the Username
+      if (!isMine) usernameElement.style.color = userColor;
 
       // ADMIN BADGE
       if (ADMIN_UIDS.includes(docUserId)) {
@@ -770,7 +837,6 @@ function renderFeed(docs, type, snapshot) {
       const replyToProfile = userProfiles[data.replyTo.userId] || {};
       replyAuthorEl.textContent = replyToProfile.username || "Anonymous";
       
-      // Color Reply Username too
       if (!isMine) {
           replyPreview.style.borderLeftColor = userColor;
           replyAuthorEl.style.color = userColor;
@@ -906,6 +972,7 @@ function renderFeed(docs, type, snapshot) {
   const lastDoc = docs[docs.length - 1];
   const lastMessageIsMine = lastDoc && lastDoc.data().userId === currentUserId;
 
+  // SCROLL FIX
   const hasNewMessages = snapshot && snapshot.docChanges().some(change => change.type === 'added');
   
   if (hasNewMessages) {
