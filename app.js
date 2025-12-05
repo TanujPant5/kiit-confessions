@@ -809,7 +809,8 @@ function renderFeed(docs, type, snapshot) {
     }
 
     const textElement = document.createElement("p");
-    textElement.className = `${isMine ? "text-right" : "text-left"}`;
+    // FIXED: Always align text to the left
+    textElement.className = "text-left";
     textElement.textContent = text;
     bubble.appendChild(textElement);
 
