@@ -173,6 +173,19 @@ function createActionContainer() {
     return null;
 }
 
+// *** SERVICE WORKER REGISTRATION (Fixes Mobile) ***
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then((reg) => {
+        console.log('Service Worker Registered!', reg);
+      })
+      .catch((err) => {
+        console.log('Service Worker Failed:', err);
+      });
+  }
+}
+
 // *** NOTIFICATIONS LOGIC ***
 function setupNotificationButton() {
     const notifBtn = document.getElementById("notificationButton");
@@ -182,7 +195,6 @@ function setupNotificationButton() {
     
     // Check initial permission
     if ("Notification" in window && Notification.permission === "granted") {
-        // We start enabled if permission is granted, user can toggle off later if they want
         notificationsEnabled = true;
     }
     updateNotificationIcon();
@@ -198,23 +210,18 @@ async function handleNotificationClick(e) {
     }
 
     if (Notification.permission === "granted") {
-        // Logic: Simply toggle the boolean
         notificationsEnabled = !notificationsEnabled;
         updateNotificationIcon();
-        
-        // Optional Feedback
         if (notificationsEnabled) {
-            new Notification("Notifications ON", { body: "You will receive updates.", icon: "icon.jpg" });
+            showNotification("Notifications ON", "You will receive updates.");
         }
-        
     } else if (Notification.permission === "denied") {
         alert("Notifications are blocked by your browser settings. Please go to Site Settings and enable Notifications for this site.");
     } else {
-        // Request Permission
         const permission = await Notification.requestPermission();
         if (permission === "granted") {
             notificationsEnabled = true;
-            new Notification("Welcome!", { body: "Notifications enabled.", icon: "icon.jpg" });
+            showNotification("Welcome!", "Notifications enabled.");
             updateNotificationIcon();
         }
     }
@@ -246,18 +253,32 @@ function updateNotificationIcon() {
     }
 }
 
-function showNotification(title, body) {
+async function showNotification(title, body) {
   if (!("Notification" in window)) return;
   if (Notification.permission !== "granted") return;
   if (!notificationsEnabled) return;
 
   const cleanBody = body.length > 50 ? body.substring(0, 50) + "..." : body;
-  
+  const iconPath = "icon.jpg"; // Ensure this image exists
+
   try {
+      // MOBILE FIX: Use Service Worker registration if available
+      if ('serviceWorker' in navigator) {
+          const reg = await navigator.serviceWorker.ready;
+          if (reg) {
+              reg.showNotification(title, {
+                  body: cleanBody,
+                  icon: iconPath,
+                  vibrate: [200, 100, 200]
+              });
+              return;
+          }
+      }
+
+      // FALLBACK (Desktop)
       new Notification(title, {
           body: cleanBody,
-          icon: "icon.jpg",
-          vibrate: [200, 100, 200]
+          icon: iconPath
       });
   } catch (e) {
       console.error("Notification failed:", e);
@@ -274,7 +295,8 @@ async function initFirebase() {
     currentUserId = userCredential.user.uid;
     console.log("Your UID:", currentUserId); 
     
-    // Setup UI
+    // Setup UI & Service Worker
+    registerServiceWorker();
     setupNotificationButton();
 
     listenForUserProfiles();
