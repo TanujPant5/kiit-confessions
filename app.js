@@ -208,7 +208,7 @@ async function handleNotificationClick(e) {
         }
         
     } else if (Notification.permission === "denied") {
-        alert("Notifications are blocked. Please enable them in your browser settings.");
+        alert("Notifications are blocked by your browser settings. Please go to Site Settings and enable Notifications for this site.");
     } else {
         // Request Permission
         const permission = await Notification.requestPermission();

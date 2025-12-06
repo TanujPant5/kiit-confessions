@@ -23,6 +23,14 @@ body {
   overflow-x: hidden; /* Prevent scrollbar jumps */
 }
 
+/* REMOVE MOBILE TAP HIGHLIGHT */
+button, 
+a, 
+input, 
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
 .glow {
   text-shadow: none;
 }
