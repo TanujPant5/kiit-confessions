@@ -170,6 +170,32 @@ function createActionContainer() {
     return null;
 }
 
+// *** NOTIFICATIONS ***
+function requestNotificationPermission() {
+  if (!("Notification" in window)) {
+    console.log("This browser does not support desktop notification");
+    return;
+  }
+  if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+    Notification.requestPermission().then((permission) => {
+      if (permission === "granted") {
+        console.log("Notification permission granted");
+      }
+    });
+  }
+}
+
+function showNotification(title, body) {
+  if (Notification.permission === "granted") {
+    // Truncate if too long
+    const cleanBody = body.length > 60 ? body.substring(0, 60) + "..." : body;
+    new Notification(title, {
+      body: cleanBody,
+      icon: "icon.jpg" // Ensure this path is correct
+    });
+  }
+}
+
 async function initFirebase() {
   try {
     const app = initializeApp(firebaseConfig);
@@ -179,6 +205,9 @@ async function initFirebase() {
     const userCredential = await signInAnonymously(auth);
     currentUserId = userCredential.user.uid;
     console.log("Your UID:", currentUserId); 
+    
+    // Request permission on load
+    requestNotificationPermission();
 
     listenForUserProfiles();
     await loadUserProfile();
@@ -537,6 +566,9 @@ function showPage(page) {
   scrollToBottomBtn.classList.add("hidden");
   scrollToBottomBtn.style.display = "";
 
+  // Request permission on nav change
+  requestNotificationPermission();
+
   if (page === "confessions") {
     navConfessions.classList.add("active");
     navChat.classList.remove("active");
@@ -564,29 +596,35 @@ let lastChatDocs = [];
 
 function listenForConfessions(isRerender = false) {
   if (isRerender) {
-    renderFeed(lastConfessionDocs, "confessions");
+    renderFeed(lastConfessionDocs, "confessions", null, true); // Rerender doesn't need to notify
     return;
   }
   unsubscribeChat();
   feedContainer.innerHTML = '<div id="loading" class="text-center p-4">LOADING CONFESSIONS...</div>';
   const q = query(confessionsCollection, orderBy("timestamp", "asc"));
+  
+  let isFirstRun = true;
   unsubscribeConfessions = onSnapshot(q, (snapshot) => {
       lastConfessionDocs = snapshot.docs;
-      renderFeed(lastConfessionDocs, "confessions", snapshot);
+      renderFeed(lastConfessionDocs, "confessions", snapshot, isFirstRun);
+      isFirstRun = false;
   });
 }
 
 function listenForChat(isRerender = false) {
   if (isRerender) {
-    renderFeed(lastChatDocs, "chat");
+    renderFeed(lastChatDocs, "chat", null, true); // Rerender doesn't need to notify
     return;
   }
   unsubscribeConfessions();
   feedContainer.innerHTML = '<div id="loading" class="text-center p-4">LOADING CHAT...</div>';
   const q = query(chatCollection, orderBy("timestamp", "asc"));
+
+  let isFirstRun = true;
   unsubscribeChat = onSnapshot(q, (snapshot) => {
       lastChatDocs = snapshot.docs;
-      renderFeed(lastChatDocs, "chat", snapshot);
+      renderFeed(lastChatDocs, "chat", snapshot, isFirstRun);
+      isFirstRun = false;
   });
 }
 
@@ -650,7 +688,24 @@ function formatMessageTime(date) {
 }
 
 // *** RENDER FEED (WITH USER COLORS) ***
-function renderFeed(docs, type, snapshot) {
+function renderFeed(docs, type, snapshot, isFirstRun) {
+  // Check for new notifications BEFORE clearing innerHTML
+  if (!isFirstRun && snapshot) {
+      snapshot.docChanges().forEach((change) => {
+          if (change.type === "added") {
+              const data = change.doc.data();
+              // Notify if message is not from self and not hidden
+              if (data.userId !== currentUserId) {
+                  const isHidden = data.hiddenFor && data.hiddenFor.includes(currentUserId);
+                  if (!isHidden) {
+                     const title = type === "chat" ? "New Chat Message" : "New Confession";
+                     showNotification(title, data.text || "Sent an image/file");
+                  }
+              }
+          }
+      });
+  }
+
   const prevScrollTop = feedContainer.scrollTop;
   const wasAtBottom = userIsAtBottom;
   
