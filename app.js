@@ -113,6 +113,9 @@ let currentContextMenuData = null;
 
 let replyToMessage = null;
 
+// Notification State
+let notificationsEnabled = false;
+
 // Scroll State
 let unreadMessages = 0;
 let userIsAtBottom = true;
@@ -170,29 +173,113 @@ function createActionContainer() {
     return null;
 }
 
-// *** NOTIFICATIONS ***
-function requestNotificationPermission() {
-  if (!("Notification" in window)) {
-    console.log("This browser does not support desktop notification");
-    return;
-  }
-  if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-    Notification.requestPermission().then((permission) => {
-      if (permission === "granted") {
-        console.log("Notification permission granted");
-      }
-    });
-  }
+// *** NOTIFICATIONS LOGIC ***
+
+// 1. Inject the Bell Button into the UI
+function injectNotificationButton() {
+    const headerActions = profileButton.parentElement; // The div containing nav and profile button
+    if (!headerActions) return;
+
+    // Check if already exists
+    if (document.getElementById("notificationButton")) return;
+
+    const notifBtn = document.createElement("button");
+    notifBtn.id = "notificationButton";
+    notifBtn.className = "p-2 rounded-full hover:bg-[#262626] transition text-[#ededed]";
+    notifBtn.title = "Toggle Notifications";
+    // Default Icon (Will be updated by updateNotificationIcon)
+    notifBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+    `;
+
+    // Insert before the profile button
+    headerActions.insertBefore(notifBtn, profileButton);
+
+    notifBtn.addEventListener("click", handleNotificationClick);
+    
+    // Initialize State based on current permission
+    if ("Notification" in window && Notification.permission === "granted") {
+        notificationsEnabled = true;
+    }
+    updateNotificationIcon();
+}
+
+async function handleNotificationClick() {
+    if (!("Notification" in window)) {
+        alert("This browser does not support notifications.");
+        return;
+    }
+
+    if (Notification.permission === "granted") {
+        // Toggle Logic
+        notificationsEnabled = !notificationsEnabled;
+        
+        if(notificationsEnabled) {
+            new Notification("Notifications ON", { body: "You will receive updates.", icon: "icon.jpg" });
+        } else {
+             // Optional: Visual feedback
+             // alert("Notifications Muted");
+        }
+        updateNotificationIcon();
+        
+    } else if (Notification.permission === "denied") {
+        alert("Notifications are blocked by your browser. Please enable them in Site Settings.");
+    } else {
+        // Request Permission
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+            notificationsEnabled = true;
+            new Notification("Welcome!", { body: "Notifications enabled.", icon: "icon.jpg" });
+            updateNotificationIcon();
+        }
+    }
+}
+
+function updateNotificationIcon() {
+    const btn = document.getElementById("notificationButton");
+    if (!btn) return;
+
+    if (notificationsEnabled) {
+        // STATE: ON (Yellow Filled Bell)
+        btn.classList.add("text-yellow-400");
+        btn.innerHTML = `
+         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>`;
+    } else {
+        // STATE: OFF (Gray Outline Bell with Slash)
+        btn.classList.remove("text-yellow-400");
+        btn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            <path d="M18.63 13A17.89 17.89 0 0 1 18 8"></path>
+            <path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"></path>
+            <path d="M18 8a6 6 0 0 0-9.33-5"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+        </svg>`;
+    }
 }
 
 function showNotification(title, body) {
-  if (Notification.permission === "granted") {
-    // Truncate if too long
-    const cleanBody = body.length > 60 ? body.substring(0, 60) + "..." : body;
-    new Notification(title, {
-      body: cleanBody,
-      icon: "icon.jpg" // Ensure this path is correct
-    });
+  // GUARD: Only show if supported, granted, AND enabled by user
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+  if (!notificationsEnabled) return;
+
+  const cleanBody = body.length > 50 ? body.substring(0, 50) + "..." : body;
+  
+  try {
+      new Notification(title, {
+          body: cleanBody,
+          icon: "icon.jpg",
+          vibrate: [200, 100, 200]
+      });
+  } catch (e) {
+      console.error("Notification failed:", e);
   }
 }
 
@@ -206,8 +293,8 @@ async function initFirebase() {
     currentUserId = userCredential.user.uid;
     console.log("Your UID:", currentUserId); 
     
-    // Request permission on load
-    requestNotificationPermission();
+    // Inject UI elements
+    injectNotificationButton();
 
     listenForUserProfiles();
     await loadUserProfile();
@@ -565,9 +652,6 @@ function showPage(page) {
   newMsgCount.classList.add("hidden");
   scrollToBottomBtn.classList.add("hidden");
   scrollToBottomBtn.style.display = "";
-
-  // Request permission on nav change
-  requestNotificationPermission();
 
   if (page === "confessions") {
     navConfessions.classList.add("active");
